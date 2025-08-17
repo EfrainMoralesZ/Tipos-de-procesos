@@ -158,8 +158,15 @@ def procesar_reporte(reporte_path):
         df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
 
         def modificar_criterio(criterio):
-            if str(criterio).strip().upper() in ['C', 'CUMPLE', 'REVISADO']:
-                return 'CUMPLE'
+            crit = str(criterio).strip().upper()
+            # Si contiene 'NO CUMPLE' no modificar
+            if 'NO CUMPLE' in crit:
+                return criterio
+            # Si contiene 'CUMPLE', 'C', 'REVISADO', 'CUMPLE NOM-050', etc.
+            palabras_cumple = ['CUMPLE', 'C', 'REVISADO']
+            for palabra in palabras_cumple:
+                if palabra in crit:
+                    return 'CUMPLE'
             return criterio
         df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
