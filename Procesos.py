@@ -13,7 +13,20 @@ HISTORIAL = "HISTORIAL_PROCESOS.xlsx"
 
 def procesar_reporte(reporte_path):
     try:
-        # Procesamiento de datos y guardado de archivo
+        # Crear ventana de progreso
+        progress_win = tk.Toplevel()
+        progress_win.title("Progreso")
+        progress_win.geometry("350x120")
+        progress_win.resizable(False, False)
+        progress_label = tk.Label(progress_win, text="Procesando...", font=("Segoe UI", 12))
+        progress_label.pack(pady=10)
+        progress_var = tk.DoubleVar()
+        progress_bar = ttk.Progressbar(progress_win, variable=progress_var, maximum=100, length=250)
+        progress_bar.pack(pady=10)
+        percent_label = tk.Label(progress_win, text="0%", font=("Segoe UI", 10))
+        percent_label.pack()
+        progress_win.update()
+
         # Leer archivos base
         df_base = pd.read_excel(BASE_GENERAL)
         df_inspeccion = pd.read_excel(INSPECCION)
@@ -21,47 +34,68 @@ def procesar_reporte(reporte_path):
 
         # 1. Columna ITEM (solo números, desde REPORTE DE MERCANCIA columna D "Num.Parte")
         items = pd.to_numeric(df_reporte['Num.Parte'], errors='coerce').dropna().astype(int).unique()
+        total = len(items)
 
         # 2. TIPO DE PROCESO (buscar en BASE GENERAL DE DECATHLON columna A "EAN" y X "CODIGO FORMATO")
         df_base['EAN'] = df_base['EAN'].astype(str)
         tipo_proceso = []
-        for item in items:
+        for idx, item in enumerate(items):
             match = df_base[df_base['EAN'] == str(item)]
             if not match.empty:
                 tipo = match.iloc[0]['CODIGO FORMATO'] if 'CODIGO FORMATO' in match.columns else ''
             else:
                 tipo = ''
             tipo_proceso.append(tipo)
+            # Actualizar progreso
+            progress = ((idx + 1) / total) * 20
+            progress_var.set(progress)
+            percent_label.config(text=f"{int(progress)}%")
+            progress_win.update()
 
         # 3. NORMA (REPORTE DE MERCANCIA columna D "Num.Parte" a columna P "NOMs")
         norma = []
-        for item in items:
+        for idx, item in enumerate(items):
             match = df_reporte[df_reporte['Num.Parte'].astype(str) == str(item)]
             if not match.empty and 'NOMs' in match.columns:
                 n = match.iloc[0]['NOMs']
             else:
                 n = ''
             norma.append(n)
+            # Actualizar progreso
+            progress = 20 + ((idx + 1) / total) * 20
+            progress_var.set(progress)
+            percent_label.config(text=f"{int(progress)}%")
+            progress_win.update()
 
         # 4. DESCRIPCION (BASE GENERAL DE DECATHLON columna A "EAN" a B "DESCRIPTION")
         descripcion = []
-        for item in items:
+        for idx, item in enumerate(items):
             match = df_base[df_base['EAN'] == str(item)]
             if not match.empty and 'DESCRIPTION' in match.columns:
                 desc = match.iloc[0]['DESCRIPTION']
             else:
                 desc = ''
             descripcion.append(desc)
+            # Actualizar progreso
+            progress = 40 + ((idx + 1) / total) * 20
+            progress_var.set(progress)
+            percent_label.config(text=f"{int(progress)}%")
+            progress_win.update()
 
         # 5. CRITERIO (INSPECCION: ITEM a INFORMACION FALTANTE)
         criterio = []
-        for item in items:
+        for idx, item in enumerate(items):
             match = df_inspeccion[df_inspeccion['ITEM'].astype(str) == str(item)]
             if not match.empty and 'INFORMACION FALTANTE' in match.columns:
                 crit = match.iloc[0]['INFORMACION FALTANTE']
             else:
                 crit = ''
             criterio.append(crit)
+            # Actualizar progreso
+            progress = 60 + ((idx + 1) / total) * 20
+            progress_var.set(progress)
+            percent_label.config(text=f"{int(progress)}%")
+            progress_win.update()
 
         # Crear DataFrame final
         df_result = pd.DataFrame({
@@ -71,9 +105,12 @@ def procesar_reporte(reporte_path):
             'DESCRIPCION': descripcion,
             'CRITERIO': criterio
         })
+        # Actualizar progreso a 80%
+        progress_var.set(80)
+        percent_label.config(text="80%")
+        progress_win.update()
 
         # Modificaciones finales
-        # Reglas de ADHERIBLE y COSTURA por norma
         normas_adherible = [
             '015', '050', '004-SE', '024', '141',
             'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021', 'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
@@ -91,28 +128,20 @@ def procesar_reporte(reporte_path):
         def modificar_tipo_proceso(row):
             norma = str(row['NORMA'])
             tipo = str(row['TIPO DE PROCESO'])
-            # NOM004TEXX en TIPO DE PROCESO es COSTURA
             if 'NOM004TEXX' in tipo:
                 return 'COSTURA'
-            # NOM004 en TIPO DE PROCESO es COSTURA
             if 'NOM004' in tipo:
                 return 'COSTURA'
-            # NOM-004-SE-2021 en NORMA es COSTURA
             if 'NOM-004-SE-2021' in norma:
                 return 'COSTURA'
-            # Excepciones ADHERIBLE en NORMA
             if 'NOM020INS' in norma:
                 return 'ADHERIBLE'
-            # ADHERIBLE si contiene alguno de los números o nombres
             if contiene_numero(norma, ['015', '050', '004-SE', '024', '141']) or any(n in norma for n in normas_adherible):
                 return 'ADHERIBLE'
-            # COSTURA si contiene alguno de los números y no es excepción
             if contiene_numero(norma, ['004', '020']) and not ('NOM004TEXX' in tipo or 'NOM020INS' in norma):
                 return 'COSTURA'
-            # COSTURA si contiene los nombres y no es excepción
             if any(n in norma for n in normas_costura) and not ('NOM004TEXX' in tipo or 'NOM020INS' in norma):
                 return 'COSTURA'
-            # SIN NORMA
             if norma == '0':
                 return 'SIN NORMA'
             if norma == 'N/D':
@@ -134,14 +163,17 @@ def procesar_reporte(reporte_path):
             return criterio
         df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
-        # Reglas para SIN NORMA: solo si ambas columnas están vacías o son '0' en la misma fila
-        # Reglas para SIN NORMA: si ambas columnas están vacías, son '0' o NaN en la misma fila
         for idx, row in df_result.iterrows():
             tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
             norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
             if ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
                 df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
                 df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+        # Actualizar progreso a 90%
+        progress_var.set(100)
+        percent_label.config(text="100%")
+        progress_win.update()
+
         # Guardar archivo final
         save_path = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
@@ -161,8 +193,16 @@ def procesar_reporte(reporte_path):
                 df_final = df_result.copy()
             df_final.to_excel(HISTORIAL, index=False)
 
+            # Actualizar progreso a 100%
+            progress_var.set(100)
+            percent_label.config(text="100%")
+            progress_label.config(text="¡Completado!")
+            progress_win.update()
+            progress_win.after(1200, progress_win.destroy)
+
             messagebox.showinfo("Éxito", f"Archivo guardado en:\n{save_path}\nHistorial actualizado.")
         else:
+            progress_win.destroy()
             messagebox.showwarning("Cancelado", "No se guardó el archivo.")
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
