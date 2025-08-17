@@ -173,9 +173,17 @@ def procesar_reporte(reporte_path):
         for idx, row in df_result.iterrows():
             tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
             norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
-            if ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
+            # Regla 1: Si NORMA está vacía pero TIPO DE PROCESO tiene información, ambas serán 'SIN NORMA'
+            if (norma == '' and tipo != ''):
                 df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
                 df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+            # Regla original: ambas vacías o ambas '0'
+            elif ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
+                df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
+                df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+            # Regla 2: Si NORMA es NOM-050-SCFI-2004 o NOM-015-SCFI-2007, TIPO DE PROCESO será 'ADHERIBLE'
+            elif norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
+                df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
         # Actualizar progreso a 90%
         progress_var.set(90)
@@ -241,8 +249,8 @@ def procesar_reporte(reporte_path):
                     def stop_and_destroy():
                         running['active'] = False
                         progress_win.destroy()
-                    # Cerrar después de 16 segundos
-                    progress_win.after(16000, stop_and_destroy)
+                    # Cerrar después de 12 segundos
+                    progress_win.after(12000, stop_and_destroy)
             except Exception as e:
                 print(f"No se pudo mostrar el gif de carga: {e}")
 
