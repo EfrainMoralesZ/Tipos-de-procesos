@@ -18,11 +18,37 @@ def procesar_reporte(reporte_path):
         progress_win.title("Progreso")
         progress_win.geometry("350x120")
         progress_win.resizable(False, False)
+
+        # Cargar GIF animado
+        gif_label_gif = None
+        frames = []
+        try:
+            gif_path = "resources/imagen_carga.gif"
+            if os.path.exists(gif_path):
+                gif = Image.open(gif_path)
+                while True:
+                    frame = gif.copy().resize((120, 60), Image.LANCZOS)
+                    frames.append(ImageTk.PhotoImage(frame))
+                    gif.seek(len(frames))
+        except Exception:
+            pass
+
+        # Layout ventana de progreso con GIF
         progress_label = tk.Label(progress_win, text="Procesando...", font=("Segoe UI", 12))
-        progress_label.pack(pady=10)
+        progress_label.pack(pady=(10,0))
+        if frames:
+            gif_label_gif = tk.Label(progress_win)
+            gif_label_gif.pack(pady=(0,5))
+            running = {'active': True}
+            def animate(index=0):
+                if running['active'] and str(progress_win.winfo_exists()) == '1':
+                    gif_label_gif.config(image=frames[index])
+                    progress_win.update()
+                    progress_win.after(80, animate, (index+1)%len(frames))
+            animate()
         progress_var = tk.DoubleVar()
         progress_bar = ttk.Progressbar(progress_win, variable=progress_var, maximum=100, length=250)
-        progress_bar.pack(pady=10)
+        progress_bar.pack(pady=5)
         percent_label = tk.Label(progress_win, text="0%", font=("Segoe UI", 10))
         percent_label.pack()
         progress_win.update()
@@ -185,9 +211,9 @@ def procesar_reporte(reporte_path):
             elif norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
                 df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
-        # Actualizar progreso a 90%
-        progress_var.set(90)
-        percent_label.config(text="90%")
+        # Actualizar progreso a 100%
+        progress_var.set(100)
+        percent_label.config(text="100%")
         progress_win.update()
 
         # Guardar archivo final
@@ -209,50 +235,54 @@ def procesar_reporte(reporte_path):
                 df_final = df_result.copy()
             df_final.to_excel(HISTORIAL, index=False)
 
-            # Actualizar progreso a 100% antes de mostrar el gif
+            # Actualizar progreso a 100% y cerrar ventana de progreso
             progress_var.set(100)
             percent_label.config(text="100%")
             progress_label.config(text="¡Completado!")
             progress_win.update()
+            progress_win.destroy()
 
-            # Mostrar gif de carga después de guardar el archivo y actualizar historial
+            # Mostrar animación GIF en ventana principal con mensaje GUARDADO EXITOSAMENTE
             try:
                 from PIL import Image, ImageTk
-                import itertools
                 gif_path = "resources/imagen_carga.gif"
                 if os.path.exists(gif_path):
-                    # Limpiar ventana de progreso
-                    for widget in progress_win.winfo_children():
-                        widget.destroy()
-                    progress_win.geometry("250x100")
                     gif = Image.open(gif_path)
                     frames = []
                     try:
                         while True:
-                            frame = gif.copy().resize((180, 90), Image.LANCZOS)
+                            frame = gif.copy().resize((380, 200), Image.LANCZOS)
                             frames.append(ImageTk.PhotoImage(frame))
                             gif.seek(len(frames))
                     except EOFError:
                         pass
-                    gif_label_gif = tk.Label(progress_win)
-                    gif_label_gif.pack(expand=True)
+                    overlay = tk.Toplevel(root)
+                    overlay.title("Guardado exitosamente")
+                    overlay.geometry("400x220")
+                    overlay.resizable(False, False)
+                    # Centrar sobre root
+                    x = root.winfo_x() + int(root.winfo_width()/2) - 200
+                    y = root.winfo_y() + int(root.winfo_height()/2) - 110
+                    overlay.geometry(f"400x220+{x}+{y}")
+                    content_frame = tk.Frame(overlay, bg='#F7F7F7')
+                    content_frame.pack(expand=True, fill='both')
+                    gif_label_gif = tk.Label(content_frame, bg='#F7F7F7')
+                    gif_label_gif.pack(pady=(10,0))
+                    msg_label_gif = tk.Label(content_frame, text="GUARDADO EXITOSAMENTE", font=("Segoe UI", 14, "bold"), bg='#F7F7F7', fg='#228B22')
+                    msg_label_gif.pack(pady=(10,10))
                     running = {'active': True}
                     def animate(index=0):
-                        if running['active'] and str(progress_win.winfo_exists()) == '1':
+                        if running['active'] and str(overlay.winfo_exists()) == '1':
                             gif_label_gif.config(image=frames[index])
-                            progress_win.update()
-                            progress_win.after(80, animate, (index+1)%len(frames))
+                            overlay.update()
+                            overlay.after(80, animate, (index+1)%len(frames))
                     animate()
-                    msg_label_gif = tk.Label(progress_win, text="Carga completada", font=("Segoe UI", 12))
-                    msg_label_gif.pack(pady=5)
-                    # Función para detener la animación y destruir la ventana
                     def stop_and_destroy():
                         running['active'] = False
-                        progress_win.destroy()
-                    # Cerrar después de 12 segundos
-                    progress_win.after(12000, stop_and_destroy)
+                        overlay.destroy()
+                    overlay.after(13000, stop_and_destroy)
             except Exception as e:
-                print(f"No se pudo mostrar el gif de carga: {e}")
+                print(f"No se pudo mostrar el gif de carga en root: {e}")
 
         else:
             progress_win.destroy()
