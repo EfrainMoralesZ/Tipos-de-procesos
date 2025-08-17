@@ -176,9 +176,10 @@ def procesar_reporte(reporte_path):
             if ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
                 df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
                 df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+
         # Actualizar progreso a 90%
-        progress_var.set(100)
-        percent_label.config(text="100%")
+        progress_var.set(90)
+        percent_label.config(text="90%")
         progress_win.update()
 
         # Guardar archivo final
@@ -200,14 +201,51 @@ def procesar_reporte(reporte_path):
                 df_final = df_result.copy()
             df_final.to_excel(HISTORIAL, index=False)
 
-            # Actualizar progreso a 100%
+            # Actualizar progreso a 100% antes de mostrar el gif
             progress_var.set(100)
             percent_label.config(text="100%")
             progress_label.config(text="¡Completado!")
             progress_win.update()
-            progress_win.after(1200, progress_win.destroy)
 
-            messagebox.showinfo("Éxito", f"Archivo guardado en:\n{save_path}\nHistorial actualizado.")
+            # Mostrar gif de carga después de guardar el archivo y actualizar historial
+            try:
+                from PIL import Image, ImageTk
+                import itertools
+                gif_path = "resources/imagen_carga.gif"
+                if os.path.exists(gif_path):
+                    # Limpiar ventana de progreso
+                    for widget in progress_win.winfo_children():
+                        widget.destroy()
+                    progress_win.geometry("250x100")
+                    gif = Image.open(gif_path)
+                    frames = []
+                    try:
+                        while True:
+                            frame = gif.copy().resize((180, 90), Image.LANCZOS)
+                            frames.append(ImageTk.PhotoImage(frame))
+                            gif.seek(len(frames))
+                    except EOFError:
+                        pass
+                    gif_label_gif = tk.Label(progress_win)
+                    gif_label_gif.pack(expand=True)
+                    running = {'active': True}
+                    def animate(index=0):
+                        if running['active'] and str(progress_win.winfo_exists()) == '1':
+                            gif_label_gif.config(image=frames[index])
+                            progress_win.update()
+                            progress_win.after(80, animate, (index+1)%len(frames))
+                    animate()
+                    msg_label_gif = tk.Label(progress_win, text="Carga completada", font=("Segoe UI", 12))
+                    msg_label_gif.pack(pady=5)
+                    # Función para detener la animación y destruir la ventana
+                    def stop_and_destroy():
+                        running['active'] = False
+                        progress_win.destroy()
+                    # Cerrar después de 16 segundos
+                    progress_win.after(16000, stop_and_destroy)
+            except Exception as e:
+                print(f"No se pudo mostrar el gif de carga: {e}")
+
         else:
             progress_win.destroy()
             messagebox.showwarning("Cancelado", "No se guardó el archivo.")
