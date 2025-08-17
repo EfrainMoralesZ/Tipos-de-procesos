@@ -73,16 +73,49 @@ def procesar_reporte(reporte_path):
         })
 
         # Modificaciones finales
-        normas_adherible = ['NOM050', 'NOM024', 'NOM0141', 'NOM0189', 'NOM015', 'NOM004TEXX', 'NOM020INS']
-        normas_costura = ['NOM004', 'NOM020']
+        # Reglas de ADHERIBLE y COSTURA por norma
+        normas_adherible = [
+            '015', '050', '004-SE', '024', '141',
+            'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021', 'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
+            'NOM004TEXX', 'NOM020INS'
+        ]
+        normas_costura = ['004', '020', 'NOM004', 'NOM020']
+
+        def contiene_numero(texto, lista_numeros):
+            texto = str(texto)
+            for n in lista_numeros:
+                if n in texto:
+                    return True
+            return False
+
         def modificar_tipo_proceso(row):
-            if row['NORMA'] in normas_adherible:
-                return 'ADHERIBLE'
-            elif row['NORMA'] in normas_costura:
+            norma = str(row['NORMA'])
+            tipo = str(row['TIPO DE PROCESO'])
+            # NOM004TEXX en TIPO DE PROCESO es COSTURA
+            if 'NOM004TEXX' in tipo:
                 return 'COSTURA'
-            elif str(row['NORMA']) == '0':
+            # NOM004 en TIPO DE PROCESO es COSTURA
+            if 'NOM004' in tipo:
+                return 'COSTURA'
+            # NOM-004-SE-2021 en NORMA es COSTURA
+            if 'NOM-004-SE-2021' in norma:
+                return 'COSTURA'
+            # Excepciones ADHERIBLE en NORMA
+            if 'NOM020INS' in norma:
+                return 'ADHERIBLE'
+            # ADHERIBLE si contiene alguno de los números o nombres
+            if contiene_numero(norma, ['015', '050', '004-SE', '024', '141']) or any(n in norma for n in normas_adherible):
+                return 'ADHERIBLE'
+            # COSTURA si contiene alguno de los números y no es excepción
+            if contiene_numero(norma, ['004', '020']) and not ('NOM004TEXX' in tipo or 'NOM020INS' in norma):
+                return 'COSTURA'
+            # COSTURA si contiene los nombres y no es excepción
+            if any(n in norma for n in normas_costura) and not ('NOM004TEXX' in tipo or 'NOM020INS' in norma):
+                return 'COSTURA'
+            # SIN NORMA
+            if norma == '0':
                 return 'SIN NORMA'
-            elif str(row['NORMA']) == 'N/D':
+            if norma == 'N/D':
                 return ''
             return row['TIPO DE PROCESO']
         df_result['TIPO DE PROCESO'] = df_result.apply(modificar_tipo_proceso, axis=1)
@@ -101,6 +134,14 @@ def procesar_reporte(reporte_path):
             return criterio
         df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
+        # Reglas para SIN NORMA: solo si ambas columnas están vacías o son '0' en la misma fila
+        # Reglas para SIN NORMA: si ambas columnas están vacías, son '0' o NaN en la misma fila
+        for idx, row in df_result.iterrows():
+            tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
+            norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
+            if ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
+                df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
+                df_result.at[idx, 'NORMA'] = 'SIN NORMA'
         # Guardar archivo final
         save_path = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
@@ -155,7 +196,7 @@ if __name__ == "__main__":
         logo_path = "resources/logo.png"  # Cambia esto si tu logo tiene otro nombre o ruta
         if os.path.exists(logo_path):
             logo_img_raw = Image.open(logo_path)
-            logo_img_raw = logo_img_raw.resize((100, 100), Image.LANCZOS)
+            logo_img_raw = logo_img_raw.resize((150, 100), Image.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
             logo_label = tk.Label(frame_top, image=logo_img, bg="#FFFFFF")
             logo_label.image = logo_img  # Mantener referencia
