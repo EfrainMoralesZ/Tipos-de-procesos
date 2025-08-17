@@ -10,6 +10,69 @@ BASE_GENERAL = "BASE DECATHLON GENERAL ADVANCE II.xlsx"
 INSPECCION = "INSPECCION.xlsx"
 HISTORIAL = "HISTORIAL_PROCESOS.xlsx"
 
+# ---------- FUNCIÓN PARA MOSTRAR GIF DE ÉXITO ----------
+def mostrar_gif_exitoso(root):
+    try:
+        gif_path = "resources/imagen_carga.gif"  # 👈 coloca aquí tu gif
+        if os.path.exists(gif_path):
+            gif = Image.open(gif_path)
+            frames = []
+            try:
+                while True:
+                    frame = gif.copy().resize((400, 320), Image.LANCZOS)
+                    frames.append(ImageTk.PhotoImage(frame))
+                    gif.seek(len(frames))
+            except EOFError:
+                pass
+
+            overlay = tk.Toplevel(root)
+            overlay.title("Guardado exitosamente")
+            overlay.geometry("400x220")
+            overlay.resizable(False, False)
+            overlay.configure(bg="#F7F7F7")
+
+            # Centrar sobre root
+            x = root.winfo_x() + int(root.winfo_width()/2) - 200
+            y = root.winfo_y() + int(root.winfo_height()/2) - 110
+            overlay.geometry(f"400x220+{x}+{y}")
+
+            content_frame = tk.Frame(overlay, bg='#F7F7F7')
+            content_frame.pack(expand=True, fill='both')
+
+            gif_label_gif = tk.Label(content_frame, bg='#F7F7F7')
+            gif_label_gif.pack(pady=(10, 0))
+
+            msg_label_gif = tk.Label(content_frame,
+                                     text="GUARDADO EXITOSAMENTE",
+                                     font=("Segoe UI", 14, "bold"),
+                                     bg='#F7F7F7',
+                                     fg='#228B22')
+            msg_label_gif.pack(pady=(10, 10))
+
+            running = {'active': True}
+            after_id = None
+
+            def animate(index=0):
+                if running['active'] and overlay.winfo_exists():
+                    gif_label_gif.config(image=frames[index])
+                    nonlocal after_id
+                    after_id = overlay.after(70, animate, (index+1) % len(frames))
+
+            animate()
+
+            def stop_and_destroy():
+                running['active'] = False
+                if after_id:
+                    overlay.after_cancel(after_id)
+                overlay.destroy()
+
+            # Cierra automáticamente después de 10 segundos
+            overlay.after(10000, stop_and_destroy)
+
+    except Exception as e:
+        print(f"No se pudo mostrar el gif de éxito: {e}")
+
+# ---------- FUNCIÓN PRINCIPAL ----------
 def procesar_reporte(reporte_path):
     global frame
     try:
@@ -84,7 +147,7 @@ def procesar_reporte(reporte_path):
             'CRITERIO': criterio
         })
 
-        # Reglas de normalización
+        # ---- Normalizaciones ----
         normas_adherible = [
             '015', '050', '004-SE', '024', '141',
             'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021',
@@ -168,13 +231,16 @@ def procesar_reporte(reporte_path):
                 df_final = df_result.copy()
             df_final.to_excel(HISTORIAL, index=False)
 
-            messagebox.showinfo("Éxito", "El archivo se guardó correctamente ✅")
+            # 👇 Aquí muestro el GIF en vez del messagebox
+            mostrar_gif_exitoso(root)
+
         else:
             messagebox.showwarning("Cancelado", "No se guardó el archivo.")
 
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
 
+# ---------- BOTONES Y VENTANA ----------
 def seleccionar_reporte():
     ruta = filedialog.askopenfilename(
         title="Seleccionar REPORTE DE MERCANCIA",
