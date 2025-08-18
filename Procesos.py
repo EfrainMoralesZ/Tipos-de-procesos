@@ -6,6 +6,8 @@ from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
 import sys
 import json
+from Formato import exportar_excel
+
 
 
 # Archivos fijos
@@ -193,7 +195,7 @@ def procesar_reporte(reporte_path):
                 percent_label.destroy()
             frame.after(500, remove_progress_widgets)
 
-            # Guardar archivo final
+            # Guardar archivo final con formato
             save_path = filedialog.asksaveasfilename(
                 defaultextension=".xlsx",
                 filetypes=[("Archivos Excel", "*.xlsx")],
@@ -202,7 +204,10 @@ def procesar_reporte(reporte_path):
             )
 
             if save_path:
-                df_result.to_excel(save_path, index=False)
+                # ✅ Guardar con formato (usa Formato.py)
+                exportar_excel(df_result, save_path)
+
+                # ✅ Actualizar historial (sin formato especial)
                 if Path(HISTORIAL).exists():
                     df_hist = pd.read_excel(HISTORIAL)
                     df_final = pd.concat([df_hist, df_result]).drop_duplicates(subset=["ITEM"])
