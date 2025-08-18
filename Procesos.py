@@ -6,6 +6,7 @@ from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
 from data_manager import DataManager
 from item_dialog import ItemDialog, BatchItemDialog
+from database_manager_dialog import DatabaseManagerDialog
 
 # Inicializar el gestor de datos
 data_manager = DataManager()
@@ -50,6 +51,11 @@ def procesar_reporte(reporte_path):
         # 1. Columna ITEM (solo números, desde REPORTE DE MERCANCIA columna D "Num.Parte")
         items = pd.to_numeric(df_reporte['Num.Parte'], errors='coerce').dropna().astype(int).unique()
         total = len(items)
+        
+        # Optimización: Si hay muchos ítems, procesar en lotes
+        batch_size = 1000  # Procesar 1000 ítems a la vez
+        if total > batch_size:
+            print(f"Procesando {total} ítems en lotes de {batch_size}")
         
         # Detectar ítems nuevos
         new_items = data_manager.get_new_items_from_report(items)
@@ -98,21 +104,25 @@ def procesar_reporte(reporte_path):
                 items = [item for item in items if data_manager.item_exists_in_base(str(item))]
                 total = len(items)
 
-        # 2. TIPO DE PROCESO (buscar en BASE GENERAL DE DECATHLON columna A "EAN" y X "CODIGO FORMATO")
-        df_base['EAN'] = df_base['EAN'].astype(str)
+        # 2. TIPO DE PROCESO (buscar en BASE GENERAL usando índices optimizados)
         tipo_proceso = []
+        update_frequency = max(1, total // 20)  # Actualizar cada 5% del progreso
+        
         for idx, item in enumerate(items):
-            match = df_base[df_base['EAN'] == str(item)]
-            if not match.empty:
-                tipo = match.iloc[0]['CODIGO FORMATO'] if 'CODIGO FORMATO' in match.columns else ''
+            # Usar búsqueda optimizada O(1)
+            record = data_manager.get_base_general_record_by_ean(str(item))
+            if record and 'CODIGO FORMATO' in record:
+                tipo = record['CODIGO FORMATO']
             else:
                 tipo = ''
             tipo_proceso.append(tipo)
-            # Actualizar progreso
-            progress = ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            progress_win.update()
+            
+            # Actualizar progreso con menor frecuencia
+            if idx % update_frequency == 0 or idx == total - 1:
+                progress = ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                progress_win.update()
 
         # 3. NORMA (REPORTE DE MERCANCIA columna D "Num.Parte" a columna P "NOMs")
         norma = []
@@ -123,19 +133,21 @@ def procesar_reporte(reporte_path):
             else:
                 n = ''
             norma.append(n)
-            # Actualizar progreso
-            progress = 20 + ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            progress_win.update()
+            
+            # Actualizar progreso con menor frecuencia
+            if idx % update_frequency == 0 or idx == total - 1:
+                progress = 20 + ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                progress_win.update()
 
         # 4. DESCRIPCION (obtener del reporte para ítems nuevos, de la base para existentes)
         descripcion = []
         for idx, item in enumerate(items):
-            # Primero intentar obtener de la base de datos
-            match_base = df_base[df_base['EAN'] == str(item)]
-            if not match_base.empty and 'DESCRIPTION' in match_base.columns:
-                desc = match_base.iloc[0]['DESCRIPTION']
+            # Primero intentar obtener de la base de datos usando búsqueda optimizada
+            record = data_manager.get_base_general_record_by_ean(str(item))
+            if record and 'DESCRIPTION' in record:
+                desc = record['DESCRIPTION']
             else:
                 # Si no está en la base, obtener del reporte
                 match_reporte = df_reporte[df_reporte['Num.Parte'].astype(str) == str(item)]
@@ -158,26 +170,31 @@ def procesar_reporte(reporte_path):
                 else:
                     desc = ''
             descripcion.append(desc)
-            # Actualizar progreso
-            progress = 40 + ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            progress_win.update()
+            
+            # Actualizar progreso con menor frecuencia
+            if idx % update_frequency == 0 or idx == total - 1:
+                progress = 40 + ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                progress_win.update()
 
-        # 5. CRITERIO (INSPECCION: ITEM a INFORMACION FALTANTE)
+        # 5. CRITERIO (INSPECCION: ITEM a INFORMACION FALTANTE usando búsqueda optimizada)
         criterio = []
         for idx, item in enumerate(items):
-            match = df_inspeccion[df_inspeccion['ITEM'].astype(str) == str(item)]
-            if not match.empty and 'INFORMACION FALTANTE' in match.columns:
-                crit = match.iloc[0]['INFORMACION FALTANTE']
+            # Usar búsqueda optimizada O(1)
+            record = data_manager.get_inspeccion_record_by_item(str(item))
+            if record and 'INFORMACION FALTANTE' in record:
+                crit = record['INFORMACION FALTANTE']
             else:
                 crit = ''
             criterio.append(crit)
-            # Actualizar progreso
-            progress = 60 + ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            progress_win.update()
+            
+            # Actualizar progreso con menor frecuencia
+            if idx % update_frequency == 0 or idx == total - 1:
+                progress = 60 + ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                progress_win.update()
 
         # Crear DataFrame final
         df_result = pd.DataFrame({
@@ -402,6 +419,9 @@ if __name__ == "__main__":
 
     btn_cargar = ttk.Button(frame, text="📂 Subir REPORTE DE MERCANCIA", command=seleccionar_reporte, style='TButton')
     btn_cargar.pack(pady=10, ipadx=10, ipady=5)
+
+    btn_gestor = ttk.Button(frame, text="🗄️ Gestor de Bases de Datos", command=lambda: DatabaseManagerDialog(root).show(), style='TButton')
+    btn_gestor.pack(pady=5, ipadx=10, ipady=5)
 
     btn_salir = ttk.Button(frame, text="❌ Salir", command=root.quit, style='TButton')
     btn_salir.pack(pady=20, ipadx=5, ipady=3)

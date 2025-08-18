@@ -27,6 +27,9 @@ class DataManager:
         self.base_general = {}
         self.inspeccion = {}
         self.historial = []
+        self._base_items_set = set()
+        self._base_general_index = {}  # Índice para búsquedas rápidas
+        self._inspeccion_index = {}    # Índice para búsquedas rápidas
         
         # Cargar datos existentes
         self._load_all_data()
@@ -37,13 +40,16 @@ class DataManager:
             if self.base_general_path.exists():
                 with open(self.base_general_path, 'r', encoding='utf-8') as f:
                     self.base_general = json.load(f)
-                # Crear set de ítems para búsqueda rápida
+                # Crear índices para búsquedas rápidas
                 if self.base_general and 'data' in self.base_general:
-                    self._base_items_set = {str(record.get('EAN', '')) for record in self.base_general['data']}
+                    self._create_base_general_index()
             
             if self.inspeccion_path.exists():
                 with open(self.inspeccion_path, 'r', encoding='utf-8') as f:
                     self.inspeccion = json.load(f)
+                # Crear índices para búsquedas rápidas
+                if self.inspeccion and 'data' in self.inspeccion:
+                    self._create_inspeccion_index()
             
             if self.historial_path.exists():
                 with open(self.historial_path, 'rb') as f:
@@ -55,6 +61,30 @@ class DataManager:
             self.inspeccion = None
             self.historial = []
             self._base_items_set = set()
+            self._base_general_index = {}
+            self._inspeccion_index = {}
+    
+    def _create_base_general_index(self):
+        """Crear índice para búsquedas rápidas en base general"""
+        self._base_general_index = {}
+        self._base_items_set = set()
+        
+        if self.base_general and 'data' in self.base_general:
+            for i, record in enumerate(self.base_general['data']):
+                ean = str(record.get('EAN', ''))
+                if ean:
+                    self._base_general_index[ean] = i
+                    self._base_items_set.add(ean)
+    
+    def _create_inspeccion_index(self):
+        """Crear índice para búsquedas rápidas en inspección"""
+        self._inspeccion_index = {}
+        
+        if self.inspeccion and 'data' in self.inspeccion:
+            for i, record in enumerate(self.inspeccion['data']):
+                item = str(record.get('ITEM', ''))
+                if item:
+                    self._inspeccion_index[item] = i
     
     def _save_base_general(self):
         """Guardar datos de base general en JSON"""
@@ -168,6 +198,106 @@ class DataManager:
             print(f"Error exportando a Excel: {e}")
             return False
     
+    def export_base_general_to_excel(self, file_path: str):
+        """Exportar base general a Excel"""
+        try:
+            df = self.get_base_general_df()
+            if not df.empty:
+                df.to_excel(file_path, index=False)
+                print(f"Base general exportada: {len(df)} registros")
+                return True
+            else:
+                print("No hay datos en la base general para exportar")
+                return False
+        except Exception as e:
+            print(f"Error exportando base general: {e}")
+            return False
+    
+    def export_inspeccion_to_excel(self, file_path: str):
+        """Exportar inspección a Excel"""
+        try:
+            df = self.get_inspeccion_df()
+            if not df.empty:
+                df.to_excel(file_path, index=False)
+                print(f"Inspección exportada: {len(df)} registros")
+                return True
+            else:
+                print("No hay datos en inspección para exportar")
+                return False
+        except Exception as e:
+            print(f"Error exportando inspección: {e}")
+            return False
+    
+    def export_historial_to_excel(self, file_path: str):
+        """Exportar historial a Excel"""
+        try:
+            df = self.get_historial_df()
+            if not df.empty:
+                df.to_excel(file_path, index=False)
+                print(f"Historial exportado: {len(df)} registros")
+                return True
+            else:
+                print("No hay datos en historial para exportar")
+                return False
+        except Exception as e:
+            print(f"Error exportando historial: {e}")
+            return False
+    
+    def import_base_general_from_excel(self, file_path: str):
+        """Importar base general desde Excel"""
+        try:
+            df = pd.read_excel(file_path)
+            self.base_general = {
+                'columns': df.columns.tolist(),
+                'data': df.to_dict('records'),
+                'metadata': {
+                    'imported_at': datetime.now().isoformat(),
+                    'source_file': file_path,
+                    'total_records': len(df)
+                }
+            }
+            self._save_base_general()
+            # Actualizar el set de ítems para búsqueda rápida
+            if self.base_general and 'data' in self.base_general:
+                self._base_items_set = {str(record.get('EAN', '')) for record in self.base_general['data']}
+            print(f"Base general importada: {len(df)} registros")
+            return True
+        except Exception as e:
+            print(f"Error importando base general: {e}")
+            return False
+    
+    def import_inspeccion_from_excel(self, file_path: str):
+        """Importar inspección desde Excel"""
+        try:
+            df = pd.read_excel(file_path)
+            self.inspeccion = {
+                'columns': df.columns.tolist(),
+                'data': df.to_dict('records'),
+                'metadata': {
+                    'imported_at': datetime.now().isoformat(),
+                    'source_file': file_path,
+                    'total_records': len(df)
+                }
+            }
+            self._save_inspeccion()
+            print(f"Inspección importada: {len(df)} registros")
+            return True
+        except Exception as e:
+            print(f"Error importando inspección: {e}")
+            return False
+    
+    def import_historial_from_excel(self, file_path: str):
+        """Importar historial desde Excel"""
+        try:
+            df = pd.read_excel(file_path)
+            self.historial = df.to_dict('records')
+            self._save_historial()
+            print(f"Historial importado: {len(df)} registros")
+            return True
+        except Exception as e:
+            print(f"Error importando historial: {e}")
+            return False
+    
     def get_data_info(self) -> Dict[str, Any]:
         """Obtener información sobre los datos almacenados"""
         return {
@@ -189,15 +319,24 @@ class DataManager:
         }
     
     def item_exists_in_base(self, item: str) -> bool:
-        """Verificar si un ítem existe en la base general"""
-        if not self.base_general or 'data' not in self.base_general:
-            return False
-        
-        # Crear un set para búsqueda más rápida si no existe
-        if not hasattr(self, '_base_items_set'):
-            self._base_items_set = {str(record.get('EAN', '')) for record in self.base_general['data']}
-        
+        """Verificar si un ítem existe en la base general (O(1))"""
         return str(item) in self._base_items_set
+    
+    def get_base_general_record_by_ean(self, ean: str) -> Optional[Dict[str, Any]]:
+        """Obtener registro de base general por EAN (O(1))"""
+        ean_str = str(ean)
+        if ean_str in self._base_general_index:
+            idx = self._base_general_index[ean_str]
+            return self.base_general['data'][idx]
+        return None
+    
+    def get_inspeccion_record_by_item(self, item: str) -> Optional[Dict[str, Any]]:
+        """Obtener registro de inspección por ITEM (O(1))"""
+        item_str = str(item)
+        if item_str in self._inspeccion_index:
+            idx = self._inspeccion_index[item_str]
+            return self.inspeccion['data'][idx]
+        return None
     
     def add_new_item_to_base(self, item: str, tipo_proceso: str, norma: str, descripcion: str):
         """Agregar un nuevo ítem a la base general"""
@@ -210,19 +349,19 @@ class DataManager:
             'CODIGO FORMATO': tipo_proceso
         }
         
-        # Verificar si ya existe y actualizar, o agregar nuevo
-        item_exists = False
-        for i, record in enumerate(self.base_general['data']):
-            if str(record.get('EAN', '')) == str(item):
-                self.base_general['data'][i] = new_record
-                item_exists = True
-                break
+        item_str = str(item)
         
-        if not item_exists:
+        # Usar índice para búsqueda rápida
+        if item_str in self._base_general_index:
+            # Actualizar registro existente
+            idx = self._base_general_index[item_str]
+            self.base_general['data'][idx] = new_record
+        else:
+            # Agregar nuevo registro
             self.base_general['data'].append(new_record)
-            # Actualizar el set de ítems para búsqueda rápida
-            if hasattr(self, '_base_items_set'):
-                self._base_items_set.add(str(item))
+            idx = len(self.base_general['data']) - 1
+            self._base_general_index[item_str] = idx
+            self._base_items_set.add(item_str)
         
         self._save_base_general()
     
@@ -236,28 +375,23 @@ class DataManager:
             'INFORMACION FALTANTE': criterio
         }
         
-        # Verificar si ya existe y actualizar, o agregar nuevo
-        item_exists = False
-        for i, record in enumerate(self.inspeccion['data']):
-            if str(record.get('ITEM', '')) == str(item):
-                self.inspeccion['data'][i] = new_record
-                item_exists = True
-                break
+        item_str = str(item)
         
-        if not item_exists:
+        # Usar índice para búsqueda rápida
+        if item_str in self._inspeccion_index:
+            # Actualizar registro existente
+            idx = self._inspeccion_index[item_str]
+            self.inspeccion['data'][idx] = new_record
+        else:
+            # Agregar nuevo registro
             self.inspeccion['data'].append(new_record)
+            idx = len(self.inspeccion['data']) - 1
+            self._inspeccion_index[item_str] = idx
         
         self._save_inspeccion()
     
     def get_new_items_from_report(self, report_items: List[int]) -> List[int]:
-        """Obtener lista de ítems nuevos que no están en la base de datos"""
-        # Asegurar que el set esté creado
-        if not hasattr(self, '_base_items_set'):
-            if self.base_general and 'data' in self.base_general:
-                self._base_items_set = {str(record.get('EAN', '')) for record in self.base_general['data']}
-            else:
-                self._base_items_set = set()
-        
+        """Obtener lista de ítems nuevos que no están en la base de datos (O(n))"""
         # Usar set comprehension para mayor velocidad
         report_items_set = {str(item) for item in report_items}
         new_items_set = report_items_set - self._base_items_set

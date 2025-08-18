@@ -7,6 +7,7 @@ Aplicación para procesar reportes de mercancía y generar archivos de tipo de p
 - `Procesos.py` - Aplicación principal (versión optimizada)
 - `data_manager.py` - Gestor de datos optimizado
 - `item_dialog.py` - Diálogos para nuevos ítems
+- `database_manager_dialog.py` - Gestor de exportación/importación de bases de datos
 - `data/` - Carpeta con datos migrados (JSON/Pickle)
 
 ## Funcionalidades
@@ -26,6 +27,8 @@ Aplicación para procesar reportes de mercancía y generar archivos de tipo de p
 - Almacenamiento en JSON/Pickle
 - Carga rápida de datos
 - Compatible con PyInstaller
+- Exportación/importación a Excel
+- Gestión completa de bases de datos
 
 ## Uso
 
