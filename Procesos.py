@@ -4,6 +4,9 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
+import sys
+import json
+
 
 # Archivos fijos
 BASE_GENERAL = "BASE DECATHLON GENERAL ADVANCE II.xlsx"
@@ -31,10 +34,34 @@ def procesar_reporte(reporte_path):
             percent_label.pack()
             frame.update()
 
+
+            def cargar_json(nombre_json):
+                """
+                Carga un archivo JSON como DataFrame de pandas.
+                Funciona tanto en Python normal como en .exe creado con PyInstaller.
+                """
+                if getattr(sys, "frozen", False):
+                    # Cuando se ejecuta como .exe
+                    base_path = sys._MEIPASS
+                else:
+                    # Cuando se ejecuta como script normal
+                    base_path = os.path.dirname(__file__)
+                
+                ruta = os.path.join(base_path, "resources", nombre_json)
+                
+                if not os.path.exists(ruta):
+                    raise FileNotFoundError(f"No se encontró el archivo JSON: {ruta}")
+                
+                with open(ruta, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                
+                return pd.DataFrame(data)
+
+
             # Leer archivos base
-            df_base = pd.read_excel(BASE_GENERAL)
-            df_inspeccion = pd.read_excel(INSPECCION)
-            df_reporte = pd.read_excel(reporte_path)
+            df_base = cargar_json("base_general.json")
+            df_inspeccion = cargar_json("inspeccion.json")
+            df_reporte = pd.read_excel(reporte_path)  # El reporte sigue siendo cargado por el usuario
 
             # 1. Columna ITEM
             items = pd.to_numeric(df_reporte['Num.Parte'], errors='coerce').dropna().astype(int).unique()
@@ -215,7 +242,7 @@ if __name__ == "__main__":
     frame_top.pack(pady=(30, 0), fill="x")
 
     try:
-        logo_path = "resources/logo.png"
+        logo_path = "img/logo.png"
         if os.path.exists(logo_path):
             logo_img_raw = Image.open(logo_path).resize((150, 100), Image.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
