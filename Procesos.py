@@ -19,9 +19,9 @@ else:
     BASE_PATH = os.path.dirname(__file__)
 
 # Archivos fijos
-BASE_GENERAL = os.path.join(BASE_PATH, "archivo","BASE DECATHLON GENERAL ADVANCE II.xlsx")
-INSPECCION = os.path.join(BASE_PATH, "archivo","INSPECCION.xlsx")
-HISTORIAL = os.path.join(BASE_PATH, "archivo","HISTORIAL_PROCESOS.xlsx")
+BASE_GENERAL = os.path.join(BASE_PATH, "archivos","BASE DECATHLON GENERAL ADVANCE II.xlsx")
+INSPECCION = os.path.join(BASE_PATH, "archivos","INSPECCION.xlsx")
+HISTORIAL = os.path.join(BASE_PATH, "archivos","HISTORIAL_PROCESOS.xlsx")
 
 def procesar_reporte(reporte_path):
     global frame
