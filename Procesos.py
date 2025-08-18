@@ -11,9 +11,9 @@ from Formato import exportar_excel
 
 
 # Archivos fijos
-BASE_GENERAL = "BASE DECATHLON GENERAL ADVANCE II.xlsx"
-INSPECCION = "INSPECCION.xlsx"
-HISTORIAL = "HISTORIAL_PROCESOS.xlsx"
+BASE_GENERAL = "archivos/BASE DECATHLON GENERAL ADVANCE II.xlsx"
+INSPECCION = "archivos/INSPECCION.xlsx"
+HISTORIAL = "archivos/HISTORIAL_PROCESOS.xlsx"
 
 def procesar_reporte(reporte_path):
     global frame
