@@ -19,9 +19,9 @@ else:
     BASE_PATH = os.path.dirname(__file__)
 
 # Archivos fijos
-BASE_GENERAL = os.path.join(BASE_PATH, "BASE DECATHLON GENERAL ADVANCE II.xlsx")
-INSPECCION = os.path.join(BASE_PATH, "INSPECCION.xlsx")
-HISTORIAL = os.path.join(BASE_PATH, "HISTORIAL_PROCESOS.xlsx")
+BASE_GENERAL = os.path.join(BASE_PATH, "archivo","BASE DECATHLON GENERAL ADVANCE II.xlsx")
+INSPECCION = os.path.join(BASE_PATH, "archivo","INSPECCION.xlsx")
+HISTORIAL = os.path.join(BASE_PATH, "archivo","HISTORIAL_PROCESOS.xlsx")
 
 def procesar_reporte(reporte_path):
     global frame
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     frame_top.pack(pady=(30, 0), fill="x")
 
     try:
-        logo_path = "img/logo.png"
+        logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
             logo_img_raw = Image.open(logo_path).resize((150, 100), Image.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
