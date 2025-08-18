@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 from pathlib import Path
@@ -13,150 +14,256 @@ HISTORIAL = "HISTORIAL_PROCESOS.xlsx"
 def procesar_reporte(reporte_path):
     global frame
     try:
-        # Limpiar barra de progreso previa si existe
-        for widget in (globals().get("progress_label"),
-                       globals().get("progress_bar"),
-                       globals().get("percent_label")):
+        # Crear barra de progreso en el frame principal
+        try:
+            # Crear barra de progreso en el frame principal
+            global progress_label, progress_var, progress_bar, percent_label
             try:
-                widget.destroy()
+                progress_label.destroy()
+                progress_bar.destroy()
+                percent_label.destroy()
             except Exception:
                 pass
+            progress_label = tk.Label(frame, text="Procesando...", font=("Segoe UI", 12), bg="#FFFFFF")
+            progress_label.pack(pady=(10,0))
+            progress_var = tk.DoubleVar()
+            progress_bar = ttk.Progressbar(frame, variable=progress_var, maximum=100, length=250)
+            progress_bar.pack(pady=5)
+            percent_label = tk.Label(frame, text="0%", font=("Segoe UI", 10), bg="#FFFFFF")
+            percent_label.pack()
+            frame.update()
 
-        # Crear barra de progreso
-        global progress_label, progress_var, progress_bar, percent_label
-        progress_label = tk.Label(frame, text="Procesando...", font=("Segoe UI", 12), bg="#FFFFFF")
-        progress_label.pack(pady=(10, 0))
-        progress_var = tk.DoubleVar()
-        progress_bar = ttk.Progressbar(frame, variable=progress_var, maximum=100, length=250)
-        progress_bar.pack(pady=5)
-        percent_label = tk.Label(frame, text="0%", font=("Segoe UI", 10), bg="#FFFFFF")
-        percent_label.pack()
-        frame.update()
+            # Leer archivos base
+            df_base = pd.read_excel(BASE_GENERAL)
+            df_inspeccion = pd.read_excel(INSPECCION)
+            df_reporte = pd.read_excel(reporte_path)
 
-        # Leer archivos base
-        df_base = pd.read_excel(BASE_GENERAL)
-        df_inspeccion = pd.read_excel(INSPECCION)
-        df_reporte = pd.read_excel(reporte_path)
+            # 1. Columna ITEM (solo números, desde REPORTE DE MERCANCIA columna D "Num.Parte")
+            items = pd.to_numeric(df_reporte['Num.Parte'], errors='coerce').dropna().astype(int).unique()
+            total = len(items)
 
-        # --- Construcción del archivo final ---
-        items = pd.to_numeric(df_reporte['Num.Parte'], errors='coerce').dropna().astype(int).unique()
-        total = len(items)
+            # 2. TIPO DE PROCESO (buscar en BASE GENERAL DE DECATHLON columna A "EAN" y X "CODIGO FORMATO")
+            df_base['EAN'] = df_base['EAN'].astype(str)
+            tipo_proceso = []
+            for idx, item in enumerate(items):
+                match = df_base[df_base['EAN'] == str(item)]
+                if not match.empty:
+                    tipo = match.iloc[0]['CODIGO FORMATO'] if 'CODIGO FORMATO' in match.columns else ''
+                else:
+                    tipo = ''
+                tipo_proceso.append(tipo)
+                # Actualizar progreso
+                progress = ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                frame.update()
 
-        # 1. TIPO DE PROCESO
-        df_base['EAN'] = df_base['EAN'].astype(str)
-        tipo_proceso = []
-        for idx, item in enumerate(items):
-            match = df_base[df_base['EAN'] == str(item)]
-            tipo = match.iloc[0]['CODIGO FORMATO'] if not match.empty and 'CODIGO FORMATO' in match.columns else ''
-            tipo_proceso.append(tipo)
-            progress_var.set(((idx + 1) / total) * 20); percent_label.config(text=f"{int(progress_var.get())}%"); frame.update()
+            # 3. NORMA (REPORTE DE MERCANCIA columna D "Num.Parte" a columna P "NOMs")
+            norma = []
+            for idx, item in enumerate(items):
+                match = df_reporte[df_reporte['Num.Parte'].astype(str) == str(item)]
+                if not match.empty and 'NOMs' in match.columns:
+                    n = match.iloc[0]['NOMs']
+                else:
+                    n = ''
+                norma.append(n)
+                # Actualizar progreso
+                progress = 20 + ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                frame.update()
 
-        # 2. NORMA
-        norma = []
-        for idx, item in enumerate(items):
-            match = df_reporte[df_reporte['Num.Parte'].astype(str) == str(item)]
-            n = match.iloc[0]['NOMs'] if not match.empty and 'NOMs' in match.columns else ''
-            norma.append(n)
-            progress_var.set(20 + ((idx + 1) / total) * 20); percent_label.config(text=f"{int(progress_var.get())}%"); frame.update()
+            # 4. DESCRIPCION (BASE GENERAL DE DECATHLON columna A "EAN" a B "DESCRIPTION")
+            descripcion = []
+            for idx, item in enumerate(items):
+                match = df_base[df_base['EAN'] == str(item)]
+                if not match.empty and 'DESCRIPTION' in match.columns:
+                    desc = match.iloc[0]['DESCRIPTION']
+                else:
+                    desc = ''
+                descripcion.append(desc)
+                # Actualizar progreso
+                progress = 40 + ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                frame.update()
 
-        # 3. DESCRIPCION
-        descripcion = []
-        for idx, item in enumerate(items):
-            match = df_base[df_base['EAN'] == str(item)]
-            desc = match.iloc[0]['DESCRIPTION'] if not match.empty and 'DESCRIPTION' in match.columns else ''
-            descripcion.append(desc)
-            progress_var.set(40 + ((idx + 1) / total) * 20); percent_label.config(text=f"{int(progress_var.get())}%"); frame.update()
+            # 5. CRITERIO (INSPECCION: ITEM a INFORMACION FALTANTE)
+            criterio = []
+            for idx, item in enumerate(items):
+                match = df_inspeccion[df_inspeccion['ITEM'].astype(str) == str(item)]
+                if not match.empty and 'INFORMACION FALTANTE' in match.columns:
+                    crit = match.iloc[0]['INFORMACION FALTANTE']
+                else:
+                    crit = ''
+                criterio.append(crit)
+                # Actualizar progreso
+                progress = 60 + ((idx + 1) / total) * 20
+                progress_var.set(progress)
+                percent_label.config(text=f"{int(progress)}%")
+                frame.update()
 
-        # 4. CRITERIO
-        criterio = []
-        for idx, item in enumerate(items):
-            match = df_inspeccion[df_inspeccion['ITEM'].astype(str) == str(item)]
-            crit = match.iloc[0]['INFORMACION FALTANTE'] if not match.empty and 'INFORMACION FALTANTE' in match.columns else ''
-            criterio.append(crit)
-            progress_var.set(60 + ((idx + 1) / total) * 20); percent_label.config(text=f"{int(progress_var.get())}%"); frame.update()
+            # Crear DataFrame final
+            df_result = pd.DataFrame({
+                'ITEM': items,
+                'TIPO DE PROCESO': tipo_proceso,
+                'NORMA': norma,
+                'DESCRIPCION': descripcion,
+                'CRITERIO': criterio
+            })
+            # Actualizar progreso a 80%
+            progress_var.set(80)
+            percent_label.config(text="80%")
+            frame.update()
 
-        # DataFrame final
-        df_result = pd.DataFrame({
-            'ITEM': items,
-            'TIPO DE PROCESO': tipo_proceso,
-            'NORMA': norma,
-            'DESCRIPCION': descripcion,
-            'CRITERIO': criterio
-        })
+            # Modificaciones finales
+            normas_adherible = [
+                '015', '050', '004-SE', '024', '141',
+                'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021', 'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
+                'NOM004TEXX', 'NOM020INS'
+            ]
+            normas_costura = ['004', '020', 'NOM004', 'NOM020']
 
-        # Reglas de normalización
-        normas_adherible = [
-            '015', '050', '004-SE', '024', '141',
-            'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021',
-            'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
-            'NOM004TEXX', 'NOM020INS'
-        ]
-        normas_costura = ['004', '020', 'NOM004', 'NOM020']
+            def contiene_numero(texto, lista_numeros):
+                texto = str(texto)
+                for n in lista_numeros:
+                    if n in texto:
+                        return True
+                return False
 
-        def contiene_numero(texto, lista_numeros):
-            texto = str(texto)
-            return any(n in texto for n in lista_numeros)
+            def modificar_tipo_proceso(row):
+                norma = str(row['NORMA'])
+                tipo = str(row['TIPO DE PROCESO'])
+                if 'NOM004TEXX' in tipo:
+                    return 'COSTURA'
+                if 'NOM004' in tipo:
+                    return 'COSTURA'
+                if 'NOM-004-SE-2021' in norma:
+                    return 'COSTURA'
+                if 'NOM020INS' in norma:
+                    return 'ADHERIBLE'
+                if contiene_numero(norma, ['015', '050', '004-SE', '024', '141']) or any(n in norma for n in normas_adherible):
+                    return 'ADHERIBLE'
+                if contiene_numero(norma, ['004', '020']) and not ('NOM004TEXX' in tipo or 'NOM020INS' in norma):
+                    return 'COSTURA'
+                if any(n in norma for n in normas_costura) and not ('NOM004TEXX' in tipo or 'NOM020INS' in norma):
+                    return 'COSTURA'
+                if norma == '0':
+                    return 'SIN NORMA'
+                if norma == 'N/D':
+                    return ''
+                return row['TIPO DE PROCESO']
+            df_result['TIPO DE PROCESO'] = df_result.apply(modificar_tipo_proceso, axis=1)
 
-        def modificar_tipo_proceso(row):
-            norma = str(row['NORMA'])
-            tipo = str(row['TIPO DE PROCESO'])
-            if 'NOM004TEXX' in tipo or 'NOM004' in tipo or 'NOM-004-SE-2021' in norma:
-                return 'COSTURA'
-            if 'NOM020INS' in norma:
-                return 'ADHERIBLE'
-            if contiene_numero(norma, normas_adherible):
-                return 'ADHERIBLE'
-            if contiene_numero(norma, normas_costura):
-                return 'COSTURA'
-            if norma in ['0', '']:
-                return 'SIN NORMA'
-            return tipo
-        df_result['TIPO DE PROCESO'] = df_result.apply(modificar_tipo_proceso, axis=1)
+            def modificar_norma(norma):
+                if str(norma) == '0':
+                    return 'SIN NORMA'
+                elif str(norma) == 'N/D':
+                    return ''
+                return norma
+            df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
 
-        def modificar_norma(norma):
-            if str(norma) == '0':
-                return 'SIN NORMA'
-            elif str(norma) == 'N/D':
-                return ''
-            return norma
-        df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
-
-        def modificar_criterio(criterio):
-            crit = str(criterio).strip().upper()
-            if 'NO CUMPLE' in crit:
+            def modificar_criterio(criterio):
+                crit = str(criterio).strip().upper()
+                # Si contiene 'NO CUMPLE' no modificar
+                if 'NO CUMPLE' in crit:
+                    return criterio
+                # Si contiene 'CUMPLE', 'C', 'REVISADO', 'CUMPLE NOM-050', etc.
+                palabras_cumple = ['CUMPLE', 'C', 'REVISADO']
+                for palabra in palabras_cumple:
+                    if palabra in crit:
+                        return 'CUMPLE'
                 return criterio
-            if any(p in crit for p in ['CUMPLE', 'C', 'REVISADO']):
-                return 'CUMPLE'
-            return criterio
-        df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
+            df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
-        # Reglas adicionales
-        for idx, row in df_result.iterrows():
-            tipo, norma = str(row['TIPO DE PROCESO']).strip(), str(row['NORMA']).strip()
-            if norma == '' and tipo != '':
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
-                df_result.at[idx, 'NORMA'] = 'SIN NORMA'
-            elif (tipo == '' and norma == '') or (tipo == '0' and norma == '0'):
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
-                df_result.at[idx, 'NORMA'] = 'SIN NORMA'
-            elif norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
+            for idx, row in df_result.iterrows():
+                tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
+                norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
+                # Regla 1: Si NORMA está vacía pero TIPO DE PROCESO tiene información, ambas serán 'SIN NORMA'
+                if (norma == '' and tipo != ''):
+                    df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
+                    df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+                # Regla original: ambas vacías o ambas '0'
+                elif ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
+                    df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
+                    df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+                # Regla 2: Si NORMA es NOM-050-SCFI-2004 o NOM-015-SCFI-2007, TIPO DE PROCESO será 'ADHERIBLE'
+                elif norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
+                    df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
-        # Progreso completo
-        progress_var.set(100)
-        percent_label.config(text="100%")
-        progress_label.config(text="¡Completado!")
-        frame.update()
-        frame.after(1000, lambda: [progress_label.destroy(), progress_bar.destroy(), percent_label.destroy()])
+            # Actualizar progreso a 100%
+            progress_var.set(100)
+            percent_label.config(text="100%")
+            progress_label.config(text="¡Completado!")
+            frame.update()
+            # Eliminar barra de progreso y etiquetas antes de mostrar el GIF
+            def remove_progress_widgets():
+                progress_label.destroy()
+                progress_bar.destroy()
+                percent_label.destroy()
+            frame.after(500, remove_progress_widgets)
 
-        # Guardar archivo
-        save_path = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Archivos Excel", "*.xlsx")],
-            title="Guardar archivo TIPO DE PROCESO",
-            initialfile="TIPO DE PROCESO.xlsx"
-        )
+            # Guardar archivo final
+            save_path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Archivos Excel", "*.xlsx")],
+                title="Guardar archivo TIPO DE PROCESO",
+                initialfile="TIPO DE PROCESO.xlsx"
+            )
 
+            if save_path:
+                df_result.to_excel(save_path, index=False)
+
+                # Actualizar historial
+                if Path(HISTORIAL).exists():
+                    df_hist = pd.read_excel(HISTORIAL)
+                    df_final = pd.concat([df_hist, df_result]).drop_duplicates(subset=["ITEM"])
+                else:
+                    df_final = df_result.copy()
+                df_final.to_excel(HISTORIAL, index=False)
+
+                # Mostrar animación GIF y mensaje en el frame principal
+                try:
+                    from PIL import Image, ImageTk
+                    gif_path = "resources/imagen_carga.gif"
+                    if os.path.exists(gif_path):
+                        gif = Image.open(gif_path)
+                        frames = []
+                        try:
+                            while True:
+                                frame_gif = gif.copy().resize((320, 160), Image.LANCZOS)
+                                frames.append(ImageTk.PhotoImage(frame_gif))
+                                gif.seek(len(frames))
+                        except EOFError:
+                            pass
+                        # Crear un frame contenedor para centrar y mejorar la vista
+                        gif_container = tk.Frame(frame, bg='#FFFFFF', highlightbackground='#228B22', highlightthickness=2, bd=0)
+                        gif_container.place(relx=0.5, rely=0.5, anchor='center', width=370, height=240)
+                        # Fondo y borde redondeado visual
+                        gif_label_gif = tk.Label(gif_container, bg='#FFFFFF')
+                        gif_label_gif.pack(pady=(18,0))
+                        msg_label_gif = tk.Label(gif_container, text="GUARDADO EXITOSAMENTE", font=("Segoe UI", 15, "bold"), bg='#FFFFFF', fg='#228B22')
+                        msg_label_gif.pack(pady=(12,10))
+                        running = {'active': True}
+                        def animate(index=0):
+                            if running['active']:
+                                gif_label_gif.config(image=frames[index])
+                                gif_container.update()
+                                gif_container.after(80, animate, (index+1)%len(frames))
+                        animate()
+                        def stop_and_destroy():
+                            running['active'] = False
+                            gif_label_gif.destroy()
+                            msg_label_gif.destroy()
+                            gif_container.destroy()
+                        gif_container.after(13000, stop_and_destroy)
+                except Exception as e:
+                    print(f"No se pudo mostrar el gif de carga en frame: {e}")
+
+            else:
+                messagebox.showwarning("Cancelado", "No se guardó el archivo.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
         if save_path:
             df_result.to_excel(save_path, index=False)
 
@@ -168,10 +275,63 @@ def procesar_reporte(reporte_path):
                 df_final = df_result.copy()
             df_final.to_excel(HISTORIAL, index=False)
 
-            messagebox.showinfo("Éxito", "El archivo se guardó correctamente ✅")
-        else:
-            messagebox.showwarning("Cancelado", "No se guardó el archivo.")
+            # Actualizar progreso a 100% y cerrar ventana de progreso
+            progress_var.set(100)
+            percent_label.config(text="100%")
+            progress_label.config(text="¡Completado!")
+            frame.update()
+            # Eliminar barra de progreso y etiquetas después de mostrar el GIF
+            def remove_progress_widgets():
+                progress_label.destroy()
+                progress_bar.destroy()
+                percent_label.destroy()
+            frame.after(500, remove_progress_widgets)
 
+            # Mostrar animación GIF en ventana principal con mensaje GUARDADO EXITOSAMENTE
+            try:
+                from PIL import Image, ImageTk
+                gif_path = "resources/imagen_carga.gif"
+                if os.path.exists(gif_path):
+                    gif = Image.open(gif_path)
+                    frames = []
+                    try:
+                        while True:
+                            frame = gif.copy().resize((380, 200), Image.LANCZOS)
+                            frames.append(ImageTk.PhotoImage(frame))
+                            gif.seek(len(frames))
+                    except EOFError:
+                        pass
+                    overlay = tk.Toplevel(root)
+                    overlay.title("Guardado exitosamente")
+                    overlay.geometry("400x220")
+                    overlay.resizable(False, False)
+                    # Centrar sobre root
+                    x = root.winfo_x() + int(root.winfo_width()/2) - 200
+                    y = root.winfo_y() + int(root.winfo_height()/2) - 110
+                    overlay.geometry(f"400x220+{x}+{y}")
+                    content_frame = tk.Frame(overlay, bg='#F7F7F7')
+                    content_frame.pack(expand=True, fill='both')
+                    gif_label_gif = tk.Label(content_frame, bg='#F7F7F7')
+                    gif_label_gif.pack(pady=(10,0))
+                    msg_label_gif = tk.Label(content_frame, text="GUARDADO EXITOSAMENTE", font=("Segoe UI", 14, "bold"), bg='#F7F7F7', fg='#228B22')
+                    msg_label_gif.pack(pady=(10,10))
+                    running = {'active': True}
+                    def animate(index=0):
+                        if running['active'] and str(overlay.winfo_exists()) == '1':
+                            gif_label_gif.config(image=frames[index])
+                            overlay.update()
+                            overlay.after(80, animate, (index+1)%len(frames))
+                    animate()
+                    def stop_and_destroy():
+                        running['active'] = False
+                        overlay.destroy()
+                    overlay.after(13000, stop_and_destroy)
+            except Exception as e:
+                print(f"No se pudo mostrar el gif de carga en root: {e}")
+
+        else:
+            # Ya no se destruye ventana, solo se eliminan los widgets de progreso
+            messagebox.showwarning("Cancelado", "No se guardó el archivo.")
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
 
@@ -183,47 +343,59 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
-# Ventana principal
+# Crear ventana principal con fondo blanco, botones dorados y letras oscuras
 root = tk.Tk()
 root.title("Generador TIPO DE PROCESO")
-root.geometry("650x480")
+root.geometry("650x480")  # Ventana más grande para mostrar todo
 root.configure(bg="#FFFFFF")
 
+
 if __name__ == "__main__":
+    # Frame principal
     frame = tk.Frame(root, bg="#FFFFFF")
     frame.pack(expand=True, fill="both")
 
+    # Frame superior para logo y título
     frame_top = tk.Frame(frame, bg="#FFFFFF")
     frame_top.pack(pady=(30, 0), fill="x")
 
-    # Logo
+    logo_label = None
     try:
-        logo_path = "resources/logo.png"
+        logo_path = "resources/logo.png"  # Cambia esto si tu logo tiene otro nombre o ruta
         if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((150, 100), Image.LANCZOS)
+            logo_img_raw = Image.open(logo_path)
+            logo_img_raw = logo_img_raw.resize((150, 100), Image.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
             logo_label = tk.Label(frame_top, image=logo_img, bg="#FFFFFF")
-            logo_label.image = logo_img
+            logo_label.image = logo_img  # Mantener referencia
             logo_label.pack(side="top", pady=(0, 10))
+        else:
+            print(f"Logo no encontrado en la ruta: {logo_path}")
     except Exception as e:
         print(f"Error cargando el logo: {e}")
 
-    label = tk.Label(frame_top, text="Generador de archivo TIPO DE PROCESO",
-                     font=("Segoe UI", 16, "bold"), bg="#FFFFFF", fg="#282828")
-    label.pack()
+    try:
+        logo_img_raw = Image.open("resources/Logo.png")
+        logo_img_raw = logo_img_raw.resize((100, 100), Image.ANTIALIAS)
+        logo_img = ImageTk.PhotoImage(logo_img_raw)
+        logo_label = tk.Label(frame_top, image=logo_img, bg="#FFFFFF")
+        logo_label.image = logo_img
+        logo_label.pack(pady=30, padx=10)
+    except Exception:
+        pass
 
-    desc = tk.Label(frame, text="Sube el archivo REPORTE DE MERCANCIA y genera el archivo Tipo de proceso.",
-                    font=("Segoe UI", 9), bg="#FFFFFF", fg="#282828")
-    desc.pack(pady=(0, 15))
+    label = tk.Label(frame_top, text="Generador de archivo TIPO DE PROCESO", font=("Segoe UI", 16, "bold"), bg="#FFFFFF", fg="#282828")
+    label.pack(pady=0, padx=10)
+
+    desc = tk.Label(frame, text="Sube el archivo REPORTE DE MERCANCIA y genera el archivo Tipo de proceso.", font=("Segoe UI", 9), bg="#FFFFFF", fg="#282828")
+    desc.pack(pady=(0,15))
 
     style = ttk.Style()
     style.theme_use('clam')
-    style.configure('TButton', background='#ECD925', foreground='#282828',
-                    font=('Segoe UI', 11, 'bold'), borderwidth=0)
+    style.configure('TButton', background='#ECD925', foreground='#282828', font=('Segoe UI', 11, 'bold'), borderwidth=0)
     style.map('TButton', background=[('active', '#ECD925')], foreground=[('active', '#282828')])
 
-    btn_cargar = ttk.Button(frame, text="📂 Subir REPORTE DE MERCANCIA",
-                            command=seleccionar_reporte, style='TButton')
+    btn_cargar = ttk.Button(frame, text="📂 Subir REPORTE DE MERCANCIA", command=seleccionar_reporte, style='TButton')
     btn_cargar.pack(pady=10, ipadx=10, ipady=5)
 
     btn_salir = ttk.Button(frame, text="❌ Salir", command=root.quit, style='TButton')
