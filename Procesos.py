@@ -10,10 +10,17 @@ from Formato import exportar_excel
 
 
 
+
+if getattr(sys, 'frozen', False):
+    # Cuando está compilado en .exe
+    BASE_PATH = sys._MEIPASS
+else:
+    # Cuando se ejecuta desde Python
+    BASE_PATH = os.path.dirname(__file__)
 # Archivos fijos
-BASE_GENERAL = "archivos/BASE DECATHLON GENERAL ADVANCE II.xlsx"
-INSPECCION = "archivos/INSPECCION.xlsx"
-HISTORIAL = "archivos/HISTORIAL_PROCESOS.xlsx"
+BASE_GENERAL = os.path.join(BASE_PATH, "archivos", "BASE DECATHLON GENERAL ADVANCE II.xlsx")
+INSPECCION = os.path.join(BASE_PATH, "archivos", "INSPECCION.xlsx")
+HISTORIAL = os.path.join(BASE_PATH, "archivos", "HISTORIAL_PROCESOS.xlsx")
 
 def procesar_reporte(reporte_path):
     global frame
