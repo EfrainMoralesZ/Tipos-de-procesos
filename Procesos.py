@@ -129,14 +129,34 @@ def procesar_reporte(reporte_path):
             percent_label.config(text=f"{int(progress)}%")
             progress_win.update()
 
-        # 4. DESCRIPCION (BASE GENERAL DE DECATHLON columna A "EAN" a B "DESCRIPTION")
+        # 4. DESCRIPCION (obtener del reporte para ítems nuevos, de la base para existentes)
         descripcion = []
         for idx, item in enumerate(items):
-            match = df_base[df_base['EAN'] == str(item)]
-            if not match.empty and 'DESCRIPTION' in match.columns:
-                desc = match.iloc[0]['DESCRIPTION']
+            # Primero intentar obtener de la base de datos
+            match_base = df_base[df_base['EAN'] == str(item)]
+            if not match_base.empty and 'DESCRIPTION' in match_base.columns:
+                desc = match_base.iloc[0]['DESCRIPTION']
             else:
-                desc = ''
+                # Si no está en la base, obtener del reporte
+                match_reporte = df_reporte[df_reporte['Num.Parte'].astype(str) == str(item)]
+                if not match_reporte.empty:
+                    # Buscar descripción en múltiples columnas del reporte
+                    desc = ''
+                    descripcion_columns = [
+                        'DESCRIPCION', 'DESCRIPCIÓN', 'DESCRIPTION', 'DESCRIP', 'PRODUCTO', 'NOMBRE',
+                        'NOMBRE PRODUCTO', 'DESCRIPCIÓN DEL PRODUCTO', 'NOMBRE DEL PRODUCTO', 
+                        'TITULO', 'TÍTULO', 'NOMBRE ARTICULO', 'DESCRIPCION ARTICULO',
+                        'Descripción Agente Aduanal'  # Agregar esta columna específica
+                    ]
+                    
+                    for col in descripcion_columns:
+                        if col in match_reporte.columns and pd.notna(match_reporte.iloc[0][col]) and str(match_reporte.iloc[0][col]).strip():
+                            desc_value = str(match_reporte.iloc[0][col]).strip()
+                            if desc_value and desc_value != 'nan' and desc_value != 'None' and len(desc_value) > 2:
+                                desc = desc_value
+                                break
+                else:
+                    desc = ''
             descripcion.append(desc)
             # Actualizar progreso
             progress = 40 + ((idx + 1) / total) * 20
