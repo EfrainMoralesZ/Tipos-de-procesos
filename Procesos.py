@@ -20,7 +20,7 @@ else:
 
 # Archivos fijos
 BASE_GENERAL = os.path.join(BASE_PATH, "archivos","BASE DECATHLON GENERAL ADVANCE II.xlsx")
-INSPECCION = os.path.join(BASE_PATH, "archivos","INSPECCION.xlsx")
+INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
 HISTORIAL = os.path.join(BASE_PATH, "archivos","HISTORIAL_PROCESOS.xlsx")
 
 def procesar_reporte(reporte_path):
@@ -70,7 +70,7 @@ def procesar_reporte(reporte_path):
 
             # Leer archivos base
             df_base = cargar_json("base_general.json")
-            df_inspeccion = cargar_json("inspeccion.json")
+            df_codigos_cumple = cargar_json("codigos_cumple.json")
             df_reporte = pd.read_excel(reporte_path)  # El reporte sigue siendo cargado por el usuario
 
             # 1. Columna ITEM
@@ -99,23 +99,63 @@ def procesar_reporte(reporte_path):
                 progress_var.set(progress)
                 percent_label.config(text=f"{int(progress)}%")
                 frame.update()
-
+                
             # 4. DESCRIPCION
+            num_parte_col = None
+            for col in df_reporte.columns:
+                if col.strip().lower() in ['num. parte', 'numero de parte', 'num.parte']:
+                    num_parte_col = col
+                    break
+
+            # Detectamos la columna de descripción
+            desc_col = None
+            for col in df_reporte.columns:
+                if col.strip().lower() == 'descripción agente aduanal':
+                    desc_col = col
+                    break
+
+            if not num_parte_col or not desc_col:
+                raise ValueError("No se encontró la columna NUM. PARTE o Descripción Agente Aduanal en el reporte")
+
+            # Convertimos NUM. PARTE a número para poder comparar
+            df_reporte[num_parte_col] = pd.to_numeric(df_reporte[num_parte_col], errors='coerce')
+
+            # Inicializamos la lista de descripciones
             descripcion = []
+
+            total = len(items)
+
             for idx, item in enumerate(items):
-                match = df_base[df_base['EAN'] == str(item)]
-                desc = match.iloc[0]['DESCRIPTION'] if not match.empty and 'DESCRIPTION' in match.columns else ''
+                # Convertimos item a número para la búsqueda
+                try:
+                    item_num = float(item)
+                except:
+                    item_num = None
+
+                if item_num is not None:
+                    # Buscamos en df_reporte por coincidencia exacta en NUM. PARTE
+                    match = df_reporte[df_reporte[num_parte_col] == item_num]
+                    if not match.empty:
+                        desc = match.iloc[0][desc_col]
+                    else:
+                        desc = ''
+                else:
+                    desc = ''
+
                 descripcion.append(desc)
+
+                # Actualizamos progreso (igual que tu código anterior)
                 progress = 40 + ((idx + 1) / total) * 20
                 progress_var.set(progress)
                 percent_label.config(text=f"{int(progress)}%")
                 frame.update()
 
+
             # 5. CRITERIO
             criterio = []
             for idx, item in enumerate(items):
-                match = df_inspeccion[df_inspeccion['ITEM'].astype(str) == str(item)]
-                crit = match.iloc[0]['INFORMACION FALTANTE'] if not match.empty and 'INFORMACION FALTANTE' in match.columns else ''
+                match = df_codigos_cumple[df_codigos_cumple['ITEM'].astype(str) == str(item)]
+                crit = match.iloc[0]['OBSERVACIONES'] if not match.empty and 'OBSERVACIONES' in match.columns else ''
                 criterio.append(crit)
                 progress = 60 + ((idx + 1) / total) * 20
                 progress_var.set(progress)
@@ -142,7 +182,7 @@ def procesar_reporte(reporte_path):
                 'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
                 'NOM004TEXX', 'NOM020INS'
             ]
-            normas_costura = ['004', '020', 'NOM004', 'NOM020','NOM004TEXX','NOM0004TEXX']
+            normas_costura = ['004', '020', 'NOM004', 'NOM020']
 
             def contiene_numero(texto, lista_numeros):
                 texto = str(texto)
