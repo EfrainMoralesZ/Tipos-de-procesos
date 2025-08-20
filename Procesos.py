@@ -127,8 +127,9 @@ def procesar_reporte(reporte_path):
                 'ITEM': items,
                 'TIPO DE PROCESO': tipo_proceso,
                 'NORMA': norma,
+                'CRITERIO': criterio,
                 'DESCRIPCION': descripcion,
-                'CRITERIO': criterio
+                
             })
             progress_var.set(80)
             percent_label.config(text="80%")
@@ -141,7 +142,7 @@ def procesar_reporte(reporte_path):
                 'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
                 'NOM004TEXX', 'NOM020INS'
             ]
-            normas_costura = ['004', '020', 'NOM004', 'NOM020']
+            normas_costura = ['004', '020', 'NOM004', 'NOM020','NOM004TEXX','NOM0004TEXX']
 
             def contiene_numero(texto, lista_numeros):
                 texto = str(texto)
