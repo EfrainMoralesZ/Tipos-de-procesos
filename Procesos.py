@@ -191,7 +191,9 @@ def procesar_reporte(reporte_path):
             def modificar_tipo_proceso(row):
                 norma = str(row['NORMA'])
                 tipo = str(row['TIPO DE PROCESO'])
-                if 'NOM004TEXX' in tipo or 'NOM004' in tipo or 'NOM-004-SE-2021' in norma:
+                if 'NOM004TEXX' in tipo or 'TEXX' in norma:
+                    return 'ADHERIBLE'
+                if 'NOM004' in tipo or '004' in norma:
                     return 'COSTURA'
                 if 'NOM020INS' in norma:
                     return 'ADHERIBLE'
