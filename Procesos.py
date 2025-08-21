@@ -212,23 +212,34 @@ def procesar_reporte(reporte_path):
             df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
 #=============================================================================================================
-            #DETECTA SIN NORMA Y LOS CUMPLE
             for idx, row in df_result.iterrows():
                 tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
                 norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
                 criterio = str(row['CRITERIO']).strip().upper() if not pd.isna(row['CRITERIO']) else ''
 
+                # 🔹 Primero detectar SIN NORMA
+                if (norma == '' and tipo != '') or ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
+                    df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
+                    df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+                    # Marcamos que esta fila tiene SIN NORMA
+                    tiene_sin_norma = True
+                else:
+                    tiene_sin_norma = False
+
                 # 🔹 Regla: si criterio = "CUMPLE", forzar tipo de proceso = "CUMPLE"
                 if criterio == 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
+                    # 🔹 Solo cambiar NORMA si no tenía SIN NORMA
+                    if not tiene_sin_norma:
+                        df_result.at[idx, 'NORMA'] = norma  # se mantiene el valor original o vacío
 
-                # 🔹 Reglas anteriores
-                elif (norma == '' and tipo != '') or ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
-                    df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
-                    df_result.at[idx, 'NORMA'] = 'SIN NORMA'
-                elif norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
+                # 🔹 Reglas específicas para ciertas normas
+                if norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
+
+
+#=============================================================================================================
             progress_var.set(100)
             percent_label.config(text="100%")
             progress_label.config(text="¡Completado!")
