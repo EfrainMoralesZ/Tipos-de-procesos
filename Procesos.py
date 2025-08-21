@@ -75,17 +75,17 @@ def procesar_reporte(reporte_path):
 
 #=========================================================================================================================0
             # --- Detectar tipo de reporte y columnas ---
-            # Primero revisamos si es RH/FH
+            # Primero revisamos si es FH
             if 'Número de Parte' in df_reporte.columns:
-                # Reporte RH/FH
+                # Reporte FH
                 num_parte_col = 'Número de Parte'
                 desc_col = 'Desc. Pedimento'
                 norma_col = 'Normas'
-            # Si no, revisamos si es MIMPO
-            elif any(col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte','NUM.PARTE'] for col in df_reporte.columns):
+                criterio_col = 'CRITERIO'   # FH usa CRITERIO
+            elif any(col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte','num.parte'] for col in df_reporte.columns):
                 # Reporte MIMPO
                 for col in df_reporte.columns:
-                    if col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte','NUM.PARTE']:
+                    if col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte','num.parte']:
                         num_parte_col = col
                         break
                 for col in df_reporte.columns:
@@ -93,10 +93,9 @@ def procesar_reporte(reporte_path):
                         desc_col = col
                         break
                 norma_col = 'NOMs'
+                criterio_col = 'CRITERIO'   # 👈 ajusta aquí si en MIMPO se llama distinto (ej: "Criterio")
             else:
                 raise ValueError("No se encontró ninguna columna de NUM. PARTE válida en el reporte")
-
-
 
             # --- 1. Columna ITEM ---
             items = pd.to_numeric(df_reporte[num_parte_col], errors='coerce').dropna().astype(int).unique()
@@ -212,6 +211,7 @@ def procesar_reporte(reporte_path):
             df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
 #=============================================================================================================
+            #   DETECTAR SIN NORMA Y LOS CUMPLE
             for idx, row in df_result.iterrows():
                 tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
                 norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
@@ -221,19 +221,19 @@ def procesar_reporte(reporte_path):
                 if (norma == '' and tipo != '') or ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
                     df_result.at[idx, 'NORMA'] = 'SIN NORMA'
-                    # Marcamos que esta fila tiene SIN NORMA
                     tiene_sin_norma = True
                 else:
                     tiene_sin_norma = False
 
-                # 🔹 Regla: si criterio = "CUMPLE", forzar tipo de proceso = "CUMPLE"
+                # 🔹 Si criterio = "CUMPLE", ambas columnas deben ser "CUMPLE" (prioridad más alta)
                 if criterio == 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
-                    # 🔹 Solo cambiar NORMA si no tenía SIN NORMA
+                    df_result.at[idx, 'CRITERIO'] = 'CUMPLE'
                     if not tiene_sin_norma:
-                        df_result.at[idx, 'NORMA'] = norma  # se mantiene el valor original o vacío
+                        df_result.at[idx, 'NORMA'] = norma
+                    continue  # 👈 salta al siguiente registro, no aplica la regla de ADHERIBLE
 
-                # 🔹 Reglas específicas para ciertas normas
+                # 🔹 Reglas específicas para ciertas normas (solo si NO fue "CUMPLE")
                 if norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
