@@ -73,36 +73,11 @@ def procesar_reporte(reporte_path):
             df_codigos_cumple = cargar_json("codigos_cumple.json")
             df_reporte = pd.read_excel(reporte_path)  # El reporte sigue siendo cargado por el usuario
 
-#======================================================================================================
-#BUSQUEDA ENTRE ARCHIVOS PARA EL ARMADO DEL ARCHIVO TIPO DE PROCESOS.
-
-            # --- Detectar tipo de reporte y columnas ---
-            # Primero revisamos si es FH
-            if 'Número de Parte' in df_reporte.columns:
-                # Reporte FH
-                num_parte_col = 'Número de Parte'
-                desc_col = 'Desc. Pedimento'
-                norma_col = 'Normas'
-            # Si no, revisamos si es MIMPO
-            elif any(col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte'] for col in df_reporte.columns):
-                # Reporte MIMPO
-                for col in df_reporte.columns:
-                    if col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte']:
-                        num_parte_col = col
-                        break
-                for col in df_reporte.columns:
-                    if col.strip().lower() == 'descripción agente aduanal':
-                        desc_col = col
-                        break
-                norma_col = 'NOMs'
-            else:
-                raise ValueError("No se encontró ninguna columna de NUM. PARTE válida en el reporte")
-
-            # --- 1. Columna ITEM ---
-            items = pd.to_numeric(df_reporte[num_parte_col], errors='coerce').dropna().astype(int).unique()
+            # 1. Columna ITEM
+            items = pd.to_numeric(df_reporte['Num.Parte'], errors='coerce').dropna().astype(int).unique()
             total = len(items)
 
-            # --- 2. TIPO DE PROCESO ---
+            # 2. TIPO DE PROCESO
             df_base['EAN'] = df_base['EAN'].astype(str)
             tipo_proceso = []
             for idx, item in enumerate(items):
@@ -114,29 +89,69 @@ def procesar_reporte(reporte_path):
                 percent_label.config(text=f"{int(progress)}%")
                 frame.update()
 
-            # --- 3. NORMA ---
+            # 3. NORMA
             norma = []
             for idx, item in enumerate(items):
-                match = df_reporte[df_reporte[num_parte_col].astype(str) == str(item)]
-                n = match.iloc[0][norma_col] if not match.empty and norma_col in match.columns else ''
+                match = df_reporte[df_reporte['Num.Parte'].astype(str) == str(item)]
+                n = match.iloc[0]['NOMs'] if not match.empty and 'NOMs' in match.columns else ''
                 norma.append(n)
                 progress = 20 + ((idx + 1) / total) * 20
                 progress_var.set(progress)
                 percent_label.config(text=f"{int(progress)}%")
                 frame.update()
+                
+            # 4. DESCRIPCION
+            num_parte_col = None
+            for col in df_reporte.columns:
+                if col.strip().lower() in ['num. parte', 'numero de parte', 'num.parte']:
+                    num_parte_col = col
+                    break
 
-            # --- 4. DESCRIPCION ---
+            # Detectamos la columna de descripción
+            desc_col = None
+            for col in df_reporte.columns:
+                if col.strip().lower() == 'descripción agente aduanal':
+                    desc_col = col
+                    break
+
+            if not num_parte_col or not desc_col:
+                raise ValueError("No se encontró la columna NUM. PARTE o Descripción Agente Aduanal en el reporte")
+
+            # Convertimos NUM. PARTE a número para poder comparar
+            df_reporte[num_parte_col] = pd.to_numeric(df_reporte[num_parte_col], errors='coerce')
+
+            # Inicializamos la lista de descripciones
             descripcion = []
+
+            total = len(items)
+
             for idx, item in enumerate(items):
-                match = df_reporte[df_reporte[num_parte_col].astype(str) == str(item)]
-                desc = match.iloc[0][desc_col] if not match.empty and desc_col in match.columns else ''
+                # Convertimos item a número para la búsqueda
+                try:
+                    item_num = float(item)
+                except:
+                    item_num = None
+
+                if item_num is not None:
+                    # Buscamos en df_reporte por coincidencia exacta en NUM. PARTE
+                    match = df_reporte[df_reporte[num_parte_col] == item_num]
+                    if not match.empty:
+                        desc = match.iloc[0][desc_col]
+                    else:
+                        desc = ''
+                else:
+                    desc = ''
+
                 descripcion.append(desc)
+
+                # Actualizamos progreso (igual que tu código anterior)
                 progress = 40 + ((idx + 1) / total) * 20
                 progress_var.set(progress)
                 percent_label.config(text=f"{int(progress)}%")
                 frame.update()
 
-            # --- 5. CRITERIO ---
+
+            # 5. CRITERIO
             criterio = []
             for idx, item in enumerate(items):
                 match = df_codigos_cumple[df_codigos_cumple['ITEM'].astype(str) == str(item)]
@@ -147,21 +162,18 @@ def procesar_reporte(reporte_path):
                 percent_label.config(text=f"{int(progress)}%")
                 frame.update()
 
-            # --- Crear DataFrame final ---
+            # Crear DataFrame final
             df_result = pd.DataFrame({
                 'ITEM': items,
                 'TIPO DE PROCESO': tipo_proceso,
                 'NORMA': norma,
                 'CRITERIO': criterio,
                 'DESCRIPCION': descripcion,
+                
             })
             progress_var.set(80)
             percent_label.config(text="80%")
             frame.update()
-
-                    
-
-#======================================================================================================
 
             # Reglas de modificación
             normas_adherible = [
