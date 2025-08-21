@@ -225,18 +225,20 @@ def procesar_reporte(reporte_path):
                 else:
                     tiene_sin_norma = False
 
-               # 🔹 Si criterio = "CUMPLE", mover valor a TIPO DE PROCESO y limpiar CRITERIO
+                # 🔹 Si criterio = "CUMPLE", mover a TIPO DE PROCESO y dejar vacío en CRITERIO
                 if criterio == 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
-                    df_result.at[idx, 'CRITERIO'] = ''   # 👈 limpiar criterio
+                    df_result.at[idx, 'CRITERIO'] = ''   # 👈 Se borra el CUMPLE de CRITERIO
                     if not tiene_sin_norma:
                         df_result.at[idx, 'NORMA'] = norma
-                    continue  # 👈 salta al siguiente registro, no aplica la regla de ADHERIBLE
 
-                # 🔹 Reglas específicas para ciertas normas (solo si NO fue "CUMPLE")
-                if norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007']:
+                # 🔹 Si criterio tiene texto distinto de "CUMPLE", marcar como REVISADO
+                elif criterio != '':
+                    df_result.at[idx, 'CRITERIO'] = 'REVISADO'
+
+                # 🔹 Reglas específicas para ciertas normas (solo aplican si no es CUMPLE)
+                if norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'] and criterio != 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
-
 
 
 #=============================================================================================================
