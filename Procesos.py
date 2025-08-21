@@ -225,10 +225,10 @@ def procesar_reporte(reporte_path):
                 else:
                     tiene_sin_norma = False
 
-                # 🔹 Si criterio = "CUMPLE", ambas columnas deben ser "CUMPLE" (prioridad más alta)
+               # 🔹 Si criterio = "CUMPLE", mover valor a TIPO DE PROCESO y limpiar CRITERIO
                 if criterio == 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
-                    df_result.at[idx, 'CRITERIO'] = 'CUMPLE'
+                    df_result.at[idx, 'CRITERIO'] = ''   # 👈 limpiar criterio
                     if not tiene_sin_norma:
                         df_result.at[idx, 'NORMA'] = norma
                     continue  # 👈 salta al siguiente registro, no aplica la regla de ADHERIBLE
