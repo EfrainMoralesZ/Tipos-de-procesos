@@ -211,35 +211,41 @@ def procesar_reporte(reporte_path):
             df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
 #=============================================================================================================
-            #   DETECTAR SIN NORMA Y LOS CUMPLE
+            normas_validas = ['003','004','008','015','020','024','035','050','051',
+                            '116','141','142','173','185','186','189','192','199','235']
+
             for idx, row in df_result.iterrows():
                 tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
                 norma = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
                 criterio = str(row['CRITERIO']).strip().upper() if not pd.isna(row['CRITERIO']) else ''
 
-                # 🔹 Primero detectar SIN NORMA
-                if (norma == '' and tipo != '') or ((tipo == '' and norma == '') or (tipo == '0' and norma == '0')):
+                # 🔹 Normas no válidas: asignar SIN NORMA en tipo de proceso
+                if norma not in normas_validas:
+                    df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
+                    # Mantener NORMA igual, excepto si estaba vacía o era cero
+                    if norma == '' or norma == '0':
+                        df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+
+                # 🔹 Tipo vacío o fila vacía/cero
+                if tipo == '' or (tipo == '0' and norma == '0') or (tipo == '' and norma == ''):
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
                     df_result.at[idx, 'NORMA'] = 'SIN NORMA'
-                    tiene_sin_norma = True
-                else:
-                    tiene_sin_norma = False
 
-                # 🔹 Si criterio = "CUMPLE", mover a TIPO DE PROCESO y dejar vacío en CRITERIO
+                # 🔹 Criterio "CUMPLE"
                 if criterio == 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
-                    df_result.at[idx, 'CRITERIO'] = ''   # 👈 Se borra el CUMPLE de CRITERIO
-                    if not tiene_sin_norma:
-                        df_result.at[idx, 'NORMA'] = norma
+                    df_result.at[idx, 'CRITERIO'] = ''
+                    # Mantener SIN NORMA en NORMA si correspondía
+                    if tipo == '' or norma == '' or norma == '0':
+                        df_result.at[idx, 'NORMA'] = 'SIN NORMA'
 
-                # 🔹 Si criterio tiene texto distinto de "CUMPLE", marcar como REVISADO
+                # 🔹 Otros criterios
                 elif criterio != '':
                     df_result.at[idx, 'CRITERIO'] = 'REVISADO'
 
-                # 🔹 Reglas específicas para ciertas normas (solo aplican si no es CUMPLE)
+                # 🔹 Normas especiales
                 if norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'] and criterio != 'CUMPLE':
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
-
 
 #=============================================================================================================
             progress_var.set(100)
