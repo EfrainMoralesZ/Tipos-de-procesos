@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 import sys
 import json
 from Formato import exportar_excel
-
+import re
 
 
 
