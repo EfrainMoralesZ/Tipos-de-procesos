@@ -7,6 +7,8 @@ from PIL import Image, ImageTk
 import sys
 import json
 from Formato import exportar_excel
+from admin_items import abrir_admin_items
+from admin_codigos_cumple import abrir_admin_codigos_cumple
 import re
 
 # Variables globales para las rutas de archivos
@@ -20,6 +22,71 @@ if getattr(sys, 'frozen', False):
 else:
     # Cuando se ejecuta desde Python
     BASE_PATH = os.path.dirname(__file__)
+
+# Archivo de configuración para persistir las rutas
+CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
+
+def cargar_configuracion():
+    """Carga la configuración guardada de archivos base"""
+    global BASE_GENERAL_PATH, INSPECCION_PATH, HISTORIAL_PATH
+    
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                BASE_GENERAL_PATH = config.get('BASE_GENERAL_PATH')
+                INSPECCION_PATH = config.get('INSPECCION_PATH')
+                HISTORIAL_PATH = config.get('HISTORIAL_PATH')
+                return True
+    except Exception as e:
+        print(f"Error cargando configuración: {e}")
+    
+    return False
+
+def guardar_configuracion():
+    """Guarda la configuración actual de archivos base"""
+    try:
+        config = {
+            'BASE_GENERAL_PATH': BASE_GENERAL_PATH,
+            'INSPECCION_PATH': INSPECCION_PATH,
+            'HISTORIAL_PATH': HISTORIAL_PATH
+        }
+        
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        return True
+    except Exception as e:
+        print(f"Error guardando configuración: {e}")
+        return False
+
+def verificar_archivos_existen():
+    """Verifica si los archivos configurados aún existen"""
+    global BASE_GENERAL_PATH, INSPECCION_PATH, HISTORIAL_PATH
+    
+    archivos_validos = True
+    
+    if BASE_GENERAL_PATH and not os.path.exists(BASE_GENERAL_PATH):
+        BASE_GENERAL_PATH = None
+        archivos_validos = False
+        
+    if INSPECCION_PATH and not os.path.exists(INSPECCION_PATH):
+        INSPECCION_PATH = None
+        archivos_validos = False
+        
+    if HISTORIAL_PATH and not os.path.exists(HISTORIAL_PATH):
+        HISTORIAL_PATH = None
+        archivos_validos = False
+    
+    return archivos_validos
+
+def cargar_archivos_automaticamente():
+    """Intenta cargar los archivos base automáticamente desde la configuración"""
+    if cargar_configuracion():
+        if verificar_archivos_existen():
+            return True
+    
+    return False
 
 def seleccionar_archivos_base():
     """Permite al usuario seleccionar los archivos base necesarios para la aplicación"""
@@ -54,11 +121,21 @@ def seleccionar_archivos_base():
     INSPECCION_PATH = inspeccion
     HISTORIAL_PATH = historial
     
+    # Guardar la configuración para futuras sesiones
+    guardar_configuracion()
+    
     return True
 
 def verificar_archivos_base():
     """Verifica si los archivos base han sido seleccionados"""
     return all([BASE_GENERAL_PATH, INSPECCION_PATH, HISTORIAL_PATH])
+
+def actualizar_estado_archivos():
+    """Actualiza la etiqueta de estado de archivos base en la interfaz"""
+    if verificar_archivos_base():
+        estado_archivos_label.config(text="Archivos base configurados", fg="#28A745")
+    else:
+        estado_archivos_label.config(text="Archivos base no configurados", fg="#FF6B35")
 
 def procesar_reporte(reporte_path):
     global frame
@@ -296,7 +373,7 @@ def procesar_reporte(reporte_path):
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
                     df_result.at[idx, 'CRITERIO'] = ''
                 elif criterio not in ['', 'N/D']:
-                    # ✅ Cualquier texto que NO sea vacío ni "N/D" se convierte en REVISADO
+                    # Cualquier texto que NO sea vacío ni "N/D" se convierte en REVISADO
                     df_result.at[idx, 'CRITERIO'] = 'REVISADO'
 
                 # Normas especiales
@@ -325,10 +402,10 @@ def procesar_reporte(reporte_path):
             )
 
             if save_path:
-                # ✅ Guardar con formato (usa Formato.py)
+                # Guardar con formato (usa Formato.py)
                 exportar_excel(df_result, save_path)
 
-                # ✅ Actualizar historial (sin formato especial)
+                # Actualizar historial (sin formato especial)
                 if Path(HISTORIAL_PATH).exists():
                     df_hist = pd.read_excel(HISTORIAL_PATH)
                     df_final = pd.concat([df_hist, df_result]).drop_duplicates(subset=["ITEM"])
@@ -336,8 +413,11 @@ def procesar_reporte(reporte_path):
                     df_final = df_result.copy()
                 df_final.to_excel(HISTORIAL_PATH, index=False)
 
-                # ✅ Solo mostrar mensaje
+                # Solo mostrar mensaje
                 messagebox.showinfo("Éxito", "GUARDADO EXITOSAMENTE")
+                
+                # Verificar si hay items nuevos para agregar a la base general
+                verificar_items_nuevos(df_reporte, df_base)
             else:
                 messagebox.showwarning("Cancelado", "No se guardó el archivo.")
 
@@ -345,6 +425,104 @@ def procesar_reporte(reporte_path):
             messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
+
+def verificar_items_nuevos(df_reporte, df_base):
+    """Verifica si hay items nuevos en el reporte y los agrega a la base general"""
+    global BASE_GENERAL_PATH
+    
+    try:
+        # Detectar tipo de reporte y obtener columna de número de parte
+        if 'Número de Parte' in df_reporte.columns:
+            num_parte_col = 'Número de Parte'
+        elif any(col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte','num.parte'] for col in df_reporte.columns):
+            for col in df_reporte.columns:
+                if col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte','num.parte']:
+                    num_parte_col = col
+                    break
+        else:
+            return
+        
+        # Obtener items del reporte
+        items_reporte = pd.to_numeric(df_reporte[num_parte_col], errors='coerce').dropna().astype(int).unique()
+        
+        # Obtener items de la base general
+        items_base = pd.to_numeric(df_base['EAN'], errors='coerce').dropna().astype(int).unique()
+        
+        # Encontrar items nuevos
+        items_nuevos = set(items_reporte) - set(items_base)
+        
+        if len(items_nuevos) > 0:
+            # Preguntar al usuario si quiere agregar los items nuevos
+            respuesta = messagebox.askyesno(
+                "Items Nuevos Detectados", 
+                f"Se detectaron {len(items_nuevos):,} items nuevos en el reporte que no están en la base general.\n\n"
+                f"¿Deseas agregarlos automáticamente a la base general?"
+            )
+            
+            if respuesta:
+                # Crear nuevos registros para los items
+                nuevos_items = []
+                for item in items_nuevos:
+                    # Buscar información del item en el reporte
+                    item_info = df_reporte[df_reporte[num_parte_col].astype(str) == str(item)].iloc[0]
+                    
+                    # Crear registro con campos por defecto
+                    nuevo_registro = {
+                        'EAN': str(item),
+                        'DESCRIPTION': item_info.get('Desc. Pedimento', '') if 'Desc. Pedimento' in item_info else '',
+                        'MODEL CODE': '',
+                        'MARCA': '',
+                        'CUIDADO': '',
+                        'CARACTERISTICAS': '',
+                        'MEDIDAS': '',
+                        'CONTENIDO': '',
+                        'MAGNITUD': '',
+                        'DENOMINACION': '',
+                        'LEYENDAS': '',
+                        'EDAD': '',
+                        'INSUMOS': '',
+                        'FORRO': '',
+                        'TALLA': '',
+                        'PAIS ORIGEN': '',
+                        'IMPORTADOR': '',
+                        'ITEM ESPAÑOL': '',
+                        'TYPE OF GOODS': '',
+                        'HS CODE': '',
+                        'NORMA': 'SIN NORMA',
+                        'CODIGO FORMATO': '',
+                        'TIPO DE ETIQUETA': '',
+                        'CLIENTE': 'DECATHLON',
+                        'LOGO NOM': '0',
+                        'LISTA': 'PZA',
+                        'PAIS DE PROCEDENCIA': 'OTRO'
+                    }
+                    
+                    # Intentar obtener descripción si existe
+                    if 'descripción agente aduanal' in df_reporte.columns:
+                        nuevo_registro['DESCRIPTION'] = item_info.get('descripción agente aduanal', '')
+                    
+                    nuevos_items.append(nuevo_registro)
+                
+                # Agregar a la base general
+                df_base_nuevo = pd.concat([df_base, pd.DataFrame(nuevos_items)], ignore_index=True)
+                
+                # Guardar la base actualizada
+                if BASE_GENERAL_PATH and BASE_GENERAL_PATH.endswith('.xlsx'):
+                    df_base_nuevo.to_excel(BASE_GENERAL_PATH, index=False)
+                    messagebox.showinfo(
+                        "Items Agregados", 
+                        f"Se han agregado {len(items_nuevos):,} items nuevos a la base general.\n\n"
+                        f"La base ha sido actualizada y guardada."
+                    )
+                else:
+                    messagebox.showwarning(
+                        "Advertencia", 
+                        f"Se detectaron {len(items_nuevos):,} items nuevos, pero no se pudo actualizar la base general.\n\n"
+                        f"Por favor, usa el administrador de ítems para agregarlos manualmente."
+                    )
+        
+    except Exception as e:
+        print(f"Error verificando items nuevos: {e}")
 
 def seleccionar_reporte():
     ruta = filedialog.askopenfilename(
@@ -357,10 +535,10 @@ def seleccionar_reporte():
 def configurar_archivos_base():
     """Permite al usuario configurar los archivos base necesarios."""
     if seleccionar_archivos_base():
-        estado_archivos_label.config(text="✅ Archivos base configurados", fg="#28A745")
-        messagebox.showinfo("Éxito", "Archivos base configurados correctamente.")
+        estado_archivos_label.config(text="Archivos base configurados", fg="#28A745")
+        messagebox.showinfo("Éxito", "Archivos base configurados correctamente.\n\nLa configuración se ha guardado y se cargará automáticamente en futuras sesiones.")
     else:
-        estado_archivos_label.config(text="⚠️ Archivos base no configurados", fg="#FF6B35")
+        estado_archivos_label.config(text="Archivos base no configurados", fg="#FF6B35")
         messagebox.showwarning("Advertencia", "No se pudieron configurar los archivos base. Por favor, seleccione los archivos necesarios.")
 
 # Crear ventana principal
@@ -402,7 +580,7 @@ if __name__ == "__main__":
     # Etiqueta de estado de archivos base
     global estado_archivos_label
     estado_archivos_label = tk.Label(frame_archivos, 
-                                    text="⚠️ Archivos base no configurados", 
+                                    text="Cargando configuración...", 
                                     font=("Segoe UI", 9), 
                                     bg="#FFFFFF", 
                                     fg="#FF6B35")
@@ -410,20 +588,55 @@ if __name__ == "__main__":
     
     # Botón para configurar archivos base
     btn_configurar = ttk.Button(frame_archivos, 
-                               text="⚙️ Configurar Archivos Base", 
+                               text="Configurar Archivos Base", 
                                command=lambda: configurar_archivos_base(), 
                                style='TButton')
     btn_configurar.pack(pady=5, ipadx=10, ipady=3)
+    
+    # Botón para administrar ítems
+    btn_admin_items = ttk.Button(frame_archivos, 
+                                text="Administrar Ítems Base", 
+                                command=lambda: abrir_admin_items(root), 
+                                style='TButton')
+    btn_admin_items.pack(pady=5, ipadx=10, ipady=3)
+    
+    # Botón para administrar códigos cumple
+    btn_admin_codigos = ttk.Button(frame_archivos, 
+                                  text="Administrar Códigos Cumple", 
+                                  command=lambda: abrir_admin_codigos_cumple(root), 
+                                  style='TButton')
+    btn_admin_codigos.pack(pady=5, ipadx=10, ipady=3)
+    
+    # Información adicional sobre el administrador de ítems
+    info_admin_label = tk.Label(frame_archivos, 
+                               text="El administrador de ítems usará automáticamente la base ya configurada", 
+                               font=("Segoe UI", 8), 
+                               bg="#FFFFFF", 
+                               fg="#666666")
+    info_admin_label.pack(pady=(0, 5))
+    
+    # Cargar archivos automáticamente al iniciar
+    def cargar_al_iniciar():
+        if cargar_archivos_automaticamente():
+            actualizar_estado_archivos()
+            messagebox.showinfo("Configuración Cargada", 
+                              "Los archivos base se han cargado automáticamente desde la configuración guardada.\n\n"
+                              "Puedes usar la aplicación directamente o modificar la configuración si es necesario.")
+        else:
+            actualizar_estado_archivos()
+    
+    # Ejecutar carga automática después de que la interfaz esté lista
+    root.after(100, cargar_al_iniciar)
     
     style = ttk.Style()
     style.theme_use('clam')
     style.configure('TButton', background='#ECD925', foreground='#282828', font=('Segoe UI', 11, 'bold'), borderwidth=0)
     style.map('TButton', background=[('active', '#ECD925')], foreground=[('active', '#282828')])
 
-    btn_cargar = ttk.Button(frame, text="📂 Subir REPORTE DE MERCANCIA", command=seleccionar_reporte, style='TButton')
+    btn_cargar = ttk.Button(frame, text="Subir REPORTE DE MERCANCIA", command=seleccionar_reporte, style='TButton')
     btn_cargar.pack(pady=10, ipadx=10, ipady=5)
 
-    btn_salir = ttk.Button(frame, text="❌ Salir", command=root.quit, style='TButton')
+    btn_salir = ttk.Button(frame, text="Salir", command=root.quit, style='TButton')
     btn_salir.pack(pady=20, ipadx=5, ipady=3)
 
     root.mainloop()
