@@ -9,7 +9,10 @@ import json
 from Formato import exportar_excel
 import re
 
-
+# Variables globales para las rutas de archivos
+BASE_GENERAL_PATH = None
+INSPECCION_PATH = None
+HISTORIAL_PATH = None
 
 if getattr(sys, 'frozen', False):
     # Cuando está compilado en .exe
@@ -18,13 +21,53 @@ else:
     # Cuando se ejecuta desde Python
     BASE_PATH = os.path.dirname(__file__)
 
-# Archivos fijos
-BASE_GENERAL = os.path.join(BASE_PATH, "archivos","BASE DECATHLON GENERAL ADVANCE II.xlsx")
-INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
-HISTORIAL = os.path.join(BASE_PATH, "archivos","HISTORIAL_PROCESOS.xlsx")
+def seleccionar_archivos_base():
+    """Permite al usuario seleccionar los archivos base necesarios para la aplicación"""
+    global BASE_GENERAL_PATH, INSPECCION_PATH, HISTORIAL_PATH
+    
+    # Seleccionar archivo BASE GENERAL
+    base_general = filedialog.askopenfilename(
+        title="Seleccionar archivo BASE GENERAL (BASE DECATHLON GENERAL ADVANCE II.xlsx)",
+        filetypes=[("Archivos Excel", "*.xlsx *.xls")]
+    )
+    if not base_general:
+        return False
+    
+    # Seleccionar archivo de INSPECCIÓN (códigos cumple)
+    inspeccion = filedialog.askopenfilename(
+        title="Seleccionar archivo de INSPECCIÓN (codigos_cumple.xlsx)",
+        filetypes=[("Archivos Excel", "*.xlsx *.xls")]
+    )
+    if not inspeccion:
+        return False
+    
+    # Seleccionar archivo de HISTORIAL
+    historial = filedialog.askopenfilename(
+        title="Seleccionar archivo de HISTORIAL (HISTORIAL_PROCESOS.xlsx)",
+        filetypes=[("Archivos Excel", "*.xlsx *.xls")]
+    )
+    if not historial:
+        return False
+    
+    # Asignar las rutas seleccionadas
+    BASE_GENERAL_PATH = base_general
+    INSPECCION_PATH = inspeccion
+    HISTORIAL_PATH = historial
+    
+    return True
+
+def verificar_archivos_base():
+    """Verifica si los archivos base han sido seleccionados"""
+    return all([BASE_GENERAL_PATH, INSPECCION_PATH, HISTORIAL_PATH])
 
 def procesar_reporte(reporte_path):
     global frame
+    
+    # Verificar que los archivos base estén seleccionados
+    if not verificar_archivos_base():
+        messagebox.showerror("Error", "Primero debes seleccionar los archivos base necesarios.\n\nUsa el botón 'Configurar Archivos Base' para seleccionarlos.")
+        return
+    
     try:
         # Crear barra de progreso en el frame principal
         try:
@@ -68,7 +111,7 @@ def procesar_reporte(reporte_path):
                 return pd.DataFrame(data)
 
 
-            # Leer archivos base
+            # Leer archivos base usando las rutas seleccionadas por el usuario
             df_base = cargar_json("base_general.json")
             df_codigos_cumple = cargar_json("codigos_cumple.json")
             df_reporte = pd.read_excel(reporte_path)  # El reporte sigue siendo cargado por el usuario
@@ -286,12 +329,12 @@ def procesar_reporte(reporte_path):
                 exportar_excel(df_result, save_path)
 
                 # ✅ Actualizar historial (sin formato especial)
-                if Path(HISTORIAL).exists():
-                    df_hist = pd.read_excel(HISTORIAL)
+                if Path(HISTORIAL_PATH).exists():
+                    df_hist = pd.read_excel(HISTORIAL_PATH)
                     df_final = pd.concat([df_hist, df_result]).drop_duplicates(subset=["ITEM"])
                 else:
                     df_final = df_result.copy()
-                df_final.to_excel(HISTORIAL, index=False)
+                df_final.to_excel(HISTORIAL_PATH, index=False)
 
                 # ✅ Solo mostrar mensaje
                 messagebox.showinfo("Éxito", "GUARDADO EXITOSAMENTE")
@@ -310,6 +353,15 @@ def seleccionar_reporte():
     )
     if ruta:
         procesar_reporte(ruta)
+
+def configurar_archivos_base():
+    """Permite al usuario configurar los archivos base necesarios."""
+    if seleccionar_archivos_base():
+        estado_archivos_label.config(text="✅ Archivos base configurados", fg="#28A745")
+        messagebox.showinfo("Éxito", "Archivos base configurados correctamente.")
+    else:
+        estado_archivos_label.config(text="⚠️ Archivos base no configurados", fg="#FF6B35")
+        messagebox.showwarning("Advertencia", "No se pudieron configurar los archivos base. Por favor, seleccione los archivos necesarios.")
 
 # Crear ventana principal
 root = tk.Tk()
@@ -342,6 +394,26 @@ if __name__ == "__main__":
     desc = tk.Label(frame, text="Sube el archivo REPORTE DE MERCANCIA y genera el archivo Tipo de proceso.",
                     font=("Segoe UI", 9), bg="#FFFFFF", fg="#282828")
     desc.pack(pady=(0,15))
+    
+    # Frame para información de archivos base
+    frame_archivos = tk.Frame(frame, bg="#FFFFFF")
+    frame_archivos.pack(pady=(0, 15))
+    
+    # Etiqueta de estado de archivos base
+    global estado_archivos_label
+    estado_archivos_label = tk.Label(frame_archivos, 
+                                    text="⚠️ Archivos base no configurados", 
+                                    font=("Segoe UI", 9), 
+                                    bg="#FFFFFF", 
+                                    fg="#FF6B35")
+    estado_archivos_label.pack(pady=(0, 5))
+    
+    # Botón para configurar archivos base
+    btn_configurar = ttk.Button(frame_archivos, 
+                               text="⚙️ Configurar Archivos Base", 
+                               command=lambda: configurar_archivos_base(), 
+                               style='TButton')
+    btn_configurar.pack(pady=5, ipadx=10, ipady=3)
     
     style = ttk.Style()
     style.theme_use('clam')
