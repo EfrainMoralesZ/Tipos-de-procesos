@@ -8,6 +8,7 @@ import sys
 import json
 from Formato import exportar_excel
 import re
+import time
 
 
 
@@ -137,10 +138,10 @@ def actualizar_codigos(frame_principal):
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema al actualizar los códigos:\n{e}")
 
-
-def exportar_concentrado_codigos():
+def exportar_concentrado_codigos(frame_principal):
     """
-    Permite al usuario guardar un concentrado de codigos_cumple.xlsx en un nuevo archivo Excel.
+    Permite al usuario guardar un concentrado de codigos_cumple.xlsx en un nuevo archivo Excel,
+    mostrando barra de progreso.
     """
     try:
         # Verifica que el archivo base exista
@@ -148,9 +149,19 @@ def exportar_concentrado_codigos():
             messagebox.showerror("Error", f"No se encontró el archivo {INSPECCION}")
             return
         
+        # Iniciar barra de progreso
+        iniciar_barra_progreso()
+
         # Cargar archivo codigos_cumple
         df_codigos = pd.read_excel(INSPECCION)
-        
+        total_filas = len(df_codigos)
+
+        # Simular avance según filas
+        for i in range(total_filas):
+            # Aquí podrías hacer algún procesamiento si fuese necesario
+            actualizar_barra((i+1)/total_filas*100)
+            frame_principal.update()  # Fuerza la actualización de la UI
+
         # Selección de ubicación y nombre del archivo a guardar
         ruta_guardado = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
@@ -158,13 +169,18 @@ def exportar_concentrado_codigos():
             title="Guardar concentrado de codigos_cumple"
         )
         if not ruta_guardado:
+            finalizar_barra_progreso()
             return  # Usuario canceló
-        
+
         # Guardar archivo
         df_codigos.to_excel(ruta_guardado, index=False)
+
+        # Finalizar barra de progreso
+        finalizar_barra_progreso()
         messagebox.showinfo("Exportar Codigos", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
     
     except Exception as e:
+        finalizar_barra_progreso()
         messagebox.showerror("Error", f"Ocurrió un problema al exportar el concentrado:\n{e}")
 
 def crear_boton_exportar_concentrado(frame):
@@ -568,10 +584,9 @@ if __name__ == "__main__":
     botones = [
         ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
         ("🔄 ACTUALIZAR CODIGOS CUMPLE", lambda: actualizar_codigos(frame)),  # Pasamos frame
-        ("📦 EXPORTAR CONCENTRADO CODIGOS", exportar_concentrado_codigos),
+        ("📦 EXPORTAR CONCENTRADO CODIGOS", lambda: exportar_concentrado_codigos(frame)),  # <-- aquí
         ("❌ Salir", root.quit)
     ]
-
     # Configurar grid con 2 columnas
     columnas = 2
     for i, (texto, comando) in enumerate(botones):
