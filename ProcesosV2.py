@@ -57,11 +57,9 @@ def actualizar_observacion_interactiva(item, obs_actual, obs_nueva):
     ventana.wait_window()  # Espera hasta cerrar la ventana
     return resultado["valor"]
 
-# Función principal de actualización
-def actualizar_codigos():
+# SE ACTUALIZAN LOS CODIGOS 
+def actualizar_codigos(frame_principal):
     try:
-        root = tk.Tk()
-        root.withdraw()
         nuevo_file = filedialog.askopenfilename(
             title="Selecciona el archivo con nuevos códigos",
             filetypes=[("Archivos Excel", "*.xlsx *.xls")]
@@ -69,48 +67,54 @@ def actualizar_codigos():
         if not nuevo_file:
             return
 
-        # Cargar archivo base
+        # Cargar archivos base y nuevo
         if os.path.exists(INSPECCION):
             df_base = pd.read_excel(INSPECCION)
         else:
             df_base = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
 
-        # Cargar archivo nuevo
         df_nuevo = pd.read_excel(nuevo_file)
-
         if "ITEM" not in df_nuevo.columns:
             messagebox.showerror("Error", "El archivo nuevo no contiene la columna 'ITEM'")
             return
 
         df_nuevo = df_nuevo.drop_duplicates(subset=["ITEM"])
-        columnas_extra = ["OBSERVACIONES", "CRITERIO"]
-        for col in columnas_extra:
+        for col in ["OBSERVACIONES", "CRITERIO"]:
             if col not in df_nuevo.columns:
-                df_nuevo[col] = ""  # Crear columna vacía si no existe
+                df_nuevo[col] = ""
 
         items_existentes = set(df_base["ITEM"].astype(str))
         nuevos_items = []
 
-        # Iterar sobre los ITEMS del archivo nuevo
+        # --- Barra de progreso en el frame principal ---
+        lbl_progreso = tk.Label(frame_principal, text="Procesando items...", font=("Segoe UI", 10), bg="#FFFFFF")
+        lbl_progreso.pack(pady=(10,0))
+        progress_var = tk.DoubleVar()
+        progress_bar = ttk.Progressbar(frame_principal, variable=progress_var, maximum=len(df_nuevo), length=400)
+        progress_bar.pack(pady=10)
+        frame_principal.update()
+
+        # Procesar items
         for idx, row in df_nuevo.iterrows():
             item = str(row["ITEM"])
             obs_nueva = str(row.get("OBSERVACIONES", ""))
             criterio_nuevo = str(row.get("CRITERIO", ""))
 
             if item in items_existentes:
-                # ITEM existente, verificar OBSERVACIONES
                 fila_base = df_base[df_base["ITEM"].astype(str) == item].iloc[0]
                 obs_actual = str(fila_base.get("OBSERVACIONES", ""))
                 if obs_actual != obs_nueva:
                     obs_final = actualizar_observacion_interactiva(item, obs_actual, obs_nueva)
                     df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_final
             else:
-                # ITEM nuevo, agregar a lista
                 nuevos_items.append({
                     "ITEM": item,
                     "OBSERVACIONES": obs_nueva,
                     "CRITERIO": criterio_nuevo
                 })
+
+            progress_var.set(idx + 1)
+            frame_principal.update()
 
         # Agregar ITEMS nuevos
         if nuevos_items:
@@ -118,6 +122,13 @@ def actualizar_codigos():
 
         # Guardar cambios
         df_base.to_excel(INSPECCION, index=False)
+
+        # --- Mostrar completado y ocultar barra automáticamente ---
+        lbl_progreso.config(text="¡Completado!")
+        progress_var.set(progress_bar["maximum"])
+        frame_principal.update()
+        frame_principal.after(800, lambda: (lbl_progreso.destroy(), progress_bar.destroy()))
+
         messagebox.showinfo(
             "Actualizar ITEMS",
             f"✅ Se actualizaron OBSERVACIONES y se agregaron {len(nuevos_items)} ITEMS nuevos.\n📊 Total ahora: {len(df_base)}"
@@ -125,6 +136,7 @@ def actualizar_codigos():
 
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema al actualizar los códigos:\n{e}")
+
 
 def exportar_concentrado_codigos():
     """
@@ -171,7 +183,7 @@ def crear_boton_exportar_concentrado(frame):
 def procesar_reporte(reporte_path):
     global frame
     try:
-        # Crear barra de progreso en el frame principal
+        # SE CREA LA BARRA DE PROGRESO EN LA FRAME PRINCIPAL
         try:
             global progress_label, progress_var, progress_bar, percent_label
             try:
@@ -189,7 +201,7 @@ def procesar_reporte(reporte_path):
             percent_label.pack()
             frame.update()
 
-
+            # LECTURA DE DATOS DE LOS ARCHIVOS DE EXCEL CONVERTIDOS EN JSON
             def cargar_json(nombre_json):
                 """
                 Carga un archivo JSON como DataFrame de pandas.
@@ -212,13 +224,11 @@ def procesar_reporte(reporte_path):
                 
                 return pd.DataFrame(data)
 
-
-            # Leer archivos base
+            # LEER ARCHIVOS BASE EN FORMATO JSON
             df_base = cargar_json("base_general.json")
             df_codigos_cumple = cargar_json("codigos_cumple.json")
             df_reporte = pd.read_excel(reporte_path)  # El reporte sigue siendo cargado por el usuario
 
-#=========================================================================================================================0
             # --- Detectar tipo de reporte y columnas ---
             # Primero revisamos si es FH
             if 'Número de Parte' in df_reporte.columns:
@@ -241,6 +251,8 @@ def procesar_reporte(reporte_path):
                 criterio_col = 'CRITERIO'   # 👈 ajusta aquí si en MIMPO se llama distinto (ej: "Criterio")
             else:
                 raise ValueError("No se encontró ninguna columna de NUM. PARTE válida en el reporte")
+            
+            # ABUSQUEDA QUE SE REALIZA PARA EL ARMADO DE LAS COLUMNAS DEL ARCHIVO TIPOS DE PROCESOS
 
             # --- 1. Columna ITEM ---
             items = pd.to_numeric(df_reporte[num_parte_col], errors='coerce').dropna().astype(int).unique()
@@ -307,8 +319,7 @@ def procesar_reporte(reporte_path):
             percent_label.config(text=f"{int(progress)}%")
             frame.update()
 
-
-            # --- Crear DataFrame final ---
+            # ORDEN EN EL QUE SE IMPRIMEN LAS COLUMNAS EN EL ARCHIVO TIPO DE PROCESO
             df_result = pd.DataFrame({
                 'ITEM': items,
                 'TIPO DE PROCESO': tipo_proceso,
@@ -319,9 +330,8 @@ def procesar_reporte(reporte_path):
             progress_var.set(80)
             percent_label.config(text="80%")
             frame.update()
-#======================================================================================================
 
-            # Reglas de modificación
+            # REGLAS PARA MODIFICAR EN LA COLUMNA TIPO DE PROCESO
             normas_adherible = [
                 '015', '050', '004-SE', '024', '141',
                 'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021',
@@ -354,7 +364,8 @@ def procesar_reporte(reporte_path):
                 return tipo
 
             df_result['TIPO DE PROCESO'] = df_result.apply(modificar_tipo_proceso, axis=1)
-
+            
+            # SE VALIDA QUE AMBAS COLUMNAS ESTEN VACIAS PARA PONER "SIN NORMA"
             def modificar_norma(norma):
                 if str(norma) == '0':
                     return 'SIN NORMA'
@@ -362,7 +373,8 @@ def procesar_reporte(reporte_path):
                     return ''
                 return norma
             df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
-
+            
+            # SE MODIFICA C o CUMPLE por CUMPLE
             def modificar_criterio(criterio):
                 crit = str(criterio).strip().upper()
                 if 'NO CUMPLE' in crit:
@@ -372,10 +384,11 @@ def procesar_reporte(reporte_path):
                 return criterio
             df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
-#=============================================================================================================
+            # LISTADO DE NORMAS VALIDAS PARA REALIZAR LOS TIPO DE PROCESOS
             normas_validas = ['003','004','NOM-004-SE-2021','008','015','020','NOM-020-SCFI-1997',
                             '024','NOM-024-SCFI-2013','035','050','051','116','141','142','173','185','186','189','192','199','235']
-
+            
+            # REGLAS PARA MODIFICAR EL ARCHIVO TIPO DE PROCESO
             for idx, row in df_result.iterrows():
                 # Normalizar valores
                 tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
@@ -405,8 +418,6 @@ def procesar_reporte(reporte_path):
                 if norma in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'] and 'CUMPLE' not in criterio:
                     df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
-
-#=============================================================================================================
             progress_var.set(100)
             percent_label.config(text="100%")
             progress_label.config(text="¡Completado!")
@@ -456,17 +467,14 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
-import os
-import tkinter as tk
-from tkinter import ttk
-from PIL import Image, ImageTk
 
-# --- Ventana principal ---
+# VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("Generador TIPO DE PROCESO")
 root.geometry("750x580")
 root.configure(bg="#FFFFFF")
 
+#DISEÑO DE LA VENTANA
 if __name__ == "__main__":
     frame = tk.Frame(root, bg="#FFFFFF")
     frame.pack(expand=True, fill="both", padx=20, pady=20)
@@ -523,12 +531,43 @@ if __name__ == "__main__":
 
     # --- Frame para botones en grid ---
     frame_buttons = tk.Frame(frame, bg="#FFFFFF")
-    frame_buttons.pack(expand=True, fill="both")
+    frame_buttons.pack(expand=True, fill="both", pady=10)
 
-    # Lista de botones (texto y función)
+    # --- Barra de progreso (inicialmente oculta) ---
+    progress_var = tk.DoubleVar()
+    progress_bar = ttk.Progressbar(frame, variable=progress_var, maximum=100)
+    progress_label = tk.Label(frame, text="", bg="#FFFFFF", fg="#282828", font=("Segoe UI", 10, "bold"))
+    percent_label = tk.Label(frame, text="", bg="#FFFFFF", fg="#282828", font=("Segoe UI", 10, "bold"))
+
+    def iniciar_barra_progreso():
+        progress_bar.pack(fill="x", padx=20, pady=(10,0))
+        progress_label.pack(pady=(5,0))
+        percent_label.pack(pady=(0,10))
+        progress_var.set(0)
+        progress_label.config(text="Procesando...")
+        percent_label.config(text="0%")
+        frame.update()
+
+    def actualizar_barra(valor):
+        progress_var.set(valor)
+        percent_label.config(text=f"{int(valor)}%")
+        frame.update()
+
+    def finalizar_barra_progreso():
+        progress_var.set(100)
+        percent_label.config(text="100%")
+        progress_label.config(text="¡Completado!")
+        frame.update()
+        def remove_widgets():
+            progress_bar.pack_forget()
+            progress_label.pack_forget()
+            percent_label.pack_forget()
+        frame.after(500, remove_widgets)
+
+    # Lista de botones (texto y función), usando lambda para pasar frame
     botones = [
         ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
-        ("🔄 ACTUALIZAR CODIGOS CUMPLE", actualizar_codigos),
+        ("🔄 ACTUALIZAR CODIGOS CUMPLE", lambda: actualizar_codigos(frame)),  # Pasamos frame
         ("📦 EXPORTAR CONCENTRADO CODIGOS", exportar_concentrado_codigos),
         ("❌ Salir", root.quit)
     ]
