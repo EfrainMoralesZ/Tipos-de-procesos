@@ -23,9 +23,43 @@ BASE_GENERAL = os.path.join(BASE_PATH, "archivos","BASE DECATHLON GENERAL ADVANC
 INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
 HISTORIAL = os.path.join(BASE_PATH, "archivos","HISTORIAL_PROCESOS.xlsx")
 
+# Rutas de archivos
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
+
+# Función para ventana de actualización de observaciones
+def actualizar_observacion_interactiva(item, obs_actual, obs_nueva):
+    """
+    Muestra un cuadro de diálogo para modificar OBSERVACIONES si cambió.
+    Devuelve la observación final que se guardará.
+    """
+    ventana = tk.Toplevel()
+    ventana.title(f"Actualizar OBSERVACIONES - ITEM {item}")
+    ventana.geometry("400x200")
+    ventana.grab_set()  # Bloquea interacción con ventana principal
+
+    tk.Label(ventana, text=f"ITEM: {item}", font=("Segoe UI", 10, "bold")).pack(pady=(10,5))
+    tk.Label(ventana, text="Observación actual:").pack()
+    tk.Label(ventana, text=obs_actual, fg="blue").pack(pady=(0,10))
+    
+    tk.Label(ventana, text="Nueva observación:").pack()
+    entrada = tk.Entry(ventana, width=50)
+    entrada.insert(0, obs_nueva)
+    entrada.pack(pady=(0,10))
+
+    resultado = {"valor": obs_actual}  # Valor por defecto
+
+    def guardar():
+        resultado["valor"] = entrada.get()
+        ventana.destroy()
+
+    tk.Button(ventana, text="Guardar", command=guardar, bg="#ECD925").pack(pady=10)
+    ventana.wait_window()  # Espera hasta cerrar la ventana
+    return resultado["valor"]
+
+# Función principal de actualización
 def actualizar_codigos():
     try:
-        # Abrir diálogo para seleccionar nuevo archivo con códigos
         root = tk.Tk()
         root.withdraw()
         nuevo_file = filedialog.askopenfilename(
@@ -39,48 +73,100 @@ def actualizar_codigos():
         if os.path.exists(INSPECCION):
             df_base = pd.read_excel(INSPECCION)
         else:
-            # Si no existe, se crea vacío con columna ITEM
-            df_base = pd.DataFrame(columns=["ITEM"])
+            df_base = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
 
         # Cargar archivo nuevo
         df_nuevo = pd.read_excel(nuevo_file)
 
-        # Validar que tenga columna ITEM
         if "ITEM" not in df_nuevo.columns:
             messagebox.showerror("Error", "El archivo nuevo no contiene la columna 'ITEM'")
             return
 
-        # Quitar duplicados dentro del archivo nuevo
         df_nuevo = df_nuevo.drop_duplicates(subset=["ITEM"])
-
-        # Columnas adicionales que queremos traer si existen
         columnas_extra = ["OBSERVACIONES", "CRITERIO"]
         for col in columnas_extra:
             if col not in df_nuevo.columns:
                 df_nuevo[col] = ""  # Crear columna vacía si no existe
 
-        # Filtrar solo ITEMS nuevos
         items_existentes = set(df_base["ITEM"].astype(str))
-        df_filtrado = df_nuevo[~df_nuevo["ITEM"].astype(str).isin(items_existentes)]
+        nuevos_items = []
 
-        if df_filtrado.empty:
-            messagebox.showinfo("Actualizar ITEMS", "No hay ITEMS nuevos para agregar.")
-            return
+        # Iterar sobre los ITEMS del archivo nuevo
+        for idx, row in df_nuevo.iterrows():
+            item = str(row["ITEM"])
+            obs_nueva = str(row.get("OBSERVACIONES", ""))
+            criterio_nuevo = str(row.get("CRITERIO", ""))
 
-        # Agregar solo ITEMS nuevos con sus columnas extra
-        df_final = pd.concat([df_base, df_filtrado[["ITEM"] + columnas_extra]], ignore_index=True)
+            if item in items_existentes:
+                # ITEM existente, verificar OBSERVACIONES
+                fila_base = df_base[df_base["ITEM"].astype(str) == item].iloc[0]
+                obs_actual = str(fila_base.get("OBSERVACIONES", ""))
+                if obs_actual != obs_nueva:
+                    obs_final = actualizar_observacion_interactiva(item, obs_actual, obs_nueva)
+                    df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_final
+            else:
+                # ITEM nuevo, agregar a lista
+                nuevos_items.append({
+                    "ITEM": item,
+                    "OBSERVACIONES": obs_nueva,
+                    "CRITERIO": criterio_nuevo
+                })
+
+        # Agregar ITEMS nuevos
+        if nuevos_items:
+            df_base = pd.concat([df_base, pd.DataFrame(nuevos_items)], ignore_index=True)
 
         # Guardar cambios
-        df_final.to_excel(INSPECCION, index=False)
-
+        df_base.to_excel(INSPECCION, index=False)
         messagebox.showinfo(
             "Actualizar ITEMS",
-            f"✅ Se agregaron {len(df_filtrado)} ITEMS nuevos con columnas OBSERVACIONES y CRITERIO.\n📊 Total ahora: {len(df_final)}"
+            f"✅ Se actualizaron OBSERVACIONES y se agregaron {len(nuevos_items)} ITEMS nuevos.\n📊 Total ahora: {len(df_base)}"
         )
 
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema al actualizar los códigos:\n{e}")
 
+def exportar_concentrado_codigos():
+    """
+    Permite al usuario guardar un concentrado de codigos_cumple.xlsx en un nuevo archivo Excel.
+    """
+    try:
+        # Verifica que el archivo base exista
+        if not os.path.exists(INSPECCION):
+            messagebox.showerror("Error", f"No se encontró el archivo {INSPECCION}")
+            return
+        
+        # Cargar archivo codigos_cumple
+        df_codigos = pd.read_excel(INSPECCION)
+        
+        # Selección de ubicación y nombre del archivo a guardar
+        ruta_guardado = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Archivos Excel", "*.xlsx *.xls")],
+            title="Guardar concentrado de codigos_cumple"
+        )
+        if not ruta_guardado:
+            return  # Usuario canceló
+        
+        # Guardar archivo
+        df_codigos.to_excel(ruta_guardado, index=False)
+        messagebox.showinfo("Exportar Codigos", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
+    
+    except Exception as e:
+        messagebox.showerror("Error", f"Ocurrió un problema al exportar el concentrado:\n{e}")
+
+def crear_boton_exportar_concentrado(frame):
+    """
+    Crea un botón ttk dentro del frame indicado para exportar el concentrado de codigos_cumple.xlsx
+    """
+    btn_exportar = ttk.Button(
+        frame, 
+        text="📦 EXPORTAR CONCENTRADO CODIGOS", 
+        command=exportar_concentrado_codigos,  # Función que definimos antes
+        style='TButton'
+    )
+    btn_exportar.pack(pady=10, ipadx=10, ipady=5)
+    return btn_exportar
 
 def procesar_reporte(reporte_path):
     global frame
@@ -370,18 +456,24 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
-# Crear ventana principal
+import os
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk
+
+# --- Ventana principal ---
 root = tk.Tk()
 root.title("Generador TIPO DE PROCESO")
-root.geometry("650x480")
+root.geometry("750x580")
 root.configure(bg="#FFFFFF")
 
 if __name__ == "__main__":
     frame = tk.Frame(root, bg="#FFFFFF")
-    frame.pack(expand=True, fill="both")
+    frame.pack(expand=True, fill="both", padx=20, pady=20)
 
+    # --- Frame superior con logo y títulos ---
     frame_top = tk.Frame(frame, bg="#FFFFFF")
-    frame_top.pack(pady=(30, 0), fill="x")
+    frame_top.pack(pady=(0, 20), fill="x")
 
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
@@ -394,26 +486,63 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error cargando el logo: {e}")
 
-    label = tk.Label(frame_top, text="Generador de archivo TIPO DE PROCESO",
-                     font=("Segoe UI", 16, "bold"), bg="#FFFFFF", fg="#282828")
-    label.pack(pady=0, padx=10)
+    label = tk.Label(
+        frame_top, 
+        text="Generador de archivo TIPO DE PROCESO",
+        font=("Segoe UI", 16, "bold"), 
+        bg="#FFFFFF", 
+        fg="#282828"
+    )
+    label.pack(pady=(0, 5))
 
-    desc = tk.Label(frame, text="Sube el archivo REPORTE DE MERCANCIA y genera el archivo Tipo de proceso.",
-                    font=("Segoe UI", 9), bg="#FFFFFF", fg="#282828")
+    desc = tk.Label(
+        frame_top,
+        text="Sube el archivo REPORTE DE MERCANCIA y genera el archivo Tipo de proceso.",
+        font=("Segoe UI", 10), 
+        bg="#FFFFFF", 
+        fg="#282828"
+    )
     desc.pack(pady=(0,15))
-    
+
+    # --- Estilo uniforme de botones ---
     style = ttk.Style()
     style.theme_use('clam')
-    style.configure('TButton', background='#ECD925', foreground='#282828', font=('Segoe UI', 11, 'bold'), borderwidth=0)
-    style.map('TButton', background=[('active', '#ECD925')], foreground=[('active', '#282828')])
+    style.configure(
+        'TButton', 
+        background='#ECD925', 
+        foreground='#282828', 
+        font=('Segoe UI', 11, 'bold'), 
+        borderwidth=0, 
+        padding=(5,5)
+    )
+    style.map(
+        'TButton', 
+        background=[('active', '#D8C600')], 
+        foreground=[('active', '#282828')]
+    )
 
-    btn_cargar = ttk.Button(frame, text="📂 SUBIR REPORTE DE MERCANCIA", command=seleccionar_reporte, style='TButton')
-    btn_cargar.pack(pady=10, ipadx=10, ipady=5)
+    # --- Frame para botones en grid ---
+    frame_buttons = tk.Frame(frame, bg="#FFFFFF")
+    frame_buttons.pack(expand=True, fill="both")
 
-    btn_actualizar = ttk.Button(frame, text="🔄 ACTUALIZAR CODIGOS CUMPLE", command=actualizar_codigos, style='TButton')
-    btn_actualizar.pack(pady=10, ipadx=10, ipady=5)
+    # Lista de botones (texto y función)
+    botones = [
+        ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
+        ("🔄 ACTUALIZAR CODIGOS CUMPLE", actualizar_codigos),
+        ("📦 EXPORTAR CONCENTRADO CODIGOS", exportar_concentrado_codigos),
+        ("❌ Salir", root.quit)
+    ]
 
-    btn_salir = ttk.Button(frame, text="❌ Salir", command=root.quit, style='TButton')
-    btn_salir.pack(pady=20, ipadx=5, ipady=3)
+    # Configurar grid con 2 columnas
+    columnas = 2
+    for i, (texto, comando) in enumerate(botones):
+        btn = ttk.Button(frame_buttons, text=texto, command=comando, style='TButton')
+        row = i // columnas
+        col = i % columnas
+        btn.grid(row=row, column=col, padx=20, pady=20, ipadx=10, ipady=10, sticky="nsew")
+
+    # Ajustar tamaño de columnas para que se expandan igual
+    for col in range(columnas):
+        frame_buttons.grid_columnconfigure(col, weight=1)
 
     root.mainloop()
