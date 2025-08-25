@@ -10,8 +10,6 @@ from Formato import exportar_excel
 import re
 import time
 
-
-
 if getattr(sys, 'frozen', False):
     # Cuando está compilado en .exe
     BASE_PATH = sys._MEIPASS
@@ -28,16 +26,11 @@ HISTORIAL = os.path.join(BASE_PATH, "archivos","HISTORIAL_PROCESOS.xlsx")
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
 
-# Función para ventana de actualización de observaciones
 def actualizar_observacion_interactiva(item, obs_actual, obs_nueva):
-    """
-    Muestra un cuadro de diálogo para modificar OBSERVACIONES si cambió.
-    Devuelve la observación final que se guardará.
-    """
     ventana = tk.Toplevel()
     ventana.title(f"Actualizar OBSERVACIONES - ITEM {item}")
     ventana.geometry("400x200")
-    ventana.grab_set()  # Bloquea interacción con ventana principal
+    ventana.grab_set()
 
     tk.Label(ventana, text=f"ITEM: {item}", font=("Segoe UI", 10, "bold")).pack(pady=(10,5))
     tk.Label(ventana, text="Observación actual:").pack()
@@ -48,17 +41,17 @@ def actualizar_observacion_interactiva(item, obs_actual, obs_nueva):
     entrada.insert(0, obs_nueva)
     entrada.pack(pady=(0,10))
 
-    resultado = {"valor": obs_actual}  # Valor por defecto
+    resultado = {"valor": obs_actual}
 
     def guardar():
         resultado["valor"] = entrada.get()
         ventana.destroy()
 
     tk.Button(ventana, text="Guardar", command=guardar, bg="#ECD925").pack(pady=10)
-    ventana.wait_window()  # Espera hasta cerrar la ventana
+    ventana.wait_window()
     return resultado["valor"]
 
-# SE ACTUALIZAN LOS CODIGOS 
+# --- Función para actualizar códigos ---
 def actualizar_codigos(frame_principal):
     try:
         nuevo_file = filedialog.askopenfilename(
@@ -68,67 +61,45 @@ def actualizar_codigos(frame_principal):
         if not nuevo_file:
             return
 
-        # Cargar archivos base y nuevo
-        if os.path.exists(INSPECCION):
-            df_base = pd.read_excel(INSPECCION)
-        else:
-            df_base = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
-
+        df_base = pd.read_excel(INSPECCION) if os.path.exists(INSPECCION) else pd.DataFrame(columns=["ITEM","OBSERVACIONES","CRITERIO"])
         df_nuevo = pd.read_excel(nuevo_file)
+
         if "ITEM" not in df_nuevo.columns:
             messagebox.showerror("Error", "El archivo nuevo no contiene la columna 'ITEM'")
             return
 
         df_nuevo = df_nuevo.drop_duplicates(subset=["ITEM"])
-        for col in ["OBSERVACIONES", "CRITERIO"]:
+        for col in ["OBSERVACIONES","CRITERIO"]:
             if col not in df_nuevo.columns:
                 df_nuevo[col] = ""
 
         items_existentes = set(df_base["ITEM"].astype(str))
         nuevos_items = []
 
-        # --- Barra de progreso en el frame principal ---
-        lbl_progreso = tk.Label(frame_principal, text="Procesando items...", font=("Segoe UI", 10), bg="#FFFFFF")
-        lbl_progreso.pack(pady=(10,0))
-        progress_var = tk.DoubleVar()
-        progress_bar = ttk.Progressbar(frame_principal, variable=progress_var, maximum=len(df_nuevo), length=400)
-        progress_bar.pack(pady=10)
-        frame_principal.update()
+        # Barra de progreso unificada
+        barra = BarraProgreso(frame_principal, "Actualizando items...")
 
-        # Procesar items
         for idx, row in df_nuevo.iterrows():
             item = str(row["ITEM"])
-            obs_nueva = str(row.get("OBSERVACIONES", ""))
-            criterio_nuevo = str(row.get("CRITERIO", ""))
+            obs_nueva = str(row.get("OBSERVACIONES",""))
+            criterio_nuevo = str(row.get("CRITERIO",""))
 
             if item in items_existentes:
                 fila_base = df_base[df_base["ITEM"].astype(str) == item].iloc[0]
-                obs_actual = str(fila_base.get("OBSERVACIONES", ""))
+                obs_actual = str(fila_base.get("OBSERVACIONES",""))
                 if obs_actual != obs_nueva:
                     obs_final = actualizar_observacion_interactiva(item, obs_actual, obs_nueva)
                     df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_final
             else:
-                nuevos_items.append({
-                    "ITEM": item,
-                    "OBSERVACIONES": obs_nueva,
-                    "CRITERIO": criterio_nuevo
-                })
+                nuevos_items.append({"ITEM": item, "OBSERVACIONES": obs_nueva, "CRITERIO": criterio_nuevo})
 
-            progress_var.set(idx + 1)
-            frame_principal.update()
+            barra.actualizar((idx+1)/len(df_nuevo)*100)
 
-        # Agregar ITEMS nuevos
         if nuevos_items:
             df_base = pd.concat([df_base, pd.DataFrame(nuevos_items)], ignore_index=True)
 
-        # Guardar cambios
         df_base.to_excel(INSPECCION, index=False)
-
-        # --- Mostrar completado y ocultar barra automáticamente ---
-        lbl_progreso.config(text="¡Completado!")
-        progress_var.set(progress_bar["maximum"])
-        frame_principal.update()
-        frame_principal.after(800, lambda: (lbl_progreso.destroy(), progress_bar.destroy()))
+        barra.finalizar()
 
         messagebox.showinfo(
             "Actualizar ITEMS",
@@ -138,49 +109,36 @@ def actualizar_codigos(frame_principal):
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema al actualizar los códigos:\n{e}")
 
+# --- Función para exportar concentrado ---
 def exportar_concentrado_codigos(frame_principal):
-    """
-    Permite al usuario guardar un concentrado de codigos_cumple.xlsx en un nuevo archivo Excel,
-    mostrando barra de progreso.
-    """
     try:
-        # Verifica que el archivo base exista
         if not os.path.exists(INSPECCION):
             messagebox.showerror("Error", f"No se encontró el archivo {INSPECCION}")
             return
-        
-        # Iniciar barra de progreso
-        iniciar_barra_progreso()
 
-        # Cargar archivo codigos_cumple
         df_codigos = pd.read_excel(INSPECCION)
         total_filas = len(df_codigos)
 
-        # Simular avance según filas
-        for i in range(total_filas):
-            # Aquí podrías hacer algún procesamiento si fuese necesario
-            actualizar_barra((i+1)/total_filas*100)
-            frame_principal.update()  # Fuerza la actualización de la UI
+        barra = BarraProgreso(frame_principal, "Generando concentrado...")
 
-        # Selección de ubicación y nombre del archivo a guardar
+        for i in range(total_filas):
+            barra.actualizar((i+1)/total_filas*100)
+
         ruta_guardado = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
             filetypes=[("Archivos Excel", "*.xlsx *.xls")],
             title="Guardar concentrado de codigos_cumple"
         )
         if not ruta_guardado:
-            finalizar_barra_progreso()
-            return  # Usuario canceló
+            barra.finalizar()
+            return
 
-        # Guardar archivo
         df_codigos.to_excel(ruta_guardado, index=False)
-
-        # Finalizar barra de progreso
-        finalizar_barra_progreso()
+        barra.finalizar()
         messagebox.showinfo("Exportar Codigos", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
-    
+
     except Exception as e:
-        finalizar_barra_progreso()
+        barra.finalizar()
         messagebox.showerror("Error", f"Ocurrió un problema al exportar el concentrado:\n{e}")
 
 def crear_boton_exportar_concentrado(frame):
@@ -483,6 +441,26 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
+# --- Función unificada para la barra de progreso ---
+class BarraProgreso:
+    def __init__(self, frame, texto="Procesando..."):
+        self.frame = frame
+        self.lbl = tk.Label(frame, text=texto, font=("Segoe UI", 10), bg="#FFFFFF")
+        self.lbl.pack(pady=(10,0))
+        self.var = tk.DoubleVar()
+        self.bar = ttk.Progressbar(frame, variable=self.var, maximum=100, length=400)
+        self.bar.pack(pady=10)
+        frame.update()
+
+    def actualizar(self, valor):
+        self.var.set(valor)
+        self.frame.update()
+
+    def finalizar(self, mensaje="¡Completado!"):
+        self.var.set(self.bar["maximum"])
+        self.lbl.config(text=mensaje)
+        self.frame.update()
+        self.frame.after(800, lambda: (self.lbl.destroy(), self.bar.destroy()))
 
 # VENTANA PRINCIPAL
 root = tk.Tk()
