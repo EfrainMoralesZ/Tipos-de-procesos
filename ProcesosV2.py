@@ -154,6 +154,7 @@ def crear_boton_exportar_concentrado(frame):
     btn_exportar.pack(pady=10, ipadx=10, ipady=5)
     return btn_exportar
 
+# --- Función para generar el tipo de proceso ---
 def procesar_reporte(reporte_path):
     global frame
 
@@ -426,6 +427,53 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
+def actualizar_catalogo(frame_principal):
+    barra = None
+    try:
+        # Seleccionar archivo Excel
+        file_path = filedialog.askopenfilename(
+            title="Seleccionar archivo de catálogo",
+            filetypes=[("Archivos Excel", "*.xlsx *.xls")]
+        )
+        
+        if not file_path:
+            return  # Usuario canceló
+
+        barra = BarraProgreso(frame_principal, "Cargando catálogo...")
+
+        # Paso 1: leer Excel
+        barra.actualizar(20)
+        df = pd.read_excel(file_path)
+
+        # Paso 2: preparar rutas
+        barra.actualizar(50)
+        if getattr(sys, "frozen", False):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.dirname(__file__)
+
+        resources_path = os.path.join(base_path, "resources")
+        if not os.path.exists(resources_path):
+            os.makedirs(resources_path)
+
+        json_path = os.path.join(resources_path, "base_general.json")
+
+        # Paso 3: guardar JSON
+        barra.actualizar(80)
+        df.to_json(json_path, orient="records", force_ascii=False, indent=4)
+
+        # Paso 4: finalizar
+        barra.actualizar(100)
+        time.sleep(0.5)
+        barra.finalizar()
+
+        messagebox.showinfo("Catálogo actualizado", "El archivo fue cargado y guardado como JSON correctamente.")
+
+    except Exception as e:
+        if barra:
+            barra.finalizar()
+        messagebox.showerror("Error", f"No se pudo actualizar el catálogo:\n{e}")
+        
 # --- Función unificada para la barra de progreso ---
 class BarraProgreso:
     def __init__(self, frame, texto="Procesando...", ancho=250, posicion="derecha"):
@@ -595,7 +643,7 @@ if __name__ == "__main__":
         ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
         ("🔄 ACTUALIZAR CODIGOS", lambda: actualizar_codigos(frame_right)), 
         ("📦 EXPORTAR CODIGOS", lambda: exportar_concentrado_codigos(frame_right)),  
-        ("📦 ACTUALIZAR CATALOGO", lambda: exportar_concentrado_codigos(frame_right)),
+        ("📦 ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_right)),
         ("❌ Salir", root.quit)
     ]
 
