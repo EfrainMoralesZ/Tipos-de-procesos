@@ -484,7 +484,7 @@ def procesar_reporte(reporte_path):
             '015', '050', '004-SE', '024', '141',
             'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021',
             'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
-            'NOM004TEXX', 'NOM020INS'
+            'NOM004TEXX', 'NOM020INS','NOM-020-SCFI-1997'
         ]
         normas_costura = ['004', '020', 'NOM004', 'NOM020']
 
@@ -499,7 +499,7 @@ def procesar_reporte(reporte_path):
                 return 'ADHERIBLE'
             if 'NOM004' in tipo or '004' in norma_val:
                 return 'COSTURA'
-            if 'NOM020INS' in norma_val:
+            if 'NOM020INS' in tipo or 'NOM-020-SCFI-1997' in norma_val:
                 return 'ADHERIBLE'
             if contiene_numero(norma_val, normas_adherible):
                 return 'ADHERIBLE'
