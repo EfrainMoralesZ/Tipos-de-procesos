@@ -17,52 +17,295 @@ else:
     # Cuando se ejecuta desde Python
     BASE_PATH = os.path.dirname(__file__)
 
-# Archivos fijos
-BASE_GENERAL = os.path.join(BASE_PATH, "archivos","BASE DECATHLON GENERAL ADVANCE II.xlsx")
-INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
-HISTORIAL = os.path.join(BASE_PATH, "archivos","HISTORIAL_PROCESOS.xlsx")
-
-# Rutas de archivos
+# Configuración de rutas y archivos
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-INSPECCION = os.path.join(BASE_PATH, "archivos","codigos_cumple.xlsx")
+CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
 
-import tkinter as tk
-import pandas as pd
+def cargar_configuracion():
+    """Carga la configuración desde el archivo JSON"""
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        else:
+            config_default = {
+                "rutas": {
+                    "base_general": "",
+                    "codigos_cumple": "",
+                    "historial": ""
+                }
+            }
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config_default, f, indent=4)
+            return config_default
+    except Exception as e:
+        print(f"Error al cargar configuración: {str(e)}")
+        return None
 
-# 🔹 Función para abrir ventana y actualizar/eliminar 
-# Ruta fija
-ARCHIVO_CODIGOS = "archivos/codigos_cumple.xlsx"
-ARCHIVO_JSON = "archivos/codigos_cumple.json"
+def guardar_configuracion(config):
+    """Guarda la configuración en el archivo JSON"""
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4)
+        return True
+    except Exception as e:
+        print(f"Error al guardar configuración: {str(e)}")
+        return False
 
-# Cargar o crear archivo base
+def configurar_rutas():
+    """Permite al usuario configurar las rutas necesarias"""
+    config = cargar_configuracion()
+    if config is None:
+        config = {"rutas": {}}
+    
+    # Crear ventana de selección
+    ventana = tk.Toplevel()
+    ventana.title("Configurar Rutas")
+    ventana.geometry("500x400")
+    ventana.configure(bg="#FFFFFF")
+    ventana.grab_set()  # Hacer la ventana modal
+    
+    def seleccionar_archivo(tipo):
+        archivo = filedialog.askopenfilename(
+            title=f"Seleccionar {tipo}",
+            filetypes=[("Archivos Excel", "*.xlsx")]
+        )
+        if archivo:
+            config["rutas"][tipo] = archivo
+            if tipo == "codigos_cumple":
+                lbl_codigos.config(text=f"Códigos de cumplimiento: {os.path.basename(archivo)}")
+            elif tipo == "base_general":
+                lbl_base.config(text=f"Base general: {os.path.basename(archivo)}")
+            elif tipo == "historial":
+                lbl_historial.config(text=f"Historial: {os.path.basename(archivo)}")
+            guardar_configuracion(config)
+    
+    # Etiquetas y botones
+    tk.Label(ventana, text="Configuración de Rutas", font=("Segoe UI", 12, "bold"), 
+             bg="#FFFFFF", fg="#282828").pack(pady=20)
+    
+    # Frame para códigos de cumplimiento
+    frame_codigos = tk.Frame(ventana, bg="#FFFFFF")
+    frame_codigos.pack(fill="x", padx=20, pady=10)
+    lbl_codigos = tk.Label(frame_codigos, text="Códigos de cumplimiento: No seleccionado", 
+                          bg="#FFFFFF", fg="#282828", anchor="w")
+    lbl_codigos.pack(side="left")
+    tk.Button(frame_codigos, text="Seleccionar", command=lambda: seleccionar_archivo("codigos_cumple"),
+             bg="#ECD925", fg="#282828").pack(side="right")
+    
+    # Frame para base general
+    frame_base = tk.Frame(ventana, bg="#FFFFFF")
+    frame_base.pack(fill="x", padx=20, pady=10)
+    lbl_base = tk.Label(frame_base, text="Base general: No seleccionado", 
+                       bg="#FFFFFF", fg="#282828", anchor="w")
+    lbl_base.pack(side="left")
+    tk.Button(frame_base, text="Seleccionar", command=lambda: seleccionar_archivo("base_general"),
+             bg="#ECD925", fg="#282828").pack(side="right")
+    
+    # Frame para historial
+    frame_historial = tk.Frame(ventana, bg="#FFFFFF")
+    frame_historial.pack(fill="x", padx=20, pady=10)
+    lbl_historial = tk.Label(frame_historial, text="Historial: No seleccionado", 
+                            bg="#FFFFFF", fg="#282828", anchor="w")
+    lbl_historial.pack(side="left")
+    tk.Button(frame_historial, text="Seleccionar", command=lambda: seleccionar_archivo("historial"),
+             bg="#ECD925", fg="#282828").pack(side="right")
+    
+    # Actualizar etiquetas con rutas existentes
+    if "codigos_cumple" in config["rutas"] and config["rutas"]["codigos_cumple"]:
+        lbl_codigos.config(text=f"Códigos de cumplimiento: {os.path.basename(config['rutas']['codigos_cumple'])}")
+    if "base_general" in config["rutas"] and config["rutas"]["base_general"]:
+        lbl_base.config(text=f"Base general: {os.path.basename(config['rutas']['base_general'])}")
+    if "historial" in config["rutas"] and config["rutas"]["historial"]:
+        lbl_historial.config(text=f"Historial: {os.path.basename(config['rutas']['historial'])}")
+    
+    # Botón cerrar
+    tk.Button(ventana, text="Cerrar", command=ventana.destroy,
+             bg="#ECD925", fg="#282828").pack(pady=20)
+    
+    ventana.wait_window()  # Esperar a que se cierre la ventana
+    return config["rutas"]
+
+# Cargar configuración inicial
+config = cargar_configuracion()
+RUTAS = config.get("rutas", {}) if config else {}
+
+# Si no hay rutas configuradas, pedir al usuario que las configure
+if not all(RUTAS.values()):
+    if messagebox.askyesno("Configuración", "No se han configurado todas las rutas necesarias. ¿Desea configurarlas ahora?"):
+        RUTAS = configurar_rutas()
+
+# Definir variables globales para las rutas
+ARCHIVO_CODIGOS = RUTAS.get("codigos_cumple", "")
+BASE_GENERAL = RUTAS.get("base_general", "")
+HISTORIAL = RUTAS.get("historial", "")
 if os.path.exists(ARCHIVO_CODIGOS):
-    df_codigos_cumple = pd.read_excel(ARCHIVO_CODIGOS)
+    try:
+        df_codigos_cumple = pd.read_excel(ARCHIVO_CODIGOS)
+        print(f"Archivo cargado: {ARCHIVO_CODIGOS}")
+        print(f"Número de registros: {len(df_codigos_cumple)}")
+    except Exception as e:
+        print(f"Error al cargar {ARCHIVO_CODIGOS}: {str(e)}")
+        df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
 else:
-    df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES"])
+    print(f"Archivo no encontrado: {ARCHIVO_CODIGOS}")
+    df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
 
 
 def abrir_editor_codigos(parent=None):
     global df_codigos_cumple
+    
+    # Recargar datos del archivo
+    try:
+        if os.path.exists(ARCHIVO_CODIGOS):
+            df_codigos_cumple = pd.read_excel(ARCHIVO_CODIGOS)
+            print(f"Abriendo editor - Registros cargados: {len(df_codigos_cumple)}")
+        elif os.path.exists(ARCHIVO_JSON):
+            df_codigos_cumple = pd.read_json(ARCHIVO_JSON)
+            print(f"Abriendo editor - Registros cargados desde JSON: {len(df_codigos_cumple)}")
+        else:
+            print(f"No se encontró ningún archivo de datos en: {ARCHIVO_CODIGOS}")
+            df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+    except Exception as e:
+        print(f"Error al cargar los datos: {str(e)}")
+        messagebox.showerror("Error", f"Error al cargar los datos: {str(e)}")
+        df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
     
     ventana = tk.Toplevel(parent) if parent else tk.Toplevel()
     ventana.title("Editor de Códigos")
     ventana.geometry("800x500")
     ventana.grab_set()
 
+
+    # --- Buscador con autocompletado ---
+    frame_search = tk.Frame(ventana, bg="#FFFFFF")
+    frame_search.pack(fill="x", pady=(10, 0))
+
+    tk.Label(frame_search, text="Buscar:").pack(side="left", padx=(5, 2))
+    search_var = tk.StringVar()
+    entry_search = tk.Entry(frame_search, textvariable=search_var, width=30)
+    entry_search.pack(side="left", padx=(0, 5))
+
+    # Listbox para sugerencias
+    listbox_suggest = tk.Listbox(frame_search, height=5, width=40,
+                               bg="#FFFFFF", fg="#282828", selectbackground="#ECD925",
+                               selectforeground="#282828")
+    listbox_suggest.pack(side="left", padx=(0, 5))
+    listbox_suggest.pack_forget()
+
+    # Crear frame contenedor para la tabla y scrollbar
+    frame_tabla = tk.Frame(ventana)
+    frame_tabla.pack(fill="both", expand=True, padx=10, pady=10)
+    
     # Tabla con los datos
-    tree = ttk.Treeview(ventana, columns=list(df_codigos_cumple.columns), show="headings", height=15)
-    for col in df_codigos_cumple.columns:
-        tree.heading(col, text=col)
-        tree.column(col, width=150)
+    columnas = ["ITEM", "OBSERVACIONES", "CRITERIO"]
+    tree = ttk.Treeview(frame_tabla, columns=columnas, show="headings", height=15, style="Custom.Treeview")
+    
+    # Configurar columnas
+    tree.heading("ITEM", text="ITEM")
+    tree.heading("OBSERVACIONES", text="OBSERVACIONES")
+    tree.heading("CRITERIO", text="CRITERIO")
+    
+    # Ajustar anchos de columnas
+    tree.column("ITEM", width=100)
+    tree.column("OBSERVACIONES", width=400)
+    tree.column("CRITERIO", width=250)
+    
+    # Scrollbar vertical
+    scrollbar = ttk.Scrollbar(frame_tabla, orient="vertical", command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar.set)
+    
+    # Empaquetar tabla y scrollbar
+    tree.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    # Cargar datos en la tabla
+    if not df_codigos_cumple.empty:
+        print("Cargando datos en la tabla...")
+        for index, row in df_codigos_cumple.iterrows():
+            values = [str(row["ITEM"]), str(row["OBSERVACIONES"]), str(row.get("CRITERIO", ""))]
+            tree.insert("", "end", values=values)
+        print(f"Se cargaron {len(df_codigos_cumple)} registros en la tabla")
+    
+    # Llenar la tabla con datos existentes
+    for index, row in df_codigos_cumple.iterrows():
+        values = [row["ITEM"], row["OBSERVACIONES"], row.get("CRITERIO", "")]
+        tree.insert("", "end", values=values)
     tree.pack(fill="both", expand=True, pady=10)
 
     # Llenar tabla
-    def cargar_tabla():
+    def cargar_tabla(filtrado=None):
         for row in tree.get_children():
             tree.delete(row)
-        for _, fila in df_codigos_cumple.iterrows():
+        df = filtrado if filtrado is not None else df_codigos_cumple
+        for _, fila in df.iterrows():
             tree.insert("", "end", values=list(fila))
     cargar_tabla()
+
+    # --- Funciones de autocompletado ---
+    def update_suggestions(event=None):
+        text = search_var.get().lower()
+        if not text:
+            listbox_suggest.pack_forget()
+            cargar_tabla()
+            return
+        # Buscar coincidencias en ITEM y OBSERVACIONES
+        suggestions = []
+        for _, row in df_codigos_cumple.iterrows():
+            item_str = str(row["ITEM"])
+            obs_str = str(row["OBSERVACIONES"]) if "OBSERVACIONES" in row else ""
+            if text in item_str.lower() or text in obs_str.lower():
+                suggestions.append(f"{item_str} | {obs_str}")
+        if suggestions:
+            listbox_suggest.delete(0, tk.END)
+            for s in suggestions:
+                listbox_suggest.insert(tk.END, s)
+            listbox_suggest.pack(side="left", padx=(0, 5))
+        else:
+            listbox_suggest.pack_forget()
+        # Filtrar tabla
+        mask = df_codigos_cumple.apply(lambda r: text in str(r["ITEM"]).lower() or text in str(r["OBSERVACIONES"]).lower(), axis=1)
+        cargar_tabla(df_codigos_cumple[mask])
+
+    def on_suggestion_select(event):
+        if listbox_suggest.curselection():
+            value = listbox_suggest.get(listbox_suggest.curselection())
+            item_val = value.split("|")[0].strip()
+            # Seleccionar en la tabla
+            for row in tree.get_children():
+                vals = tree.item(row, "values")
+                if str(vals[0]) == item_val:
+                    tree.selection_set(row)
+                    tree.see(row)
+                    break
+            entry_search.delete(0, tk.END)
+            entry_search.insert(0, item_val)
+            listbox_suggest.pack_forget()
+
+    entry_search.bind("<KeyRelease>", update_suggestions)
+    listbox_suggest.bind("<<ListboxSelect>>", on_suggestion_select)
+
+    # --- Botones de navegación ---
+    frame_nav = tk.Frame(ventana)
+    frame_nav.pack(fill="x", pady=(0, 5))
+    def ir_al_principio():
+        children = tree.get_children()
+        if children:
+            tree.selection_set(children[0])
+            tree.see(children[0])
+
+    def ir_al_final():
+        children = tree.get_children()
+        if children:
+            tree.selection_set(children[-1])
+            tree.see(children[-1])
+
+    tk.Button(frame_nav, text="⏮ Ir al principio", command=ir_al_principio,
+             bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+             activeforeground="#282828").pack(side="left", padx=5)
+    tk.Button(frame_nav, text="Ir al final ⏭", command=ir_al_final,
+             bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+             activeforeground="#282828").pack(side="left", padx=5)
 
     # Editar item seleccionado
     def editar_item():
@@ -96,17 +339,18 @@ def abrir_editor_codigos(parent=None):
         ventana_add.title("➕ Agregar ITEM")
         ventana_add.geometry("400x250")
         ventana_add.grab_set()
+        ventana_add.configure(bg="#FFFFFF")
 
-        tk.Label(ventana_add, text="ITEM:").pack(pady=5)
-        entry_item = tk.Entry(ventana_add)
+        tk.Label(ventana_add, text="ITEM:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_item = tk.Entry(ventana_add, bg="#FFFFFF", fg="#282828", insertbackground="#282828")
         entry_item.pack()
 
-        tk.Label(ventana_add, text="Observación:").pack(pady=5)
-        entry_obs = tk.Entry(ventana_add, width=40)
+        tk.Label(ventana_add, text="Observación:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_obs = tk.Entry(ventana_add, width=40, bg="#FFFFFF", fg="#282828", insertbackground="#282828")
         entry_obs.pack()
 
-        tk.Label(ventana_add, text="CRITERIO:").pack(pady=5)
-        entry_criterio = tk.Entry(ventana_add, width=40)
+        tk.Label(ventana_add, text="CRITERIO:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_criterio = tk.Entry(ventana_add, width=40, bg="#FFFFFF", fg="#282828", insertbackground="#282828")
         entry_criterio.pack()
 
         def guardar_nuevo():
@@ -136,7 +380,9 @@ def abrir_editor_codigos(parent=None):
             cargar_tabla()      # tu función para refrescar la tabla en la UI
             ventana_add.destroy()
 
-        tk.Button(ventana_add, text="Guardar", command=guardar_nuevo, bg="#ECD925").pack(pady=10)
+        tk.Button(ventana_add, text="Guardar", command=guardar_nuevo, 
+                bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+                activeforeground="#282828").pack(pady=10)
 
     # Subir Excel y fusionar
     def subir_excel():
@@ -146,7 +392,11 @@ def abrir_editor_codigos(parent=None):
         if not file_path:
             return
 
-        df_subido = pd.read_excel(file_path)
+        try:
+            df_subido = pd.read_excel(file_path)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo leer el archivo: {str(e)}")
+            return
 
         # Verificamos que existan las columnas necesarias
         columnas_necesarias = ["ITEM", "OBSERVACIONES", "CRITERIO"]
@@ -155,21 +405,21 @@ def abrir_editor_codigos(parent=None):
                 messagebox.showerror("Error", f"Falta la columna '{col}' en el archivo")
                 return
 
-        # Aseguramos que df_codigos_cumple tenga esas 3 columnas
+        # Concatenamos lo nuevo con lo existente
         global df_codigos_cumple
-        if df_codigos_cumple.empty:
-            df_codigos_cumple = pd.DataFrame(columns=columnas_necesarias)
-
-        # Concatenamos lo nuevo
         df_codigos_cumple = pd.concat(
             [df_codigos_cumple, df_subido[columnas_necesarias]],
             ignore_index=True
         )
 
-        # Guardar cambios
-        df_codigos_cumple.to_excel("archivos/codigos_cumple.xlsx", index=False)
-
-        messagebox.showinfo("Éxito", "Archivo cargado y datos guardados correctamente")
+        # Guardamos directamente en la ubicación del archivo original
+        try:
+            df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
+            df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
+            messagebox.showinfo("Éxito", "Datos importados y guardados correctamente")
+            cargar_tabla()  # Actualizar la tabla con los nuevos datos
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudieron guardar los cambios: {str(e)}")
 
 
     # Guardar Excel + JSON
@@ -181,10 +431,18 @@ def abrir_editor_codigos(parent=None):
     frame_botones = tk.Frame(ventana)
     frame_botones.pack(pady=10)
 
-    tk.Button(frame_botones, text="✏️ Editar", command=editar_item, bg="#4CAF50", fg="white").pack(side="left", padx=5)
-    tk.Button(frame_botones, text="🗑️ Eliminar", command=eliminar_item, bg="#FF4C4C", fg="white").pack(side="left", padx=5)
-    tk.Button(frame_botones, text="➕ Agregar", command=agregar_item, bg="#2196F3", fg="white").pack(side="left", padx=5)
-    tk.Button(frame_botones, text="📤 Subir Excel", command=subir_excel, bg="#ECD925").pack(side="left", padx=5)
+    tk.Button(frame_botones, text="✏️ Editar", command=editar_item,
+             bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+             activeforeground="#282828").pack(side="left", padx=5)
+    tk.Button(frame_botones, text="🗑️ Eliminar", command=eliminar_item,
+             bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+             activeforeground="#282828").pack(side="left", padx=5)
+    tk.Button(frame_botones, text="➕ Agregar", command=agregar_item,
+             bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+             activeforeground="#282828").pack(side="left", padx=5)
+    tk.Button(frame_botones, text="📤 Subir Excel", command=subir_excel,
+             bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+             activeforeground="#282828").pack(side="left", padx=5)
 
     ventana.mainloop()
 
@@ -193,14 +451,77 @@ def actualizar_observacion_interactiva(item):
     global df_codigos_cumple
 
     ventana = tk.Toplevel()
-    ventana.title(f"Actualizar OBSERVACIÓN - ITEM {item}")
-    ventana.geometry("500x250")
+    ventana.title(f"Actualizar ITEM {item}")
+    ventana.geometry("500x350")
     ventana.grab_set()
+    ventana.configure(bg="#FFFFFF")
 
     try:
         item_num = int(item)
-    except:
-        item_num = item
+        # Obtener valores actuales
+        item_data = df_codigos_cumple[df_codigos_cumple["ITEM"] == item_num].iloc[0]
+        obs_actual = item_data["OBSERVACIONES"]
+        criterio_actual = item_data.get("CRITERIO", "")
+    except ValueError:
+        messagebox.showerror("Error", "El ITEM debe ser un número válido")
+        ventana.destroy()
+        return
+    except IndexError:
+        messagebox.showerror("Error", f"No se encontró el ITEM {item}")
+        ventana.destroy()
+        return
+        
+        # Crear campos de entrada
+        tk.Label(ventana, text="ITEM:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        tk.Label(ventana, text=str(item_num), bg="#FFFFFF", fg="#282828", font=("Arial", 10, "bold")).pack()
+
+        tk.Label(ventana, text="Observación:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_obs = tk.Entry(ventana, width=50, bg="#FFFFFF", fg="#282828")
+        entry_obs.insert(0, obs_actual)
+        entry_obs.pack(pady=5)
+
+        tk.Label(ventana, text="Criterio:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_criterio = tk.Entry(ventana, width=50, bg="#FFFFFF", fg="#282828")
+        entry_criterio.insert(0, criterio_actual)
+        entry_criterio.pack(pady=5)
+
+        def guardar_cambios():
+            nueva_obs = entry_obs.get()
+            nuevo_criterio = entry_criterio.get()
+            
+            if not nueva_obs.strip():
+                messagebox.showwarning("Advertencia", "La observación no puede estar vacía")
+                return
+                
+            # Actualizar DataFrame
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "OBSERVACIONES"] = nueva_obs
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "CRITERIO"] = nuevo_criterio
+            
+            # Guardar cambios en archivos
+            df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
+            df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
+            
+            messagebox.showinfo("Éxito", "Cambios guardados correctamente")
+            ventana.destroy()
+
+        tk.Button(ventana, text="Guardar Cambios", command=guardar_cambios,
+                 bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+                 activeforeground="#282828").pack(pady=20)
+
+        def guardar_cambios():
+            nueva_obs = entry_obs.get()
+            nuevo_criterio = entry_criterio.get()
+            
+            # Actualizar DataFrame
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "OBSERVACIONES"] = nueva_obs
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "CRITERIO"] = nuevo_criterio
+            
+            # Guardar cambios en archivos
+            df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
+            df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
+            
+            messagebox.showinfo("Éxito", "Cambios guardados correctamente")
+            ventana.destroy()
 
     obs_actual = ""
     if "OBSERVACIONES" in df_codigos_cumple.columns:
@@ -752,11 +1073,24 @@ class BarraProgreso:
         self.lbl.place_forget()
         self.percent_lbl.place_forget()
         
+# Verificar rutas al inicio
+def verificar_rutas():
+    """Verifica si todas las rutas necesarias están configuradas"""
+    config = cargar_configuracion()
+    if not config or not all(config.get("rutas", {}).values()):
+        if messagebox.askyesno("Configuración", 
+                             "No se han configurado todas las rutas necesarias. ¿Desea configurarlas ahora?"):
+            return configurar_rutas()
+    return config.get("rutas", {})
+
 # VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
 root.geometry("650x570")
 root.configure(bg="#FFFFFF")
+
+# Verificar rutas al iniciar la aplicación
+RUTAS = verificar_rutas()
 
 # --- DISEÑO DE LA VENTANA ---
 if __name__ == "__main__":
@@ -862,6 +1196,7 @@ if __name__ == "__main__":
     frame_buttons.pack(expand=True, fill="y", pady=10)
 
     botones = [
+        ("⚙️ CONFIGURAR RUTAS", configurar_rutas),
         ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
         ("🔄 ACTUALIZAR CODIGOS", lambda: abrir_editor_codigos(frame_right)), 
         ("📦 EXPORTAR CODIGOS", lambda: exportar_concentrado_codigos(frame_right)),  
