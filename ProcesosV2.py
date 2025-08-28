@@ -24,6 +24,9 @@ CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
 
 # 👈 NUEVO: SISTEMA DE CONTADOR DE ARCHIVOS PROCESADOS
 ARCHIVOS_PROCESADOS_FILE = os.path.join(BASE_PATH, "archivos_procesados.json")
+CODIGOS_CUMPLE = "codigos_cumple.xlsx"   # Ruta del Excel
+CODIGOS_JSON = "codigos_cumple.json"     # Ruta del respaldo JSON
+
 
 def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
     """Registra un archivo procesado en el sistema de estadísticas"""
@@ -478,21 +481,68 @@ def abrir_editor_codigos(parent=None):
                 messagebox.showerror("Error", f"Falta la columna '{col}' en el archivo")
                 return
 
-        # Concatenamos lo nuevo con lo existente
-        global df_codigos_cumple
-        df_codigos_cumple = pd.concat(
-            [df_codigos_cumple, df_subido[columnas_necesarias]],
-            ignore_index=True
-        )
+        # 🔎 Forzar que ITEM sea numérico
+        df_subido["ITEM"] = pd.to_numeric(df_subido["ITEM"], errors="coerce").astype("Int64")
 
-        # Guardamos directamente en la ubicación del archivo original
+        # 🔎 Limpiar duplicados en el archivo nuevo
+        df_subido = df_subido.drop_duplicates(subset=["ITEM", "OBSERVACIONES", "CRITERIO"])
+
+        global df_codigos_cumple
+        # 🔎 Convertir también los existentes a número
+        df_codigos_cumple["ITEM"] = pd.to_numeric(df_codigos_cumple["ITEM"], errors="coerce").astype("Int64")
+
+        items_existentes = set(df_codigos_cumple["ITEM"].dropna())
+        nuevos_items = []
+
+        # 🔄 Recorrer cada fila del Excel subido
+        for _, row in df_subido.iterrows():
+            item = row["ITEM"]
+            obs_nueva = str(row.get("OBSERVACIONES", "")).strip()
+            criterio_nuevo = str(row.get("CRITERIO", "")).strip()
+
+            if pd.isna(item):
+                continue  # saltar filas sin item
+
+            if item in items_existentes:
+                fila_base = df_codigos_cumple[df_codigos_cumple["ITEM"] == item].iloc[0]
+                obs_actual = str(fila_base.get("OBSERVACIONES", "")).strip()
+                criterio_actual = str(fila_base.get("CRITERIO", "")).strip()
+
+                # 🟡 Si la observación difiere → preguntar al usuario
+                if obs_actual != obs_nueva:
+                    msg = (f"El ITEM '{item}' ya existe.\n\n"
+                        f"🔹 Observación actual: {obs_actual}\n"
+                        f"🔹 Nueva observación: {obs_nueva}\n\n"
+                        "¿Quieres actualizarla?")
+                    if messagebox.askyesno("Actualizar Observación", msg):
+                        df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "OBSERVACIONES"] = obs_nueva
+
+                # 🟢 Si el criterio estaba vacío y el nuevo trae algo → actualizar
+                if not criterio_actual and criterio_nuevo:
+                    df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "CRITERIO"] = criterio_nuevo
+            else:
+                nuevos_items.append({
+                    "ITEM": item,
+                    "OBSERVACIONES": obs_nueva,
+                    "CRITERIO": criterio_nuevo
+                })
+
+        # ➕ Agregar nuevos registros sin duplicar
+        if nuevos_items:
+            df_codigos_cumple = pd.concat([df_codigos_cumple, pd.DataFrame(nuevos_items)], ignore_index=True)
+
+        # 💾 Guardar cambios
         try:
+            # Asegurar que ITEM siga siendo numérico antes de guardar
+            df_codigos_cumple["ITEM"] = pd.to_numeric(df_codigos_cumple["ITEM"], errors="coerce").astype("Int64")
+
             df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
             df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
-            messagebox.showinfo("Éxito", "Datos importados y guardados correctamente")
-            cargar_tabla()  # Actualizar la tabla con los nuevos datos
+            messagebox.showinfo("Éxito", f"Se importaron {len(nuevos_items)} ITEMS nuevos y se actualizaron los existentes.")
+            cargar_tabla()
         except Exception as e:
             messagebox.showerror("Error", f"No se pudieron guardar los cambios: {str(e)}")
+
 
 
     # Guardar Excel + JSON
@@ -518,7 +568,6 @@ def abrir_editor_codigos(parent=None):
              activeforeground="#282828").pack(side="left", padx=5)
 
     ventana.mainloop()
-
 
 def actualizar_observacion_interactiva(item):
     global df_codigos_cumple
@@ -619,9 +668,10 @@ def actualizar_observacion_interactiva(item):
 
     ventana.wait_window()
 
-# --- Función para actualizar códigos ---
+# FUNCION PARA ACTUALIZAR CODIGOS
 def actualizar_codigos(frame_principal):
     try:
+        # Seleccionar archivo nuevo
         nuevo_file = filedialog.askopenfilename(
             title="Selecciona el archivo con nuevos códigos",
             filetypes=[("Archivos Excel", "*.xlsx *.xls")]
@@ -629,44 +679,61 @@ def actualizar_codigos(frame_principal):
         if not nuevo_file:
             return
 
-        df_base = pd.read_excel(INSPECCION) if os.path.exists(INSPECCION) else pd.DataFrame(columns=["ITEM","OBSERVACIONES","CRITERIO"])
+        # Si ya existe el concentrado, lo cargamos, si no creamos uno vacío
+        if os.path.exists(ARCHIVO_CODIGOS):
+            df_base = pd.read_excel(ARCHIVO_CODIGOS)
+        else:
+            df_base = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+
         df_nuevo = pd.read_excel(nuevo_file)
 
+        # Validar columnas obligatorias
         if "ITEM" not in df_nuevo.columns:
             messagebox.showerror("Error", "El archivo nuevo no contiene la columna 'ITEM'")
             return
 
-        df_nuevo = df_nuevo.drop_duplicates(subset=["ITEM"])
-        for col in ["OBSERVACIONES","CRITERIO"]:
+        # Asegurar que tenga las 3 columnas
+        for col in ["OBSERVACIONES", "CRITERIO"]:
             if col not in df_nuevo.columns:
                 df_nuevo[col] = ""
+
+        # Eliminar duplicados por ITEM
+        df_nuevo = df_nuevo.drop_duplicates(subset=["ITEM"])
 
         items_existentes = set(df_base["ITEM"].astype(str))
         nuevos_items = []
 
-        # Barra de progreso unificada
+        # Barra de progreso
         barra = BarraProgreso(frame_principal, "Actualizando items...")
 
         for idx, row in df_nuevo.iterrows():
             item = str(row["ITEM"])
-            obs_nueva = str(row.get("OBSERVACIONES",""))
-            criterio_nuevo = str(row.get("CRITERIO",""))
+            obs_nueva = str(row.get("OBSERVACIONES", ""))
+            criterio_nuevo = str(row.get("CRITERIO", ""))
 
             if item in items_existentes:
                 fila_base = df_base[df_base["ITEM"].astype(str) == item].iloc[0]
-                obs_actual = str(fila_base.get("OBSERVACIONES",""))
+                obs_actual = str(fila_base.get("OBSERVACIONES", ""))
+
+                # Si la observación cambió → preguntar al usuario
                 if obs_actual != obs_nueva:
                     obs_final = actualizar_observacion_interactiva(item, obs_actual, obs_nueva)
                     df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_final
             else:
-                nuevos_items.append({"ITEM": item, "OBSERVACIONES": obs_nueva, "CRITERIO": criterio_nuevo})
+                nuevos_items.append({
+                    "ITEM": item,
+                    "OBSERVACIONES": obs_nueva,
+                    "CRITERIO": criterio_nuevo
+                })
 
-            barra.actualizar((idx+1)/len(df_nuevo)*100)
+            barra.actualizar((idx + 1) / len(df_nuevo) * 100)
 
+        # Agregar nuevos registros
         if nuevos_items:
             df_base = pd.concat([df_base, pd.DataFrame(nuevos_items)], ignore_index=True)
 
-        df_base.to_excel(INSPECCION, index=False)
+        # Guardar concentrado actualizado
+        df_base.to_excel(ARCHIVO_CODIGOS, index=False)
         barra.finalizar()
 
         messagebox.showinfo(
@@ -675,54 +742,80 @@ def actualizar_codigos(frame_principal):
         )
 
     except Exception as e:
-        messagebox.showerror("Error", f"Ocurrió un problema al actualizar los códigos:\n{e}")
-
-# --- Función para exportar concentrado ---
-def exportar_concentrado_codigos(frame_principal):
-    try:
-        if not os.path.exists(INSPECCION):
-            messagebox.showerror("Error", f"No se encontró el archivo {INSPECCION}")
-            return
-
-        df_codigos = pd.read_excel(INSPECCION)
-        total_filas = len(df_codigos)
-
-        barra = BarraProgreso(frame_principal, "Generando concentrado...")
-
-        for i in range(total_filas):
-            barra.actualizar((i+1)/total_filas*100)
-
-        ruta_guardado = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Archivos Excel", "*.xlsx *.xls")],
-            title="Guardar concentrado de codigos_cumple"
-        )
-        if not ruta_guardado:
-            barra.finalizar()
-            return
-
-        df_codigos.to_excel(ruta_guardado, index=False)
         barra.finalizar()
-        messagebox.showinfo("Exportar Codigos", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
+        messagebox.showerror("Error", f"Ocurrió un problema al actualizar:\n{e}")
 
-    except Exception as e:
-        barra.finalizar()
-        messagebox.showerror("Error", f"Ocurrió un problema al exportar el concentrado:\n{e}")
+#==================================================================
+# FUNCION PARA EXPORTAR CONCENTRADO
+# def exportar_concentrado_codigos(frame_principal):
+#     try:
+#         # Archivo donde guardas tus códigos cumple
+#         archivo_json = "archivos/codigos_cumple.json"
 
-def crear_boton_exportar_concentrado(frame):
-    """
-    Crea un botón ttk dentro del frame indicado para exportar el concentrado de codigos_cumple.xlsx
-    """
-    btn_exportar = ttk.Button(
-        frame, 
-        text="📦 EXPORTAR CONCENTRADO CODIGOS", 
-        command=lambda: exportar_concentrado_codigos(frame),  # Pasamos el frame como argumento
-        style='TButton'
-    )
-    btn_exportar.pack(pady=10, ipadx=10, ipady=5)
-    return btn_exportar
+#         if not os.path.exists(archivo_json):
+#             messagebox.showerror("Error", f"No se encontró el archivo {archivo_json}")
+#             return
 
-# --- Función para generar el tipo de proceso ---
+#         # Leer JSON → DataFrame
+#         with open(archivo_json, "r", encoding="utf-8") as f:
+#             try:
+#                 data = json.load(f)
+#             except json.JSONDecodeError:
+#                 messagebox.showerror("Error", "El archivo JSON está corrupto o mal formado.")
+#                 return
+
+#         if not data:
+#             messagebox.showwarning("Sin datos", "El archivo codigos_cumple.json está vacío.")
+#             return
+
+#         df_codigos = pd.DataFrame(data)
+
+#         # Asegurar que ITEM sea numérico
+#         df_codigos["ITEM"] = pd.to_numeric(df_codigos["ITEM"], errors="coerce")
+
+#         total_filas = len(df_codigos)
+#         barra = BarraProgreso(frame_principal, "Generando concentrado...")
+
+#         for i in range(total_filas):
+#             barra.actualizar((i + 1) / total_filas * 100)
+
+#         # Guardar Excel
+#         ruta_guardado = filedialog.asksaveasfilename(
+#             defaultextension=".xlsx",
+#             filetypes=[("Archivos Excel", "*.xlsx *.xls")],
+#             title="Guardar concentrado de codigos_cumple"
+#         )
+#         if not ruta_guardado:
+#             barra.finalizar()
+#             return
+
+#         df_codigos.to_excel(ruta_guardado, index=False)
+#         barra.finalizar()
+#         messagebox.showinfo("Exportar Códigos", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
+
+#     except Exception as e:
+#         try:
+#             barra.finalizar()
+#         except:
+#             pass
+#         messagebox.showerror("Error", f"Ocurrió un problema al exportar el concentrado:\n{e}")
+
+# FUNCION PARA CREAR BOTON DE EXPORTAR CONCENTRADO DE CODIGOS 
+# def crear_boton_exportar_concentrado(frame):
+#     """
+#     Crea un botón ttk dentro del frame indicado para exportar el concentrado de codigos_cumple.xlsx
+#     """
+#     btn_exportar = ttk.Button(
+#         frame, 
+#         text="📦 EXPORTAR CONCENTRADO CODIGOS", 
+#         command=lambda: exportar_concentrado_codigos(frame),  # Pasamos el frame como argumento
+#         style='TButton'
+#     )
+#     btn_exportar.pack(pady=10, ipadx=10, ipady=5)
+#     return btn_exportar
+#==================================================================
+
+# FUNCION PARA GENERAR EL TIPO DE REPORTE
 def procesar_reporte(reporte_path):
     global frame
 
@@ -885,7 +978,7 @@ def procesar_reporte(reporte_path):
             '015', '050', '004-SE', '024', '141',
             'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021',
             'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
-            'NOM004TEXX', 'NOM020INS', 'NOM-020-SCFI-1997'
+            'NOM004TEXX', 'NOM020INS'
         ]
         normas_costura = ['004', '020', 'NOM004', 'NOM020']
 
@@ -900,7 +993,7 @@ def procesar_reporte(reporte_path):
                 return 'ADHERIBLE'
             if 'NOM004' in tipo or '004' in norma_val:
                 return 'COSTURA'
-            if 'NOM020INS' in tipo or 'NOM-020-SCFI-1997' in norma_val:
+            if 'NOM020INS' in norma_val:
                 return 'ADHERIBLE'
             if contiene_numero(norma_val, normas_adherible):
                 return 'ADHERIBLE'
@@ -1002,6 +1095,7 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
+# CATALOGO DE DECATHLON
 def actualizar_catalogo(frame_principal):
     barra = None
     try:
@@ -1097,6 +1191,7 @@ def exportar_concentrado_catalogo(frame_principal):
             pass
         messagebox.showerror("Error", f"No se pudo exportar el catálogo:\n{e}")
 
+#VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
     """Muestra un dashboard con estadísticas de la aplicación"""
     try:
@@ -1204,37 +1299,37 @@ def mostrar_estadisticas():
         tk.Label(frame_stats, text=str(stats['codigos_activos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
         row += 1
         
-        # Sección: CATÁLOGO
-        tk.Label(frame_stats, text="📚 CATÁLOGO BASE", 
-                font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
-        row += 1
+        # # Sección: CATÁLOGO
+        # tk.Label(frame_stats, text="📚 CATÁLOGO BASE", 
+        #         font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
+        # row += 1
         
-        tk.Label(frame_stats, text="Total de items:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['total_items']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        row += 1
+        # tk.Label(frame_stats, text="Total de items:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        # tk.Label(frame_stats, text=str(stats['total_items']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        # row += 1
         
-        tk.Label(frame_stats, text="Tamaño del archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['catalogo_size']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        row += 1
+        # tk.Label(frame_stats, text="Tamaño del archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        # tk.Label(frame_stats, text=str(stats['catalogo_size']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        # row += 1
         
-        # Sección: HISTORIAL
-        tk.Label(frame_stats, text="📊 HISTORIAL DE PROCESOS", 
-                font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
-        row += 1
+        # # Sección: HISTORIAL
+        # tk.Label(frame_stats, text="📊 HISTORIAL DE PROCESOS", 
+        #         font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
+        # row += 1
         
-        tk.Label(frame_stats, text="Total de procesos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['total_procesos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        row += 1
+        # tk.Label(frame_stats, text="Total de procesos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        # tk.Label(frame_stats, text=str(stats['total_procesos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        # row += 1
         
-        tk.Label(frame_stats, text="Tamaño del archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['historial_size']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        row += 1
+        # tk.Label(frame_stats, text="Tamaño del archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        # tk.Label(frame_stats, text=str(stats['historial_size']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        # row += 1
         
-        tk.Label(frame_stats, text="Último proceso:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['ultimo_proceso']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        row += 1
+        # tk.Label(frame_stats, text="Último proceso:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        # tk.Label(frame_stats, text=str(stats['ultimo_proceso']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        # row += 1
         
-        # 👈 NUEVA SECCIÓN: ARCHIVOS PROCESADOS
+        # ESTADISTICAS DE ARCHIVOS PROCESADOS
         tk.Label(frame_stats, text="📁 ARCHIVOS PROCESADOS", 
                 font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
         row += 1
@@ -1377,7 +1472,7 @@ def mostrar_estadisticas():
         messagebox.showerror("Error", f"Error al mostrar estadísticas:\n{e}")
         print(f"Error en dashboard: {e}")
 
-# --- Función unificada para la barra de progreso ---
+# FUNCION PARA LA BARRA DE PROGRESO
 class   BarraProgreso:
     def __init__(self, frame, texto="Procesando...", ancho=250, posicion="derecha"):
         """
@@ -1463,7 +1558,7 @@ def verificar_rutas():
 # VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("650x570")
+root.geometry("950x670")
 root.configure(bg="#FFFFFF")
 
 # Verificar rutas al iniciar la aplicación
@@ -1575,7 +1670,8 @@ if __name__ == "__main__":
     botones = [
         ("⚙️ CONFIGURAR RUTAS", configurar_rutas),
         ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
-        ("📝 EDITOR DE CÓDIGOS", lambda: abrir_editor_codigos(frame_right)), 
+        ("📝 EDITOR DE CÓDIGOS", lambda: abrir_editor_codigos(frame_right)),
+        # ("📝 EXPORTAR CODIGOS", lambda: exportar_concentrado_codigos(frame_right)),
         ("📊 DASHBOARD", mostrar_estadisticas),
         ("🔄 ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_right)),
         ("📦 EXPORTAR CATALOGO", lambda: exportar_concentrado_catalogo(frame_right)),
