@@ -1558,7 +1558,7 @@ def verificar_rutas():
 # VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("950x670")
+root.geometry("770x570")
 root.configure(bg="#FFFFFF")
 
 # Verificar rutas al iniciar la aplicación
@@ -1675,7 +1675,7 @@ if __name__ == "__main__":
         ("📊 DASHBOARD", mostrar_estadisticas),
         ("🔄 ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_right)),
         ("📦 EXPORTAR CATALOGO", lambda: exportar_concentrado_catalogo(frame_right)),
-        ("❌ Salir", root.quit)
+        # ("❌ Salir", root.quit)
     ]
 
     max_width = 10  # ancho uniforme
