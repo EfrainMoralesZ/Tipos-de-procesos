@@ -1459,7 +1459,7 @@ def verificar_rutas():
 # VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("1070x570")
+root.geometry("1100x570")
 root.configure(bg="#FFFFFF")
 
 # Verificar rutas al iniciar la aplicación
@@ -1482,7 +1482,7 @@ if __name__ == "__main__":
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((100, 50), Image.LANCZOS)
+            logo_img_raw = Image.open(logo_path).resize((150, 90), Image.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
             logo_label = tk.Label(frame_left, image=logo_img, bg="#FFFFFF")
             logo_label.image = logo_img
@@ -1578,7 +1578,7 @@ if __name__ == "__main__":
 
     # Contenedor de botones debajo del header
     frame_buttons = tk.Frame(frame_left, bg="#FFFFFF")
-    frame_buttons.pack(pady=(10,10), fill="x")
+    frame_buttons.pack(pady=(5,5), fill="x")
 
     botones = [
         ("⚙️ CONFIGURAR RUTAS", configurar_rutas),
@@ -1591,8 +1591,9 @@ if __name__ == "__main__":
     # Ahora los botones se organizan en 4 columnas
     cols = 4
     for i, (texto, comando) in enumerate(botones):
-        btn = ttk.Button(frame_buttons, text=texto, command=comando, style='TButton')
+        btn = ttk.Button(frame_buttons, text=texto, command=comando, style='TButton', width=25)
         btn.grid(row=i // cols, column=i % cols, padx=10, pady=10, ipadx=10, ipady=10, sticky="nsew")
+    
     # Configurar las columnas para que se expandan de forma proporcional
     for col in range(cols):
         frame_buttons.grid_columnconfigure(col, weight=1)
