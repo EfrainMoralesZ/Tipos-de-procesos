@@ -745,76 +745,6 @@ def actualizar_codigos(frame_principal):
         barra.finalizar()
         messagebox.showerror("Error", f"Ocurrió un problema al actualizar:\n{e}")
 
-#==================================================================
-# FUNCION PARA EXPORTAR CONCENTRADO
-# def exportar_concentrado_codigos(frame_principal):
-#     try:
-#         # Archivo donde guardas tus códigos cumple
-#         archivo_json = "archivos/codigos_cumple.json"
-
-#         if not os.path.exists(archivo_json):
-#             messagebox.showerror("Error", f"No se encontró el archivo {archivo_json}")
-#             return
-
-#         # Leer JSON → DataFrame
-#         with open(archivo_json, "r", encoding="utf-8") as f:
-#             try:
-#                 data = json.load(f)
-#             except json.JSONDecodeError:
-#                 messagebox.showerror("Error", "El archivo JSON está corrupto o mal formado.")
-#                 return
-
-#         if not data:
-#             messagebox.showwarning("Sin datos", "El archivo codigos_cumple.json está vacío.")
-#             return
-
-#         df_codigos = pd.DataFrame(data)
-
-#         # Asegurar que ITEM sea numérico
-#         df_codigos["ITEM"] = pd.to_numeric(df_codigos["ITEM"], errors="coerce")
-
-#         total_filas = len(df_codigos)
-#         barra = BarraProgreso(frame_principal, "Generando concentrado...")
-
-#         for i in range(total_filas):
-#             barra.actualizar((i + 1) / total_filas * 100)
-
-#         # Guardar Excel
-#         ruta_guardado = filedialog.asksaveasfilename(
-#             defaultextension=".xlsx",
-#             filetypes=[("Archivos Excel", "*.xlsx *.xls")],
-#             title="Guardar concentrado de codigos_cumple"
-#         )
-#         if not ruta_guardado:
-#             barra.finalizar()
-#             return
-
-#         df_codigos.to_excel(ruta_guardado, index=False)
-#         barra.finalizar()
-#         messagebox.showinfo("Exportar Códigos", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
-
-#     except Exception as e:
-#         try:
-#             barra.finalizar()
-#         except:
-#             pass
-#         messagebox.showerror("Error", f"Ocurrió un problema al exportar el concentrado:\n{e}")
-
-# FUNCION PARA CREAR BOTON DE EXPORTAR CONCENTRADO DE CODIGOS 
-# def crear_boton_exportar_concentrado(frame):
-#     """
-#     Crea un botón ttk dentro del frame indicado para exportar el concentrado de codigos_cumple.xlsx
-#     """
-#     btn_exportar = ttk.Button(
-#         frame, 
-#         text="📦 EXPORTAR CONCENTRADO CODIGOS", 
-#         command=lambda: exportar_concentrado_codigos(frame),  # Pasamos el frame como argumento
-#         style='TButton'
-#     )
-#     btn_exportar.pack(pady=10, ipadx=10, ipady=5)
-#     return btn_exportar
-#==================================================================
-
 # FUNCION PARA GENERAR EL TIPO DE REPORTE
 def procesar_reporte(reporte_path):
     global frame
@@ -1143,6 +1073,7 @@ def actualizar_catalogo(frame_principal):
             barra.finalizar()
         messagebox.showerror("Error", f"No se pudo actualizar el catálogo:\n{e}")
 
+# FUNCION PARA EXPORTAR EL CATALOGO DE DECATHLON
 def exportar_concentrado_catalogo(frame_principal):
     try:
         # Detectar ruta base (para .exe y script)
@@ -1298,36 +1229,6 @@ def mostrar_estadisticas():
         tk.Label(frame_stats, text="Códigos activos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
         tk.Label(frame_stats, text=str(stats['codigos_activos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
         row += 1
-        
-        # # Sección: CATÁLOGO
-        # tk.Label(frame_stats, text="📚 CATÁLOGO BASE", 
-        #         font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
-        # row += 1
-        
-        # tk.Label(frame_stats, text="Total de items:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        # tk.Label(frame_stats, text=str(stats['total_items']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        # row += 1
-        
-        # tk.Label(frame_stats, text="Tamaño del archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        # tk.Label(frame_stats, text=str(stats['catalogo_size']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        # row += 1
-        
-        # # Sección: HISTORIAL
-        # tk.Label(frame_stats, text="📊 HISTORIAL DE PROCESOS", 
-        #         font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
-        # row += 1
-        
-        # tk.Label(frame_stats, text="Total de procesos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        # tk.Label(frame_stats, text=str(stats['total_procesos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        # row += 1
-        
-        # tk.Label(frame_stats, text="Tamaño del archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        # tk.Label(frame_stats, text=str(stats['historial_size']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        # row += 1
-        
-        # tk.Label(frame_stats, text="Último proceso:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        # tk.Label(frame_stats, text=str(stats['ultimo_proceso']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
-        # row += 1
         
         # ESTADISTICAS DE ARCHIVOS PROCESADOS
         tk.Label(frame_stats, text="📁 ARCHIVOS PROCESADOS", 
@@ -1558,7 +1459,7 @@ def verificar_rutas():
 # VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("770x570")
+root.geometry("870x570")
 root.configure(bg="#FFFFFF")
 
 # Verificar rutas al iniciar la aplicación
@@ -1589,23 +1490,32 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error cargando el logo: {e}")
 
-    label = tk.Label(
+    label1 = tk.Label( 
         frame_left, 
-        text="GENERADOR DEL ARCHIVO TIPO DE PROCESO",
-        font=("Segoe UI", 12, "bold"), 
-        bg="#FFFFFF", 
-        fg="#282828"
+        text="INSPECCIÓN DE CUMPLIMIENTO",
+        font=("INTER", 20, "bold"), 
+        bg="#FFFFFF",   # mismo color que el fondo del frame
+        fg="#282828"    # color del texto
     )
-    label.pack(pady=(0, 5))
+    label1.pack(pady=(0, 0))
 
-    desc = tk.Label(
-        frame_left,
-        text="SUBE EL REPORTE DE MERCANCIA PARA EL TIPO DE PROCESO.",
-        font=("Segoe UI", 8), 
-        bg="#FFFFFF", 
-        fg="#282828"
+    label2 = tk.Label(
+        frame_left, 
+        text="NORMATIVO AL ARRIBO",
+        font=("INTER", 20, "bold"), 
+        bg="#FFFFFF",   # mismo color que el fondo del frame
+        fg="#282828"    # color del texto
     )
-    desc.pack(pady=(0,15))
+    label2.pack(pady=(0, 5))
+
+    label3 = tk.Label(
+        frame_left, 
+        text="SUBE EL REPORTE DE MERCANCIA PARA GENERAR EL TIPO DE PROCESO",
+        font=("INTER", 10), 
+        bg="#FFFFFF",   # mismo color que el fondo del frame
+        fg="#282828"    # color del texto
+    )
+    label3.pack(pady=(0, 5))
 
     # --- Barra de progreso TIPO DE PROCESO (abajo a la izquierda) ---
     progress_var_tipo = tk.DoubleVar()
@@ -1652,16 +1562,16 @@ if __name__ == "__main__":
     style.theme_use('clam')
     style.configure(
         'TButton', 
-        background='#ECD925', 
-        foreground='#282828', 
-        font=('Segoe UI', 11, 'bold'), 
+        background='#4b4b4b', 
+        foreground='#FFFFFF', 
+        font=('INTER', 11, 'bold'), 
         borderwidth=0, 
         padding=(5,5)
     )
     style.map(
         'TButton', 
-        background=[('active', '#D8C600')], 
-        foreground=[('active', '#282828')]
+        background=[('active', '#282828')], 
+        foreground=[('active', '#FFFFFF')]
     )
 
     frame_buttons = tk.Frame(frame_right, bg="#FFFFFF")
@@ -1671,7 +1581,6 @@ if __name__ == "__main__":
         ("⚙️ CONFIGURAR RUTAS", configurar_rutas),
         ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
         ("📝 EDITOR DE CÓDIGOS", lambda: abrir_editor_codigos(frame_right)),
-        # ("📝 EXPORTAR CODIGOS", lambda: exportar_concentrado_codigos(frame_right)),
         ("📊 DASHBOARD", mostrar_estadisticas),
         ("🔄 ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_right)),
         ("📦 EXPORTAR CATALOGO", lambda: exportar_concentrado_catalogo(frame_right)),
