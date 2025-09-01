@@ -1239,34 +1239,34 @@ def mostrar_estadisticas():
         tk.Label(frame_stats, text="🔑 CÓDIGOS DE CUMPLIMIENTO", 
                 font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
         row += 1
-        
-        tk.Label(frame_stats, text="Total de códigos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['total_codigos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+
+        tk.Label(frame_stats, text="Total de códigos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        tk.Label(frame_stats, text=str(stats['total_codigos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
-        tk.Label(frame_stats, text="Códigos activos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['codigos_activos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        tk.Label(frame_stats, text="Códigos activos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        tk.Label(frame_stats, text=str(stats['codigos_activos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
         # ESTADISTICAS DE ARCHIVOS PROCESADOS
         tk.Label(frame_stats, text="📁 ARCHIVOS PROCESADOS", 
-                font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
+                font=("INRTE", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
         row += 1
         
         # Obtener estadísticas de archivos
         stats_archivos = obtener_estadisticas_archivos()
         
-        tk.Label(frame_stats, text="Total de archivos:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats_archivos['total_archivos']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+        tk.Label(frame_stats, text="Total de archivos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        tk.Label(frame_stats, text=str(stats_archivos['total_archivos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
-        
-        tk.Label(frame_stats, text="Último archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats_archivos['ultimo_proceso']), font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#ECD925").grid(row=row, column=1, sticky="w")
+
+        tk.Label(frame_stats, text="Último archivo:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
+        tk.Label(frame_stats, text=str(stats_archivos['ultimo_proceso']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
         # Lista de archivos recientes
         if stats_archivos['archivos_recientes']:
-            tk.Label(frame_stats, text="Archivos recientes:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", padx=(20,10), pady=(10,5))
+            tk.Label(frame_stats, text="Archivos recientes:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", padx=(20,10), pady=(10,5))
             row += 1
             
             # Frame para la lista de archivos
@@ -1280,7 +1280,7 @@ def mostrar_estadisticas():
                 tk.Label(frame_archivos, text=f"• {nombre_corto}", font=("Segoe UI", 8), 
                         bg="#FFFFFF", fg="#282828").grid(row=i, column=0, sticky="w")
                 tk.Label(frame_archivos, text=fecha_corta, font=("Segoe UI", 8), 
-                        bg="#FFFFFF", fg="#ECD925").grid(row=i, column=1, sticky="w", padx=(10,0))
+                        bg="#FFFFFF", fg="#282828").grid(row=i, column=1, sticky="w", padx=(10,0))
                 row += 1
         
         # GRÁFICA DE BARRAS MEJORADA
@@ -1371,7 +1371,7 @@ def mostrar_estadisticas():
         
         btn_limpiar = tk.Button(frame_botones, text="🗑️ LIMPIAR HISTORIAL", 
                                command=limpiar_historial_archivos,
-                               font=("INTER", 10, "bold"), bg="#ECD925", fg="#FFFFFF", 
+                               font=("INTER", 10, "bold"), bg="#ECD925", fg="#282828", 
                                relief="flat", padx=20, pady=10)
         btn_limpiar.pack(side="left", padx=10)
         
@@ -1450,7 +1450,7 @@ def mostrar_estadisticas():
         # --- Botón dentro del dashboard ---
         btn_pdf = tk.Button(frame_botones, text="📄 EXPORTAR PDF", 
                             command=exportar_pdf,
-                            font=("INTER", 10, "bold"), bg="#ECD925", fg="#FFFFFF", 
+                            font=("INTER", 10, "bold"), bg="#ECD925", fg="#282828", 
                             relief="flat", padx=20, pady=10)
         btn_pdf.pack(side="left", padx=10)
 
