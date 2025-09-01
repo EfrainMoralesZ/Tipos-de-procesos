@@ -1147,7 +1147,7 @@ def mostrar_estadisticas():
         # Crear ventana del dashboard
         ventana = tk.Toplevel()
         ventana.title("📊 Dashboard de Estadísticas")
-        ventana.geometry("800x600")
+        ventana.geometry("1000x600")
         ventana.configure(bg="#FFFFFF")
         ventana.grab_set()
         
@@ -1283,66 +1283,61 @@ def mostrar_estadisticas():
                         bg="#FFFFFF", fg="#ECD925").grid(row=i, column=1, sticky="w", padx=(10,0))
                 row += 1
         
-        # GRÁFICA DE BARRAS SIMPLE
+        # GRÁFICA DE BARRAS MEJORADA
         tk.Label(frame_graph, text="📈 VISUALIZACIÓN", 
-                font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
-        
-        # Crear canvas para la gráfica
-        canvas_width = 300
-        canvas_height = 200
+                font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
+
+        canvas_width = 350
+        canvas_height = 220
         canvas = tk.Canvas(frame_graph, width=canvas_width, height=canvas_height, bg="#FFFFFF", highlightthickness=0)
         canvas.pack()
-        
-        # Dibujar gráfica de barras
+
         def dibujar_grafica():
             canvas.delete("all")
             
-            # Datos para la gráfica
+            # Datos
             datos = [
                 ("Códigos", stats['total_codigos']),
-                ("Catálogo", stats['total_items']),
                 ("Historial", stats['total_procesos']),
-                ("Archivos", stats_archivos['total_archivos'])
             ]
             
-            # Configuración de la gráfica
             margen = 40
-            ancho_barra = 50  # Reducido para que quepan 4 barras
-            espacio = 15      # Reducido el espacio
+            ancho_barra = 60
+            espacio = 40
             altura_max = 150
             
-            # Encontrar el valor máximo para escalar
             max_valor = max([d[1] for d in datos if isinstance(d[1], (int, float))])
             if max_valor == 0:
                 max_valor = 1
-            
-            # Dibujar ejes
+
+            # Dibujar ejes con ticks
             canvas.create_line(margen, altura_max + margen, canvas_width - margen, altura_max + margen, fill="#282828", width=2)
             canvas.create_line(margen, margen, margen, altura_max + margen, fill="#282828", width=2)
+            for i in range(0, max_valor + 1, max(1, max_valor // 5)):
+                y_tick = altura_max + margen - (i / max_valor) * altura_max
+                canvas.create_line(margen-5, y_tick, margen, y_tick, fill="#282828", width=1)
+                canvas.create_text(margen-10, y_tick, text=str(i), font=("Segoe UI", 8), fill="#282828", anchor="e")
             
-            # Dibujar barras
+            # Dibujar barras con valor dentro
             x_inicio = margen + espacio
             for i, (nombre, valor) in enumerate(datos):
                 if isinstance(valor, (int, float)) and valor > 0:
-                    # Calcular altura de la barra
                     altura_barra = (valor / max_valor) * altura_max
-                    
-                    # Dibujar barra
-                    x1 = x_inicio + (i * (ancho_barra + espacio))
+                    x1 = x_inicio + i * (ancho_barra + espacio)
                     y1 = altura_max + margen - altura_barra
                     x2 = x1 + ancho_barra
                     y2 = altura_max + margen
+
+                    # Barra con borde más fino
+                    canvas.create_rectangle(x1, y1, x2, y2, fill="#ECD925", outline="#282828", width=1.5)
                     
-                    canvas.create_rectangle(x1, y1, x2, y2, fill="#ECD925", outline="#282828", width=2)
+                    # Valor dentro de la barra (centrado)
+                    canvas.create_text((x1 + x2)/2, y1 + 10, text=str(valor), font=("Segoe UI", 9, "bold"), fill="#282828")
                     
-                    # Texto del valor
-                    canvas.create_text(x1 + ancho_barra/2, y1 - 10, text=str(valor), 
-                                     font=("Segoe UI", 9, "bold"), fill="#282828")
-                    
-                    # Texto del nombre
-                    canvas.create_text(x1 + ancho_barra/2, altura_max + margen + 20, text=nombre, 
-                                     font=("Segoe UI", 8), fill="#282828")
-        
+                    # Nombre debajo
+                    canvas.create_text((x1 + x2)/2, altura_max + margen + 20, text=nombre, font=("Segoe UI", 9), fill="#282828")
+
+                
         # Dibujar gráfica inicial
         dibujar_grafica()
         
@@ -1353,11 +1348,11 @@ def mostrar_estadisticas():
         # Botón de actualizar
         btn_actualizar = tk.Button(frame_botones, text="🔄 ACTUALIZAR ESTADÍSTICAS", 
                                  command=lambda: [obtener_stats(), dibujar_grafica()],
-                                 font=("Segoe UI", 10, "bold"), bg="#ECD925", fg="#282828", 
+                                 font=("INTER", 10, "bold"), bg="#ECD925", fg="#282828", 
                                  relief="flat", padx=20, pady=10)
         btn_actualizar.pack(side="left", padx=10)
         
-        # 👈 NUEVO: Botón para limpiar historial de archivos
+        # Botón para limpiar historial de archivos
         def limpiar_historial_archivos():
             if messagebox.askyesno("Confirmar", "¿Estás seguro de que quieres limpiar el historial de archivos procesados?\nEsta acción no se puede deshacer."):
                 try:
@@ -1376,16 +1371,9 @@ def mostrar_estadisticas():
         
         btn_limpiar = tk.Button(frame_botones, text="🗑️ LIMPIAR HISTORIAL", 
                                command=limpiar_historial_archivos,
-                               font=("Segoe UI", 10, "bold"), bg="#FF6B6B", fg="#FFFFFF", 
+                               font=("INTER", 10, "bold"), bg="#ECD925", fg="#FFFFFF", 
                                relief="flat", padx=20, pady=10)
         btn_limpiar.pack(side="left", padx=10)
-        
-        # Botón de cerrar
-        btn_cerrar = tk.Button(frame_botones, text="❌ CERRAR", 
-                             command=ventana.destroy,
-                             font=("Segoe UI", 10, "bold"), bg="#282828", fg="#FFFFFF", 
-                             relief="flat", padx=20, pady=10)
-        btn_cerrar.pack(side="left", padx=10)
         
         def exportar_pdf():
             """Genera un PDF con TODAS las estadísticas y la gráfica del dashboard"""
@@ -1401,7 +1389,7 @@ def mostrar_estadisticas():
 
                 # Título
                 c.setFont("Helvetica-Bold", 16)
-                c.drawString(50, y, "📊 DASHBOARD DE ESTADÍSTICAS")
+                c.drawString(50, y, "📊 Reporte semanal de procesos")
                 y -= 30
 
                 # --- Estadísticas de códigos ---
@@ -1432,28 +1420,10 @@ def mostrar_estadisticas():
                         y -= 15
                     y -= 10
 
-                # --- Otras estadísticas ---
-                c.setFont("Helvetica-Bold", 12)
-                c.drawString(50, y, "📊 OTRAS ESTADÍSTICAS")
-                y -= 20
-                c.setFont("Helvetica", 10)
-                c.drawString(70, y, f"Total items catálogo: {stats['total_items']}")
-                y -= 15
-                c.drawString(70, y, f"Tamaño catálogo: {stats['catalogo_size']}")
-                y -= 15
-                c.drawString(70, y, f"Total procesos históricos: {stats['total_procesos']}")
-                y -= 15
-                c.drawString(70, y, f"Tamaño historial: {stats['historial_size']}")
-                y -= 15
-                c.drawString(70, y, f"Último proceso: {stats['ultimo_proceso']}")
-                y -= 30
-
                 # --- Gráfica de barras ---
                 datos = [
                     ("Códigos", stats['total_codigos']),
-                    ("Catálogo", stats['total_items']),
                     ("Historial", stats['total_procesos']),
-                    ("Archivos", stats_archivos['total_archivos'])
                 ]
                 nombres = [d[0] for d in datos]
                 valores = [d[1] for d in datos]
@@ -1480,15 +1450,21 @@ def mostrar_estadisticas():
         # --- Botón dentro del dashboard ---
         btn_pdf = tk.Button(frame_botones, text="📄 EXPORTAR PDF", 
                             command=exportar_pdf,
-                            font=("Segoe UI", 10, "bold"), bg="#4D90FE", fg="#FFFFFF", 
+                            font=("INTER", 10, "bold"), bg="#ECD925", fg="#FFFFFF", 
                             relief="flat", padx=20, pady=10)
         btn_pdf.pack(side="left", padx=10)
+
+        # Botón de cerrar
+        btn_cerrar = tk.Button(frame_botones, text="❌ CERRAR", 
+                             command=ventana.destroy,
+                             font=("INTER", 10, "bold"), bg="#282828", fg="#FFFFFF", 
+                             relief="flat", padx=20, pady=10)
+        btn_cerrar.pack(side="left", padx=10)
 
 
     except Exception as e:
         messagebox.showerror("Error", f"Error al mostrar estadísticas:\n{e}")
         print(f"Error en dashboard: {e}")
-
 
 
 
@@ -1521,8 +1497,8 @@ class   BarraProgreso:
         self.ancho = ancho
         self.var = tk.DoubleVar()
         
-        self.lbl = tk.Label(frame, text=texto, font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#282828")
-        self.percent_lbl = tk.Label(frame, text="0%", font=("Segoe UI", 10, "bold"), bg="#FFFFFF", fg="#282828")
+        self.lbl = tk.Label(frame, text=texto, font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828")
+        self.percent_lbl = tk.Label(frame, text="0%", font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828")
         self.bar = ttk.Progressbar(frame, variable=self.var, maximum=100, length=self.ancho)
         
         # Guardar posición
@@ -1701,7 +1677,7 @@ if __name__ == "__main__":
         'TButton', 
         background='#ecd925', 
         foreground='#282828', 
-        font=('INTER', 12, 'bold'), 
+        font=('INTER', 10, 'bold'), 
         borderwidth=0, 
         padding=(2,2)
     )
