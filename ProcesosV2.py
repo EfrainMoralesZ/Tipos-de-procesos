@@ -10,6 +10,11 @@ from Formato import exportar_excel
 import re
 import time
 from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas as pdf_canvas
+import matplotlib.pyplot as plt
+from io import BytesIO
+from reportlab.lib.utils import ImageReader
 
 if getattr(sys, 'frozen', False):
     # Cuando está compilado en .exe
@@ -1122,6 +1127,19 @@ def exportar_concentrado_catalogo(frame_principal):
             pass
         messagebox.showerror("Error", f"No se pudo exportar el catálogo:\n{e}")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 #VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
     """Muestra un dashboard con estadísticas de la aplicación"""
@@ -1369,9 +1387,126 @@ def mostrar_estadisticas():
                              relief="flat", padx=20, pady=10)
         btn_cerrar.pack(side="left", padx=10)
         
+        def exportar_pdf():
+            """Genera un PDF con TODAS las estadísticas y la gráfica del dashboard"""
+            try:
+                ruta = filedialog.asksaveasfilename(defaultextension=".pdf",
+                                                    filetypes=[("Archivos PDF","*.pdf")])
+                if not ruta:
+                    return
+
+                c = pdf_canvas.Canvas(ruta, pagesize=letter)
+                ancho, alto = letter
+                y = alto - 50
+
+                # Título
+                c.setFont("Helvetica-Bold", 16)
+                c.drawString(50, y, "📊 DASHBOARD DE ESTADÍSTICAS")
+                y -= 30
+
+                # --- Estadísticas de códigos ---
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(50, y, "🔑 CÓDIGOS DE CUMPLIMIENTO")
+                y -= 20
+                c.setFont("Helvetica", 10)
+                c.drawString(70, y, f"Total de códigos: {stats['total_codigos']}")
+                y -= 15
+                c.drawString(70, y, f"Códigos activos: {stats['codigos_activos']}")
+                y -= 30
+
+                # --- Archivos procesados ---
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(50, y, "📁 ARCHIVOS PROCESADOS")
+                y -= 20
+                c.setFont("Helvetica", 10)
+                c.drawString(70, y, f"Total de archivos: {stats_archivos['total_archivos']}")
+                y -= 15
+                c.drawString(70, y, f"Último archivo: {stats_archivos['ultimo_proceso']}")
+                y -= 15
+
+                if stats_archivos['archivos_recientes']:
+                    c.drawString(70, y, "Archivos recientes:")
+                    y -= 15
+                    for archivo in stats_archivos['archivos_recientes'][-3:]:
+                        c.drawString(90, y, f"• {archivo['nombre']} ({archivo['fecha_proceso']})")
+                        y -= 15
+                    y -= 10
+
+                # --- Otras estadísticas ---
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(50, y, "📊 OTRAS ESTADÍSTICAS")
+                y -= 20
+                c.setFont("Helvetica", 10)
+                c.drawString(70, y, f"Total items catálogo: {stats['total_items']}")
+                y -= 15
+                c.drawString(70, y, f"Tamaño catálogo: {stats['catalogo_size']}")
+                y -= 15
+                c.drawString(70, y, f"Total procesos históricos: {stats['total_procesos']}")
+                y -= 15
+                c.drawString(70, y, f"Tamaño historial: {stats['historial_size']}")
+                y -= 15
+                c.drawString(70, y, f"Último proceso: {stats['ultimo_proceso']}")
+                y -= 30
+
+                # --- Gráfica de barras ---
+                datos = [
+                    ("Códigos", stats['total_codigos']),
+                    ("Catálogo", stats['total_items']),
+                    ("Historial", stats['total_procesos']),
+                    ("Archivos", stats_archivos['total_archivos'])
+                ]
+                nombres = [d[0] for d in datos]
+                valores = [d[1] for d in datos]
+
+                plt.figure(figsize=(6,3))
+                plt.bar(nombres, valores, color="#ECD925")
+                plt.title("Visualización de Estadísticas", color="#282828")
+                plt.ylabel("Cantidad", color="#282828")
+                plt.tight_layout()
+
+                buf = BytesIO()
+                plt.savefig(buf, format="PNG")
+                plt.close()
+                buf.seek(0)
+
+                imagen = ImageReader(buf)
+                c.drawImage(imagen, 50, y - 200, width=500, height=200)  # Ajusta tamaño y posición
+
+                c.save()
+                messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
+
+        # --- Botón dentro del dashboard ---
+        btn_pdf = tk.Button(frame_botones, text="📄 EXPORTAR PDF", 
+                            command=exportar_pdf,
+                            font=("Segoe UI", 10, "bold"), bg="#4D90FE", fg="#FFFFFF", 
+                            relief="flat", padx=20, pady=10)
+        btn_pdf.pack(side="left", padx=10)
+
+
     except Exception as e:
         messagebox.showerror("Error", f"Error al mostrar estadísticas:\n{e}")
         print(f"Error en dashboard: {e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # FUNCION PARA LA BARRA DE PROGRESO
 class   BarraProgreso:
