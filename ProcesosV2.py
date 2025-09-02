@@ -1376,7 +1376,7 @@ def mostrar_estadisticas():
         btn_limpiar.pack(side="left", padx=10)
         
         def exportar_pdf():
-            """Genera un PDF con TODAS las estadísticas y la gráfica del dashboard"""
+            """Genera un PDF con un diseño corporativo de estadísticas y la gráfica del dashboard"""
             try:
                 ruta = filedialog.asksaveasfilename(defaultextension=".pdf",
                                                     filetypes=[("Archivos PDF","*.pdf")])
@@ -1385,26 +1385,47 @@ def mostrar_estadisticas():
 
                 c = pdf_canvas.Canvas(ruta, pagesize=letter)
                 ancho, alto = letter
-                y = alto - 50
 
-                # Título
-                c.setFont("Helvetica-Bold", 16)
-                c.drawString(50, y, "📊 Reporte semanal de procesos")
-                y -= 30
+                # --- Encabezado ---
+                c.setFillColor("#ecd925")
+                c.rect(0, alto - 80, ancho, 80, fill=1, stroke=0)
+
+                c.setFillColor("#282828")
+                c.setFont("Helvetica-Bold", 20)
+                c.drawString(50, alto - 50, "Reporte Semanal de Procesos")
+
+                c.setFont("Helvetica", 10)
+                c.drawString(50, alto - 70, f"Fecha de generación: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}")
+
+                # --- Imagen en la parte superior derecha ---
+                ruta_imagen = "img/logo_empresarial.png"  # Ruta de la imagen
+                altura_imagen = 70
+                margen_superior = 5  # Espacio entre encabezado y la imagen
+
+                try:
+                    imagen = ImageReader(ruta_imagen)
+                    # Posición: X = ancho - 120 (derecha), Y = alto - encabezado - altura_imagen - margen
+                    c.drawImage(imagen, ancho - 120, alto - 80 - altura_imagen - margen_superior,
+                                width=100, height=altura_imagen)
+                except:
+                    print("No se encontró la imagen en la ruta:", ruta_imagen)
+
+                # Ajustamos la coordenada Y para el contenido debajo de la imagen
+                y = alto - 80 - altura_imagen - margen_superior - 20  # 20 de margen extra
+
 
                 # --- Estadísticas de códigos ---
                 c.setFont("Helvetica-Bold", 12)
-                c.drawString(50, y, "🔑 CÓDIGOS DE CUMPLIMIENTO")
+                c.setFillColor("#282828")
+                c.drawString(50, y, "CÓDIGOS TOTALES")
                 y -= 20
                 c.setFont("Helvetica", 10)
                 c.drawString(70, y, f"Total de códigos: {stats['total_codigos']}")
-                y -= 15
-                c.drawString(70, y, f"Códigos activos: {stats['codigos_activos']}")
-                y -= 30
+                y -= 25
 
                 # --- Archivos procesados ---
                 c.setFont("Helvetica-Bold", 12)
-                c.drawString(50, y, "📁 ARCHIVOS PROCESADOS")
+                c.drawString(50, y, "ARCHIVOS PROCESADOS")
                 y -= 20
                 c.setFont("Helvetica", 10)
                 c.drawString(70, y, f"Total de archivos: {stats_archivos['total_archivos']}")
@@ -1420,18 +1441,41 @@ def mostrar_estadisticas():
                         y -= 15
                     y -= 10
 
-                # --- Gráfica de barras ---
-                datos = [
-                    ("Códigos", stats['total_codigos']),
-                    ("Historial", stats['total_procesos']),
-                ]
-                nombres = [d[0] for d in datos]
-                valores = [d[1] for d in datos]
+                # --- Preparar datos para la gráfica ---
+                datos = {}
+                for key, value in stats.items():
+                    if key == "codigos_activos":
+                        continue
+                    elif key == "total_procesos":
+                        datos["total_items"] = value
+                    elif isinstance(value, (int, float)):
+                        datos[key] = value
 
-                plt.figure(figsize=(6,3))
-                plt.bar(nombres, valores, color="#ECD925")
+                for key, value in stats_archivos.items():
+                    if key == "total_archivos":
+                        datos["total_procesos"] = value
+                    elif isinstance(value, (int, float)):
+                        if key not in datos:
+                            datos[key] = value
+
+                nombres = list(datos.keys())
+                valores = list(datos.values())
+
+                # --- Gráfica ---
+                ancho_figura = max(6, len(nombres) * 1.5)
+                plt.figure(figsize=(ancho_figura, 3))
+                bars = plt.bar(nombres, valores, color="#ecd925")
+
+                for bar in bars:
+                    plt.text(bar.get_x() + bar.get_width()/2,
+                            bar.get_height(),
+                            str(bar.get_height()),
+                            ha="center", va="bottom", fontsize=8, color="#282828")
+
                 plt.title("Visualización de Estadísticas", color="#282828")
                 plt.ylabel("Cantidad", color="#282828")
+                plt.xticks(rotation=20, color="#282828")
+                plt.yticks(color="#282828")
                 plt.tight_layout()
 
                 buf = BytesIO()
@@ -1439,11 +1483,17 @@ def mostrar_estadisticas():
                 plt.close()
                 buf.seek(0)
 
-                imagen = ImageReader(buf)
-                c.drawImage(imagen, 50, y - 200, width=500, height=200)  # Ajusta tamaño y posición
+                imagen_grafica = ImageReader(buf)
+                c.drawImage(imagen_grafica, 50, y - 300, width=500, height=250)
 
+                # --- Pie de página ---
+                c.setFillColor("#282828")
+                c.rect(0, 0, ancho, 40, fill=1, stroke=0)
+
+                # Guardar PDF
                 c.save()
                 messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}")
+
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
 
