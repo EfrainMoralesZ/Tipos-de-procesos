@@ -1375,6 +1375,7 @@ def mostrar_estadisticas():
                                relief="flat", padx=20, pady=10)
         btn_limpiar.pack(side="left", padx=10)
         
+
         def exportar_pdf():
             """Genera un PDF con un diseño corporativo de estadísticas y la gráfica del dashboard"""
             try:
@@ -1398,21 +1399,19 @@ def mostrar_estadisticas():
                 c.drawString(50, alto - 70, f"Fecha de generación: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}")
 
                 # --- Imagen en la parte superior derecha ---
-                ruta_imagen = "img/logo_empresarial.png"  # Ruta de la imagen
+                ruta_imagen = "img/logo_empresarial.png"
                 altura_imagen = 70
-                margen_superior = 5  # Espacio entre encabezado y la imagen
+                margen_superior = 5
 
                 try:
                     imagen = ImageReader(ruta_imagen)
-                    # Posición: X = ancho - 120 (derecha), Y = alto - encabezado - altura_imagen - margen
                     c.drawImage(imagen, ancho - 120, alto - 80 - altura_imagen - margen_superior,
                                 width=100, height=altura_imagen)
                 except:
                     print("No se encontró la imagen en la ruta:", ruta_imagen)
 
                 # Ajustamos la coordenada Y para el contenido debajo de la imagen
-                y = alto - 80 - altura_imagen - margen_superior - 20  # 20 de margen extra
-
+                y = alto - 80 - altura_imagen - margen_superior - 20
 
                 # --- Estadísticas de códigos ---
                 c.setFont("Helvetica-Bold", 12)
@@ -1441,28 +1440,19 @@ def mostrar_estadisticas():
                         y -= 15
                     y -= 10
 
-                # --- Preparar datos para la gráfica ---
-                datos = {}
-                for key, value in stats.items():
-                    if key == "codigos_activos":
-                        continue
-                    elif key == "total_procesos":
-                        datos["total_items"] = value
-                    elif isinstance(value, (int, float)):
-                        datos[key] = value
+                # --- Preparar datos para la gráfica desde JSON ---
+                with open("resources/codigos_cumple.json", "r", encoding="utf-8") as f:
+                    codigos_data = json.load(f)
 
-                for key, value in stats_archivos.items():
-                    if key == "total_archivos":
-                        datos["total_procesos"] = value
-                    elif isinstance(value, (int, float)):
-                        if key not in datos:
-                            datos[key] = value
+                # Contar los códigos que cumplen
+                total_cumple = sum(1 for d in codigos_data if d.get("OBSERVACION", "").lower() == "cumple")
+                total_items = stats.get('total_codigos', 0)
 
-                nombres = list(datos.keys())
-                valores = list(datos.values())
+                nombres = ["Total de códigos", "Códigos que cumplen"]
+                valores = [total_items, total_cumple]
 
                 # --- Gráfica ---
-                ancho_figura = max(6, len(nombres) * 1.5)
+                ancho_figura = 6
                 plt.figure(figsize=(ancho_figura, 3))
                 bars = plt.bar(nombres, valores, color="#ecd925")
 
@@ -1470,11 +1460,11 @@ def mostrar_estadisticas():
                     plt.text(bar.get_x() + bar.get_width()/2,
                             bar.get_height(),
                             str(bar.get_height()),
-                            ha="center", va="bottom", fontsize=8, color="#282828")
+                            ha="center", va="bottom", fontsize=10, color="#282828")
 
                 plt.title("Visualización de Estadísticas", color="#282828")
                 plt.ylabel("Cantidad", color="#282828")
-                plt.xticks(rotation=20, color="#282828")
+                plt.xticks(color="#282828")
                 plt.yticks(color="#282828")
                 plt.tight_layout()
 
@@ -1489,6 +1479,9 @@ def mostrar_estadisticas():
                 # --- Pie de página ---
                 c.setFillColor("#282828")
                 c.rect(0, 0, ancho, 40, fill=1, stroke=0)
+
+                c.setFillColor("#FFFFFF")
+                c.setFont("Helvetica-Oblique", 8)
 
                 # Guardar PDF
                 c.save()
