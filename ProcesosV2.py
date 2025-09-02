@@ -1127,19 +1127,6 @@ def exportar_concentrado_catalogo(frame_principal):
             pass
         messagebox.showerror("Error", f"No se pudo exportar el catálogo:\n{e}")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 #VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
     """Muestra un dashboard con estadísticas de la aplicación"""
@@ -1187,21 +1174,7 @@ def mostrar_estadisticas():
             except Exception as e:
                 print(f"Error leyendo códigos: {e}")
                 stats['total_codigos'] = 0
-                stats['codigos_activos'] = 0
-            
-            # Estadísticas del catálogo
-            try:
-                if os.path.exists(BASE_GENERAL):
-                    df_catalogo = pd.read_excel(BASE_GENERAL)
-                    stats['total_items'] = len(df_catalogo)
-                    stats['catalogo_size'] = f"{os.path.getsize(BASE_GENERAL) / 1024 / 1024:.2f} MB"
-                else:
-                    stats['total_items'] = 0
-                    stats['catalogo_size'] = '0 MB'
-            except Exception as e:
-                print(f"Error leyendo catálogo: {e}")
-                stats['total_items'] = 0
-                stats['catalogo_size'] = '0 MB'
+
             
             # Estadísticas del historial
             try:
@@ -1244,10 +1217,6 @@ def mostrar_estadisticas():
         tk.Label(frame_stats, text=str(stats['total_codigos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
-        tk.Label(frame_stats, text="Códigos activos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['codigos_activos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
-        row += 1
-        
         # ESTADISTICAS DE ARCHIVOS PROCESADOS
         tk.Label(frame_stats, text="📁 ARCHIVOS PROCESADOS", 
                 font=("INRTE", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
@@ -1282,12 +1251,12 @@ def mostrar_estadisticas():
                 tk.Label(frame_archivos, text=fecha_corta, font=("Segoe UI", 8), 
                         bg="#FFFFFF", fg="#282828").grid(row=i, column=1, sticky="w", padx=(10,0))
                 row += 1
-        
+
         # GRÁFICA DE BARRAS MEJORADA
         tk.Label(frame_graph, text="📈 VISUALIZACIÓN", 
                 font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
 
-        canvas_width = 350
+        canvas_width = 500
         canvas_height = 220
         canvas = tk.Canvas(frame_graph, width=canvas_width, height=canvas_height, bg="#FFFFFF", highlightthickness=0)
         canvas.pack()
@@ -1295,18 +1264,39 @@ def mostrar_estadisticas():
         def dibujar_grafica():
             canvas.delete("all")
             
-            # Datos
+            # --- Leer codigos_cumple.json para calcular los códigos que cumplen ---
+            try:
+                with open("resources/codigos_cumple.json", "r", encoding="utf-8") as f:
+                    codigos_data = json.load(f)
+
+                # Total de códigos que cumplen según OBSERVACION
+                total_cumple = sum(
+                    1 for d in codigos_data
+                    if isinstance(d, dict) and "OBSERVACION" in d and "CUMPLE" in str(d["OBSERVACION"]).upper()
+                )
+                # Códigos que no cumplen
+                total_no_cumple = stats['total_codigos'] - total_cumple
+                if total_no_cumple < 0:
+                    total_no_cumple = 0
+            except Exception as e:
+                print(f"Error leyendo codigos_cumple.json: {e}")
+                total_cumple = 0
+                total_no_cumple = 0
+
+            # --- Datos de la gráfica: 4 columnas ---
             datos = [
-                ("Códigos", stats['total_codigos']),
-                ("Historial", stats['total_procesos']),
+                ("Total Códigos", stats['total_codigos']),
+                ("Códigos Ingresados", stats['total_procesos']),
+                ("Códigos cumplen", total_cumple),
+                ("Códigos no cumplen", total_no_cumple),
             ]
-            
+
             margen = 40
             ancho_barra = 60
             espacio = 40
             altura_max = 150
             
-            max_valor = max([d[1] for d in datos if isinstance(d[1], (int, float))])
+            max_valor = max([d[1] for d in datos if isinstance(d[1], (int, float))], default=1)
             if max_valor == 0:
                 max_valor = 1
 
@@ -1318,24 +1308,24 @@ def mostrar_estadisticas():
                 canvas.create_line(margen-5, y_tick, margen, y_tick, fill="#282828", width=1)
                 canvas.create_text(margen-10, y_tick, text=str(i), font=("Segoe UI", 8), fill="#282828", anchor="e")
             
-            # Dibujar barras con valor dentro
+            # Dibujar barras
             x_inicio = margen + espacio
             for i, (nombre, valor) in enumerate(datos):
-                if isinstance(valor, (int, float)) and valor > 0:
-                    altura_barra = (valor / max_valor) * altura_max
-                    x1 = x_inicio + i * (ancho_barra + espacio)
-                    y1 = altura_max + margen - altura_barra
-                    x2 = x1 + ancho_barra
-                    y2 = altura_max + margen
+                altura_barra = (valor / max_valor) * altura_max if valor > 0 else 0
+                x1 = x_inicio + i * (ancho_barra + espacio)
+                y1 = altura_max + margen - altura_barra
+                x2 = x1 + ancho_barra
+                y2 = altura_max + margen
 
-                    # Barra con borde más fino
-                    canvas.create_rectangle(x1, y1, x2, y2, fill="#ECD925", outline="#282828", width=1.5)
-                    
-                    # Valor dentro de la barra (centrado)
-                    canvas.create_text((x1 + x2)/2, y1 + 10, text=str(valor), font=("Segoe UI", 9, "bold"), fill="#282828")
-                    
-                    # Nombre debajo
-                    canvas.create_text((x1 + x2)/2, altura_max + margen + 20, text=nombre, font=("Segoe UI", 9), fill="#282828")
+                # Barra
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#ECD925", outline="#282828", width=1.5)
+                
+                # Valor sobre la barra
+                canvas.create_text((x1 + x2)/2, y1 - 10, text=str(valor), font=("INTER", 9, "bold"), fill="#282828")
+                
+                # Nombre debajo
+                canvas.create_text((x1 + x2)/2, altura_max + margen + 20, text=nombre, font=("INTER", 9), fill="#282828")
+
 
                 
         # Dibujar gráfica inicial
@@ -1453,7 +1443,7 @@ def mostrar_estadisticas():
 
                 # --- Gráfica ---
                 ancho_figura = 6
-                plt.figure(figsize=(ancho_figura, 3))
+                plt.figure(figsize=(ancho_figura, 4))
                 bars = plt.bar(nombres, valores, color="#ecd925")
 
                 for bar in bars:
@@ -1474,7 +1464,7 @@ def mostrar_estadisticas():
                 buf.seek(0)
 
                 imagen_grafica = ImageReader(buf)
-                c.drawImage(imagen_grafica, 50, y - 300, width=500, height=250)
+                c.drawImage(imagen_grafica, 100, y - 300, width=400, height=250)
 
                 # --- Pie de página ---
                 c.setFillColor("#282828")
