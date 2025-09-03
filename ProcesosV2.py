@@ -722,8 +722,13 @@ def actualizar_codigos(frame_principal):
 
                 # Si la observación cambió → preguntar al usuario
                 if obs_actual != obs_nueva:
-                    obs_final = actualizar_observacion_interactiva(item, obs_actual, obs_nueva)
-                    df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_final
+                    # Preguntar al usuario qué hacer
+                    msg = (f"El ITEM '{item}' ya existe.\n\n"
+                          f"🔹 Observación actual: {obs_actual}\n"
+                          f"🔹 Nueva observación: {obs_nueva}\n\n"
+                          "¿Quieres actualizarla?")
+                    if messagebox.askyesno("Actualizar Observación", msg):
+                        df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_nueva
             else:
                 nuevos_items.append({
                     "ITEM": item,
@@ -1140,217 +1145,408 @@ def exportar_concentrado_catalogo(frame_principal):
 
 
 
-#VENTANA DEL DASHBOARD
+#VENTANA DEL DASHBOARD MEJORADO
 def mostrar_estadisticas():
-    """Muestra un dashboard con estadísticas de la aplicación"""
+    """Muestra un dashboard mejorado con estadísticas avanzadas de la aplicación"""
     try:
-        # Crear ventana del dashboard
+        # Crear ventana del dashboard (más compacta)
         ventana = tk.Toplevel()
         ventana.title("📊 Dashboard de Estadísticas")
-        ventana.geometry("1000x600")
+        ventana.geometry("900x600")  # Reducido de 1200x700
         ventana.configure(bg="#FFFFFF")
         ventana.grab_set()
         
-        # Título principal
-        tk.Label(ventana, text="📊 DASHBOARD DE ESTADÍSTICAS", 
-                font=("Segoe UI", 16, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=20)
+        # Configurar el estilo de la ventana
+        style = ttk.Style()
+        style.theme_use('clam')
         
-        # Frame principal con dos columnas
+        # Título principal más compacto
+        header_frame = tk.Frame(ventana, bg="#ecd925", height=50)  # Reducido de 80
+        header_frame.pack(fill="x", pady=(0, 10))  # Reducido de 20
+        header_frame.pack_propagate(False)
+        
+        tk.Label(header_frame, text="📊 DASHBOARD DE ESTADÍSTICAS", 
+                font=("INTER", 14, "bold"), bg="#ecd925", fg="#282828").pack(expand=True)  # Reducido de 18
+        
+        # Frame principal más compacto
         frame_main = tk.Frame(ventana, bg="#FFFFFF")
-        frame_main.pack(pady=20, padx=40, fill="both", expand=True)
+        frame_main.pack(pady=10, padx=20, fill="both", expand=True)  # Reducido de 20,40
         
-        # Frame izquierdo para estadísticas
-        frame_stats = tk.Frame(frame_main, bg="#FFFFFF")
-        frame_stats.pack(side="left", fill="both", expand=True, padx=(0, 20))
+        # Frame superior para métricas principales (más compacto)
+        frame_metrics = tk.Frame(frame_main, bg="#FFFFFF")
+        frame_metrics.pack(fill="x", pady=(0, 10))  # Reducido de 20
         
-        # Frame derecho para gráfica
-        frame_graph = tk.Frame(frame_main, bg="#FFFFFF")
+        # Frame inferior con dos columnas
+        frame_content = tk.Frame(frame_main, bg="#FFFFFF")
+        frame_content.pack(fill="both", expand=True)
+        
+        # Frame izquierdo para estadísticas detalladas
+        frame_stats = tk.Frame(frame_content, bg="#FFFFFF")
+        frame_stats.pack(side="left", fill="both", expand=True, padx=(0, 10))  # Reducido de 20
+        
+        # Frame derecho para gráficas
+        frame_graph = tk.Frame(frame_content, bg="#FFFFFF")
         frame_graph.pack(side="right", fill="both", expand=True)
         
-        # Función para obtener estadísticas
-        def obtener_stats():
+        # Función mejorada para obtener estadísticas avanzadas
+        def obtener_stats_avanzadas():
             stats = {}
             
-            # Estadísticas de códigos - ARREGLADO
+            # Estadísticas de códigos con análisis detallado
             try:
                 if os.path.exists(ARCHIVO_CODIGOS):
                     df_codigos = pd.read_excel(ARCHIVO_CODIGOS)
                     stats['total_codigos'] = len(df_codigos)
-                    # Contar códigos activos (si no hay columna ESTADO, todos son activos)
+                    
+                    # Análisis de cumplimiento
+                    if 'OBSERVACIONES' in df_codigos.columns:
+                        cumple_count = df_codigos['OBSERVACIONES'].str.contains('CUMPLE', case=False, na=False).sum()
+                        no_cumple_count = df_codigos['OBSERVACIONES'].str.contains('NO CUMPLE', case=False, na=False).sum()
+                        stats['codigos_cumple'] = cumple_count
+                        stats['codigos_no_cumple'] = no_cumple_count
+                        stats['porcentaje_cumple'] = (cumple_count / len(df_codigos) * 100) if len(df_codigos) > 0 else 0
+                    else:
+                        stats['codigos_cumple'] = 0
+                        stats['codigos_no_cumple'] = 0
+                        stats['porcentaje_cumple'] = 0
+                    
+                    # Códigos activos
                     if 'ESTADO' in df_codigos.columns:
                         stats['codigos_activos'] = len(df_codigos[df_codigos['ESTADO'] == 'ACTIVO'])
                     else:
-                        stats['codigos_activos'] = len(df_codigos)  # Todos activos por defecto
+                        stats['codigos_activos'] = len(df_codigos)
                 else:
-                    stats['total_codigos'] = 0
-                    stats['codigos_activos'] = 0
+                    stats.update({
+                        'total_codigos': 0, 'codigos_activos': 0, 'codigos_cumple': 0,
+                        'codigos_no_cumple': 0, 'porcentaje_cumple': 0
+                    })
             except Exception as e:
                 print(f"Error leyendo códigos: {e}")
-                stats['total_codigos'] = 0
-                stats['codigos_activos'] = 0
+                stats.update({
+                    'total_codigos': 0, 'codigos_activos': 0, 'codigos_cumple': 0,
+                    'codigos_no_cumple': 0, 'porcentaje_cumple': 0
+                })
             
-            # Estadísticas del catálogo
+            # Estadísticas del catálogo con análisis de tipos
             try:
                 if os.path.exists(BASE_GENERAL):
                     df_catalogo = pd.read_excel(BASE_GENERAL)
                     stats['total_items'] = len(df_catalogo)
                     stats['catalogo_size'] = f"{os.path.getsize(BASE_GENERAL) / 1024 / 1024:.2f} MB"
+                    
+                    # Análisis de tipos de proceso si existe la columna
+                    if 'CODIGO FORMATO' in df_catalogo.columns:
+                        tipos_proceso = df_catalogo['CODIGO FORMATO'].value_counts()
+                        stats['tipos_proceso'] = tipos_proceso.to_dict()
+                    else:
+                        stats['tipos_proceso'] = {}
                 else:
-                    stats['total_items'] = 0
-                    stats['catalogo_size'] = '0 MB'
+                    stats.update({'total_items': 0, 'catalogo_size': '0 MB', 'tipos_proceso': {}})
             except Exception as e:
                 print(f"Error leyendo catálogo: {e}")
-                stats['total_items'] = 0
-                stats['catalogo_size'] = '0 MB'
+                stats.update({'total_items': 0, 'catalogo_size': '0 MB', 'tipos_proceso': {}})
             
-            # Estadísticas del historial
+            # Estadísticas del historial con análisis temporal
             try:
                 if os.path.exists(HISTORIAL):
                     df_hist = pd.read_excel(HISTORIAL)
                     stats['total_procesos'] = len(df_hist)
                     stats['historial_size'] = f"{os.path.getsize(HISTORIAL) / 1024 / 1024:.2f} MB"
                     
-                    # Última fecha de proceso
+                    # Análisis temporal
                     if 'FECHA_PROCESO' in df_hist.columns:
                         df_hist['FECHA_PROCESO'] = pd.to_datetime(df_hist['FECHA_PROCESO'], errors='coerce')
                         ultima_fecha = df_hist['FECHA_PROCESO'].max()
+                        primera_fecha = df_hist['FECHA_PROCESO'].min()
                         stats['ultimo_proceso'] = ultima_fecha.strftime('%d/%m/%Y %H:%M') if pd.notna(ultima_fecha) else 'N/A'
+                        stats['primer_proceso'] = primera_fecha.strftime('%d/%m/%Y') if pd.notna(primera_fecha) else 'N/A'
+                        
+                        # Procesos por mes (últimos 6 meses)
+                        df_hist['MES'] = df_hist['FECHA_PROCESO'].dt.to_period('M')
+                        procesos_por_mes = df_hist['MES'].value_counts().sort_index().tail(6)
+                        stats['procesos_por_mes'] = {str(k): v for k, v in procesos_por_mes.items()}
                     else:
-                        stats['ultimo_proceso'] = 'N/A'
+                        stats.update({
+                            'ultimo_proceso': 'N/A', 'primer_proceso': 'N/A', 'procesos_por_mes': {}
+                        })
                 else:
-                    stats['total_procesos'] = 0
-                    stats['historial_size'] = '0 MB'
-                    stats['ultimo_proceso'] = 'N/A'
+                    stats.update({
+                        'total_procesos': 0, 'historial_size': '0 MB', 'ultimo_proceso': 'N/A',
+                        'primer_proceso': 'N/A', 'procesos_por_mes': {}
+                    })
             except Exception as e:
                 print(f"Error leyendo historial: {e}")
-                stats['total_procesos'] = 0
-                stats['historial_size'] = '0 MB'
-                stats['ultimo_proceso'] = 'N/A'
+                stats.update({
+                    'total_procesos': 0, 'historial_size': '0 MB', 'ultimo_proceso': 'N/A',
+                    'primer_proceso': 'N/A', 'procesos_por_mes': {}
+                })
             
             return stats
         
-        # Obtener estadísticas
-        stats = obtener_stats()
+        # Obtener estadísticas avanzadas
+        stats = obtener_stats_avanzadas()
         
-        # Crear widgets de estadísticas
+        # Crear tarjetas de métricas principales (más compactas)
+        def crear_tarjeta_metrica(parent, titulo, valor, color="#ecd925", icono="📊"):
+            tarjeta = tk.Frame(parent, bg=color, relief="raised", bd=1)
+            tarjeta.pack(side="left", fill="both", expand=True, padx=3, pady=3)  # Reducido de 5
+            
+            # Icono y título más compactos
+            tk.Label(tarjeta, text=icono, font=("INTER", 12), bg=color, fg="#282828").pack(pady=(5, 2))  # Reducido de 16, 10,5
+            tk.Label(tarjeta, text=titulo, font=("INTER", 8, "bold"), bg=color, fg="#282828").pack()  # Reducido de 10
+            
+            # Valor principal más compacto
+            tk.Label(tarjeta, text=str(valor), font=("INTER", 14, "bold"), bg=color, fg="#282828").pack(pady=(2, 5))  # Reducido de 20, 5,10
+            
+            return tarjeta
+        
+        # Crear tarjetas de métricas principales (manteniendo colores originales)
+        tarjeta_codigos = crear_tarjeta_metrica(frame_metrics, "Total Códigos", stats['total_codigos'], "#ecd925", "🔑")
+        tarjeta_cumple = crear_tarjeta_metrica(frame_metrics, "Cumplen", stats['codigos_cumple'], "#ecd925", "✅")  # Cambiado a color original
+        tarjeta_procesos = crear_tarjeta_metrica(frame_metrics, "Procesos", stats['total_procesos'], "#ecd925", "📋")  # Cambiado a color original
+        tarjeta_items = crear_tarjeta_metrica(frame_metrics, "Items", stats['total_items'], "#ecd925", "📦")  # Cambiado a color original y texto más corto
+        
+        # Variables para las gráficas
+        notebook = None
+        
+        # Crear widgets de estadísticas detalladas
         row = 0
         
-        # Sección: CÓDIGOS
+        # Sección: CÓDIGOS DE CUMPLIMIENTO (más compacta)
         tk.Label(frame_stats, text="🔑 CÓDIGOS DE CUMPLIMIENTO", 
-                font=("Segoe UI", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
+                font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(10,5))  # Reducido de 12, 20,10
         row += 1
 
-        tk.Label(frame_stats, text="Total de códigos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['total_codigos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
+        tk.Label(frame_stats, text="Total códigos:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))  # Reducido de 10, 20,10
+        tk.Label(frame_stats, text=str(stats['total_codigos']), font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
-        tk.Label(frame_stats, text="Códigos activos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats['codigos_activos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
+        tk.Label(frame_stats, text="Cumplen:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))
+        tk.Label(frame_stats, text=f"{stats['codigos_cumple']} ({stats['porcentaje_cumple']:.1f}%)", 
+                font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")  # Cambiado a color original
         row += 1
         
-        # ESTADISTICAS DE ARCHIVOS PROCESADOS
+        tk.Label(frame_stats, text="No cumplen:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))
+        tk.Label(frame_stats, text=str(stats['codigos_no_cumple']), 
+                font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")  # Cambiado a color original
+        row += 1
+        
+        # ESTADISTICAS DE ARCHIVOS PROCESADOS (más compacta)
         tk.Label(frame_stats, text="📁 ARCHIVOS PROCESADOS", 
-                font=("INRTE", 12, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(20,10))
+                font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(10,5))  # Reducido de 12, 20,10
         row += 1
         
         # Obtener estadísticas de archivos
         stats_archivos = obtener_estadisticas_archivos()
         
-        tk.Label(frame_stats, text="Total de archivos:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats_archivos['total_archivos']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
+        tk.Label(frame_stats, text="Total archivos:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))  # Reducido de 10, 20,10
+        tk.Label(frame_stats, text=str(stats_archivos['total_archivos']), font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
 
-        tk.Label(frame_stats, text="Último archivo:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(20,10))
-        tk.Label(frame_stats, text=str(stats_archivos['ultimo_proceso']), font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
+        tk.Label(frame_stats, text="Último archivo:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))
+        tk.Label(frame_stats, text=str(stats_archivos['ultimo_proceso']), font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
-        # Lista de archivos recientes
+        # Información temporal del historial (más compacta)
+        if stats.get('primer_proceso', 'N/A') != 'N/A':
+            tk.Label(frame_stats, text="Primer proceso:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))
+            tk.Label(frame_stats, text=str(stats['primer_proceso']), font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
+        row += 1
+        
+        # Lista de archivos recientes (más compacta)
         if stats_archivos['archivos_recientes']:
-            tk.Label(frame_stats, text="Archivos recientes:", font=("INTER", 10), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", padx=(20,10), pady=(10,5))
+            tk.Label(frame_stats, text="Archivos recientes:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", padx=(15,5), pady=(5,2))  # Reducido
             row += 1
             
             # Frame para la lista de archivos
             frame_archivos = tk.Frame(frame_stats, bg="#FFFFFF")
-            frame_archivos.grid(row=row, column=0, columnspan=2, sticky="ew", padx=(20,0))
+            frame_archivos.grid(row=row, column=0, columnspan=2, sticky="ew", padx=(15,0))
             
-            for i, archivo in enumerate(stats_archivos['archivos_recientes'][-3:]):  # Solo los últimos 3
-                nombre_corto = archivo['nombre'][:30] + "..." if len(archivo['nombre']) > 30 else archivo['nombre']
+            for i, archivo in enumerate(stats_archivos['archivos_recientes'][-2:]):  # Solo los últimos 2 para ahorrar espacio
+                nombre_corto = archivo['nombre'][:25] + "..." if len(archivo['nombre']) > 25 else archivo['nombre']  # Reducido de 30
                 fecha_corta = archivo['fecha_proceso'].split(' ')[0]  # Solo la fecha
                 
-                tk.Label(frame_archivos, text=f"• {nombre_corto}", font=("Segoe UI", 8), 
-                        bg="#FFFFFF", fg="#282828").grid(row=i, column=0, sticky="w")
-                tk.Label(frame_archivos, text=fecha_corta, font=("Segoe UI", 8), 
-                        bg="#FFFFFF", fg="#282828").grid(row=i, column=1, sticky="w", padx=(10,0))
+                tk.Label(frame_archivos, text=f"• {nombre_corto}", font=("INTER", 7), 
+                        bg="#FFFFFF", fg="#282828").grid(row=i, column=0, sticky="w")  # Reducido de 8
+                tk.Label(frame_archivos, text=fecha_corta, font=("INTER", 7), 
+                        bg="#FFFFFF", fg="#282828").grid(row=i, column=1, sticky="w", padx=(5,0))  # Reducido de 8, 10
                 row += 1
         
-        # GRÁFICA DE BARRAS MEJORADA
-        tk.Label(frame_graph, text="📈 VISUALIZACIÓN", 
-                font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
+        # GRÁFICAS AVANZADAS CON MATPLOTLIB (más compactas)
+        tk.Label(frame_graph, text="📈 VISUALIZACIONES", 
+                font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,5))  # Reducido de 12, 10
 
-        canvas_width = 350
-        canvas_height = 220
-        canvas = tk.Canvas(frame_graph, width=canvas_width, height=canvas_height, bg="#FFFFFF", highlightthickness=0)
-        canvas.pack()
+        # Frame para las gráficas
+        frame_graficas = tk.Frame(frame_graph, bg="#FFFFFF")
+        frame_graficas.pack(fill="both", expand=True)
+        
+        # Notebook para pestañas de gráficas (más compacto)
+        notebook = ttk.Notebook(frame_graficas)
+        notebook.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido de 10
+        
+        # Pestaña 1: Gráfica de cumplimiento
+        frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
+        notebook.add(frame_cumplimiento, text="📊 Cumplimiento")
+        
+        # Pestaña 2: Procesos por mes
+        frame_temporal = tk.Frame(notebook, bg="#FFFFFF")
+        notebook.add(frame_temporal, text="📅 Temporal")
+        
+        # Pestaña 3: Tipos de proceso
+        frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
+        notebook.add(frame_tipos, text="🏷️ Tipos")
 
-        def dibujar_grafica():
-            canvas.delete("all")
-            
-            # Datos
-            datos = [
-                ("Códigos", stats['total_codigos']),
-                ("Historial", stats['total_procesos']),
-            ]
-            
-            margen = 40
-            ancho_barra = 60
-            espacio = 40
-            altura_max = 150
-            
-            max_valor = max([d[1] for d in datos if isinstance(d[1], (int, float))])
-            if max_valor == 0:
-                max_valor = 1
-
-            # Dibujar ejes con ticks
-            canvas.create_line(margen, altura_max + margen, canvas_width - margen, altura_max + margen, fill="#282828", width=2)
-            canvas.create_line(margen, margen, margen, altura_max + margen, fill="#282828", width=2)
-            for i in range(0, max_valor + 1, max(1, max_valor // 5)):
-                y_tick = altura_max + margen - (i / max_valor) * altura_max
-                canvas.create_line(margen-5, y_tick, margen, y_tick, fill="#282828", width=1)
-                canvas.create_text(margen-10, y_tick, text=str(i), font=("Segoe UI", 8), fill="#282828", anchor="e")
-            
-            # Dibujar barras con valor dentro
-            x_inicio = margen + espacio
-            for i, (nombre, valor) in enumerate(datos):
-                if isinstance(valor, (int, float)) and valor > 0:
-                    altura_barra = (valor / max_valor) * altura_max
-                    x1 = x_inicio + i * (ancho_barra + espacio)
-                    y1 = altura_max + margen - altura_barra
-                    x2 = x1 + ancho_barra
-                    y2 = altura_max + margen
-
-                    # Barra con borde más fino
-                    canvas.create_rectangle(x1, y1, x2, y2, fill="#ECD925", outline="#282828", width=1.5)
-                    
-                    # Valor dentro de la barra (centrado)
-                    canvas.create_text((x1 + x2)/2, y1 + 10, text=str(valor), font=("Segoe UI", 9, "bold"), fill="#282828")
-                    
-                    # Nombre debajo
-                    canvas.create_text((x1 + x2)/2, altura_max + margen + 20, text=nombre, font=("Segoe UI", 9), fill="#282828")
-
+        def crear_grafica_cumplimiento():
+            """Crear gráfica de cumplimiento con matplotlib (más compacta)"""
+            try:
+                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6, 3))  # Reducido de 8,4
+                fig.patch.set_facecolor('#FFFFFF')
                 
-        # Dibujar gráfica inicial
-        dibujar_grafica()
+                # Gráfica de barras de cumplimiento
+                categorias = ['Cumplen', 'No Cumplen']
+                valores = [stats['codigos_cumple'], stats['codigos_no_cumple']]
+                colores = ['#ecd925', '#ecd925']  # Usar colores originales
+                
+                bars = ax1.bar(categorias, valores, color=colores, alpha=0.8)
+                ax1.set_title('Códigos de Cumplimiento', fontsize=10, fontweight='bold', color='#282828')  # Reducido de 12
+                ax1.set_ylabel('Cantidad', color='#282828', fontsize=9)  # Reducido
+                
+                # Agregar valores en las barras
+                for bar, valor in zip(bars, valores):
+                    height = bar.get_height()
+                    ax1.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                            f'{valor}', ha='center', va='bottom', fontweight='bold', fontsize=8)  # Reducido
+                
+                # Gráfica de pastel
+                if sum(valores) > 0:
+                    ax2.pie(valores, labels=categorias, colors=colores, autopct='%1.1f%%', startangle=90)
+                    ax2.set_title('Distribución', fontsize=10, fontweight='bold', color='#282828')  # Reducido
+                
+                plt.tight_layout()
+                
+                # Convertir a imagen para tkinter
+                canvas_cumplimiento = tk.Canvas(frame_cumplimiento, bg="#FFFFFF", highlightthickness=0)
+                canvas_cumplimiento.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido de 10
+                
+                # Guardar figura en buffer
+                buf = BytesIO()
+                plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')  # Reducido de 100
+                buf.seek(0)
+                plt.close()
+                
+                # Mostrar en canvas
+                img = Image.open(buf)
+                img_tk = ImageTk.PhotoImage(img)
+                canvas_cumplimiento.create_image(0, 0, anchor="nw", image=img_tk)
+                canvas_cumplimiento.image = img_tk
+                
+            except Exception as e:
+                print(f"Error creando gráfica de cumplimiento: {e}")
+                tk.Label(frame_cumplimiento, text="Error al cargar gráfica", bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
+
+        def crear_grafica_temporal():
+            """Crear gráfica temporal de procesos (más compacta)"""
+            try:
+                if stats.get('procesos_por_mes'):
+                    fig, ax = plt.subplots(figsize=(6, 3))  # Reducido de 8,4
+                    fig.patch.set_facecolor('#FFFFFF')
+                    
+                    meses = list(stats['procesos_por_mes'].keys())
+                    valores = list(stats['procesos_por_mes'].values())
+                    
+                    # Gráfica de línea
+                    ax.plot(meses, valores, marker='o', linewidth=2, markersize=4, color='#ecd925')  # Color original
+                    ax.fill_between(meses, valores, alpha=0.3, color='#ecd925')  # Color original
+                    
+                    ax.set_title('Procesos por Mes', fontsize=10, fontweight='bold', color='#282828')  # Reducido
+                    ax.set_ylabel('Cantidad', color='#282828', fontsize=9)  # Reducido
+                    ax.set_xlabel('Mes', color='#282828', fontsize=9)  # Reducido
+                    
+                    # Rotar etiquetas del eje X
+                    plt.xticks(rotation=45, fontsize=8)  # Reducido
+                    plt.tight_layout()
+                    
+                    # Convertir a imagen para tkinter
+                    canvas_temporal = tk.Canvas(frame_temporal, bg="#FFFFFF", highlightthickness=0)
+                    canvas_temporal.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido
+                    
+                    # Guardar figura en buffer
+                    buf = BytesIO()
+                    plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')  # Reducido
+                    buf.seek(0)
+                    plt.close()
+                    
+                    # Mostrar en canvas
+                    img = Image.open(buf)
+                    img_tk = ImageTk.PhotoImage(img)
+                    canvas_temporal.create_image(0, 0, anchor="nw", image=img_tk)
+                    canvas_temporal.image = img_tk
+                else:
+                    tk.Label(frame_temporal, text="No hay datos temporales", 
+                            bg="#FFFFFF", fg="#666666", font=("INTER", 9)).pack(expand=True)  # Reducido
+                    
+            except Exception as e:
+                print(f"Error creando gráfica temporal: {e}")
+                tk.Label(frame_temporal, text="Error al cargar gráfica", 
+                        bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
+
+        def crear_grafica_tipos():
+            """Crear gráfica de tipos de proceso (más compacta)"""
+            try:
+                if stats.get('tipos_proceso'):
+                    fig, ax = plt.subplots(figsize=(6, 3))  # Reducido de 8,4
+                    fig.patch.set_facecolor('#FFFFFF')
+                    
+                    tipos = list(stats['tipos_proceso'].keys())[:5]  # Top 5 para ahorrar espacio
+                    valores = list(stats['tipos_proceso'].values())[:5]
+                    
+                    # Gráfica de barras horizontales
+                    bars = ax.barh(tipos, valores, color='#ecd925', alpha=0.8)  # Color original
+                    ax.set_title('Tipos de Proceso (Top 5)', fontsize=10, fontweight='bold', color='#282828')  # Reducido
+                    ax.set_xlabel('Cantidad', color='#282828', fontsize=9)  # Reducido
+                    
+                    # Agregar valores en las barras
+                    for i, (bar, valor) in enumerate(zip(bars, valores)):
+                        width = bar.get_width()
+                        ax.text(width + 0.1, bar.get_y() + bar.get_height()/2,
+                               f'{valor}', ha='left', va='center', fontweight='bold', fontsize=8)  # Reducido
+                    
+                    plt.tight_layout()
+                    
+                    # Convertir a imagen para tkinter
+                    canvas_tipos = tk.Canvas(frame_tipos, bg="#FFFFFF", highlightthickness=0)
+                    canvas_tipos.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido
+                    
+                    # Guardar figura en buffer
+                    buf = BytesIO()
+                    plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')  # Reducido
+                    buf.seek(0)
+                    plt.close()
+                    
+                    # Mostrar en canvas
+                    img = Image.open(buf)
+                    img_tk = ImageTk.PhotoImage(img)
+                    canvas_tipos.create_image(0, 0, anchor="nw", image=img_tk)
+                    canvas_tipos.image = img_tk
+                else:
+                    tk.Label(frame_tipos, text="No hay datos de tipos", 
+                            bg="#FFFFFF", fg="#666666", font=("INTER", 9)).pack(expand=True)  # Reducido
+                    
+            except Exception as e:
+                print(f"Error creando gráfica de tipos: {e}")
+                tk.Label(frame_tipos, text="Error al cargar gráfica", 
+                        bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
+
+        # Crear las gráficas
+        crear_grafica_cumplimiento()
+        crear_grafica_temporal()
+        crear_grafica_tipos()
         
-        # Botones en la parte inferior
+        # Botones en la parte inferior (más compactos)
         frame_botones = tk.Frame(ventana, bg="#FFFFFF")
-        frame_botones.pack(pady=20)
+        frame_botones.pack(pady=10)  # Reducido de 20
         
-        # Botón de actualizar
-        btn_actualizar = tk.Button(frame_botones, text="🔄 ACTUALIZAR ESTADÍSTICAS", 
-                                 command=lambda: [obtener_stats(), dibujar_grafica()],
-                                 font=("INTER", 10, "bold"), bg="#ECD925", fg="#282828", 
-                                 relief="flat", padx=20, pady=10)
-        btn_actualizar.pack(side="left", padx=10)
+        # Botón de actualizar (removido - ya no se usa)
         
         # Botón para limpiar historial de archivos
         def limpiar_historial_archivos():
@@ -1360,8 +1556,6 @@ def mostrar_estadisticas():
                         os.remove(ARCHIVOS_PROCESADOS_FILE)
                         messagebox.showinfo("Éxito", "Historial de archivos limpiado correctamente.")
                         # Actualizar dashboard
-                        obtener_stats()
-                        dibujar_grafica()
                         ventana.destroy()
                         mostrar_estadisticas()  # Reabrir dashboard
                     else:
@@ -1369,119 +1563,75 @@ def mostrar_estadisticas():
                 except Exception as e:
                     messagebox.showerror("Error", f"No se pudo limpiar el historial:\n{e}")
         
-        btn_limpiar = tk.Button(frame_botones, text="🗑️ LIMPIAR HISTORIAL", 
+        btn_limpiar = tk.Button(frame_botones, text="🗑️ LIMPIAR", 
                                command=limpiar_historial_archivos,
-                               font=("INTER", 10, "bold"), bg="#ECD925", fg="#282828", 
-                               relief="flat", padx=20, pady=10)
-        btn_limpiar.pack(side="left", padx=10)
+                               font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828", 
+                               relief="flat", padx=15, pady=8)  # Reducido
+        btn_limpiar.pack(side="left", padx=5)  # Reducido
         
 
-        def exportar_pdf():
-            """Genera un PDF con un diseño corporativo de estadísticas y la gráfica del dashboard"""
+        def exportar_pdf_simple():
+            """Genera un PDF simple con estadísticas"""
             try:
-                ruta = filedialog.asksaveasfilename(defaultextension=".pdf",
-                                                    filetypes=[("Archivos PDF","*.pdf")])
+                ruta = filedialog.asksaveasfilename(
+                    defaultextension=".pdf",
+                    filetypes=[("Archivos PDF", "*.pdf")],
+                    title="Guardar Reporte de Estadísticas"
+                )
                 if not ruta:
                     return
 
+                # Crear PDF simple
                 c = pdf_canvas.Canvas(ruta, pagesize=letter)
                 ancho, alto = letter
 
-                # --- Encabezado ---
+                # Encabezado
                 c.setFillColor("#ecd925")
                 c.rect(0, alto - 80, ancho, 80, fill=1, stroke=0)
 
                 c.setFillColor("#282828")
                 c.setFont("Helvetica-Bold", 20)
-                c.drawString(50, alto - 50, "Reporte Semanal de Procesos")
+                c.drawString(50, alto - 50, "REPORTE DE ESTADÍSTICAS")
 
                 c.setFont("Helvetica", 10)
-                c.drawString(50, alto - 70, f"Fecha de generación: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}")
+                c.drawString(50, alto - 70, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
 
-                # --- Imagen en la parte superior derecha ---
-                ruta_imagen = "img/logo_empresarial.png"
-                altura_imagen = 70
-                margen_superior = 5
+                y = alto - 120
 
-                try:
-                    imagen = ImageReader(ruta_imagen)
-                    c.drawImage(imagen, ancho - 120, alto - 80 - altura_imagen - margen_superior,
-                                width=100, height=altura_imagen)
-                except:
-                    print("No se encontró la imagen en la ruta:", ruta_imagen)
+                # Estadísticas principales
+                c.setFont("Helvetica-Bold", 14)
+                c.drawString(50, y, "ESTADÍSTICAS PRINCIPALES")
+                y -= 30
 
-                # Ajustamos la coordenada Y para el contenido debajo de la imagen
-                y = alto - 80 - altura_imagen - margen_superior - 20
-
-                # --- Estadísticas de códigos ---
-                c.setFont("Helvetica-Bold", 12)
-                c.setFillColor("#282828")
-                c.drawString(50, y, "CÓDIGOS TOTALES")
+                c.setFont("Helvetica", 12)
+                c.drawString(70, y, f"• Total de códigos: {stats['total_codigos']}")
                 y -= 20
-                c.setFont("Helvetica", 10)
-                c.drawString(70, y, f"Total de códigos: {stats['total_codigos']}")
-                y -= 25
+                c.drawString(70, y, f"• Códigos que cumplen: {stats['codigos_cumple']} ({stats['porcentaje_cumple']:.1f}%)")
+                y -= 20
+                c.drawString(70, y, f"• Códigos que no cumplen: {stats['codigos_no_cumple']}")
+                y -= 20
+                c.drawString(70, y, f"• Total de procesos: {stats['total_procesos']}")
+                y -= 20
+                c.drawString(70, y, f"• Items en catálogo: {stats['total_items']}")
+                y -= 30
 
-                # --- Archivos procesados ---
-                c.setFont("Helvetica-Bold", 12)
+                # Archivos procesados
+                c.setFont("Helvetica-Bold", 14)
                 c.drawString(50, y, "ARCHIVOS PROCESADOS")
+                y -= 30
+
+                c.setFont("Helvetica", 12)
+                c.drawString(70, y, f"• Total de archivos: {stats_archivos['total_archivos']}")
                 y -= 20
-                c.setFont("Helvetica", 10)
-                c.drawString(70, y, f"Total de archivos: {stats_archivos['total_archivos']}")
-                y -= 15
-                c.drawString(70, y, f"Último archivo: {stats_archivos['ultimo_proceso']}")
-                y -= 15
+                c.drawString(70, y, f"• Último archivo: {stats_archivos['ultimo_proceso']}")
+                y -= 30
 
-                if stats_archivos['archivos_recientes']:
-                    c.drawString(70, y, "Archivos recientes:")
-                    y -= 15
-                    for archivo in stats_archivos['archivos_recientes'][-3:]:
-                        c.drawString(90, y, f"• {archivo['nombre']} ({archivo['fecha_proceso']})")
-                        y -= 15
-                    y -= 10
-
-                # --- Preparar datos para la gráfica desde JSON ---
-                with open("resources/codigos_cumple.json", "r", encoding="utf-8") as f:
-                    codigos_data = json.load(f)
-
-                # Contar los códigos que cumplen
-                total_cumple = sum(1 for d in codigos_data if d.get("OBSERVACION", "").lower() == "cumple")
-                total_items = stats.get('total_codigos', 0)
-
-                nombres = ["Total de códigos", "Códigos que cumplen"]
-                valores = [total_items, total_cumple]
-
-                # --- Gráfica ---
-                ancho_figura = 6
-                plt.figure(figsize=(ancho_figura, 3))
-                bars = plt.bar(nombres, valores, color="#ecd925")
-
-                for bar in bars:
-                    plt.text(bar.get_x() + bar.get_width()/2,
-                            bar.get_height(),
-                            str(bar.get_height()),
-                            ha="center", va="bottom", fontsize=10, color="#282828")
-
-                plt.title("Visualización de Estadísticas", color="#282828")
-                plt.ylabel("Cantidad", color="#282828")
-                plt.xticks(color="#282828")
-                plt.yticks(color="#282828")
-                plt.tight_layout()
-
-                buf = BytesIO()
-                plt.savefig(buf, format="PNG")
-                plt.close()
-                buf.seek(0)
-
-                imagen_grafica = ImageReader(buf)
-                c.drawImage(imagen_grafica, 50, y - 300, width=500, height=250)
-
-                # --- Pie de página ---
+                # Pie de página
                 c.setFillColor("#282828")
-                c.rect(0, 0, ancho, 40, fill=1, stroke=0)
-
+                c.rect(0, 0, ancho, 30, fill=1, stroke=0)
                 c.setFillColor("#FFFFFF")
-                c.setFont("Helvetica-Oblique", 8)
+                c.setFont("Helvetica", 8)
+                c.drawString(50, 10, "Generado por Sistema de Procesos")
 
                 # Guardar PDF
                 c.save()
@@ -1489,20 +1639,127 @@ def mostrar_estadisticas():
 
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
+                print(f"Error detallado: {e}")
 
-        # --- Botón dentro del dashboard ---
-        btn_pdf = tk.Button(frame_botones, text="📄 EXPORTAR PDF", 
-                            command=exportar_pdf,
-                            font=("INTER", 10, "bold"), bg="#ECD925", fg="#282828", 
-                            relief="flat", padx=20, pady=10)
-        btn_pdf.pack(side="left", padx=10)
+        # --- Botones mejorados del dashboard (más compactos) ---
+        btn_pdf = tk.Button(frame_botones, text="📄 PDF", 
+                            command=exportar_pdf_simple,
+                            font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828", 
+                            relief="flat", padx=15, pady=8)  # Reducido
+        btn_pdf.pack(side="left", padx=5)  # Reducido
+        
+        # Botón para exportar datos a Excel
+        def exportar_excel_estadisticas():
+            """Exporta las estadísticas a un archivo Excel"""
+            try:
+                ruta = filedialog.asksaveasfilename(
+                    defaultextension=".xlsx",
+                    filetypes=[("Archivos Excel", "*.xlsx")],
+                    title="Guardar Estadísticas en Excel"
+                )
+                if not ruta:
+                    return
+                
+                # Crear DataFrame con estadísticas
+                df_stats = pd.DataFrame([
+                    ["Total Códigos", stats['total_codigos']],
+                    ["Códigos que Cumplen", stats['codigos_cumple']],
+                    ["Códigos que No Cumplen", stats['codigos_no_cumple']],
+                    ["Porcentaje de Cumplimiento", f"{stats['porcentaje_cumple']:.1f}%"],
+                    ["Total Procesos", stats['total_procesos']],
+                    ["Total Items Catálogo", stats['total_items']],
+                    ["Tamaño Catálogo", stats['catalogo_size']],
+                    ["Tamaño Historial", stats['historial_size']],
+                    ["Último Proceso", stats['ultimo_proceso']],
+                    ["Primer Proceso", stats.get('primer_proceso', 'N/A')]
+                ], columns=["Métrica", "Valor"])
+                
+                # Crear archivo Excel con múltiples hojas
+                with pd.ExcelWriter(ruta, engine='openpyxl') as writer:
+                    df_stats.to_excel(writer, sheet_name='Resumen', index=False)
+                    
+                    # Hoja de archivos procesados
+                    if stats_archivos['archivos_recientes']:
+                        df_archivos = pd.DataFrame(stats_archivos['archivos_recientes'])
+                        df_archivos.to_excel(writer, sheet_name='Archivos Procesados', index=False)
+                    
+                    # Hoja de procesos por mes
+                    if stats.get('procesos_por_mes'):
+                        df_meses = pd.DataFrame(list(stats['procesos_por_mes'].items()), 
+                                              columns=['Mes', 'Cantidad'])
+                        df_meses.to_excel(writer, sheet_name='Procesos por Mes', index=False)
+                
+                messagebox.showinfo("Éxito", f"Estadísticas exportadas a Excel:\n{ruta}")
+                
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo exportar a Excel:\n{e}")
+        
+        btn_excel = tk.Button(frame_botones, text="📊 EXCEL", 
+                             command=exportar_excel_estadisticas,
+                             font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828",  # Color original
+                             relief="flat", padx=15, pady=8)  # Reducido
+        btn_excel.pack(side="left", padx=5)  # Reducido
+
+        # Botón de actualizar estadísticas
+        def actualizar_estadisticas():
+            """Actualiza las estadísticas y regenera las gráficas"""
+            try:
+                # Obtener nuevas estadísticas
+                stats = obtener_stats_avanzadas()
+                
+                # Actualizar tarjetas de métricas
+                try:
+                    tarjeta_codigos.destroy()
+                    tarjeta_cumple.destroy()
+                    tarjeta_procesos.destroy()
+                    tarjeta_items.destroy()
+                except:
+                    pass
+                
+                # Recrear tarjetas
+                tarjeta_codigos = crear_tarjeta_metrica(frame_metrics, "Total Códigos", stats['total_codigos'], "#ECD925", "🔑")
+                tarjeta_cumple = crear_tarjeta_metrica(frame_metrics, "Cumplen", stats['codigos_cumple'], "#4CAF50", "✅")
+                tarjeta_procesos = crear_tarjeta_metrica(frame_metrics, "Procesos", stats['total_procesos'], "#2196F3", "📋")
+                tarjeta_items = crear_tarjeta_metrica(frame_metrics, "Items Catálogo", stats['total_items'], "#FF9800", "📦")
+                
+                # Regenerar gráficas
+                for widget in frame_graficas.winfo_children():
+                    widget.destroy()
+                
+                # Recrear notebook y gráficas
+                notebook = ttk.Notebook(frame_graficas)
+                notebook.pack(fill="both", expand=True, padx=10, pady=10)
+                
+                frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
+                notebook.add(frame_cumplimiento, text="📊 Cumplimiento")
+                
+                frame_temporal = tk.Frame(notebook, bg="#FFFFFF")
+                notebook.add(frame_temporal, text="📅 Temporal")
+                
+                frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
+                notebook.add(frame_tipos, text="🏷️ Tipos")
+                
+                crear_grafica_cumplimiento()
+                crear_grafica_temporal()
+                crear_grafica_tipos()
+                
+                messagebox.showinfo("Actualizado", "Estadísticas actualizadas correctamente")
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al actualizar estadísticas:\n{e}")
+
+        btn_actualizar = tk.Button(frame_botones, text="🔄 ACTUALIZAR", 
+                                 command=actualizar_estadisticas,
+                                 font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828",  # Color original
+                                 relief="flat", padx=15, pady=8)  # Reducido
+        btn_actualizar.pack(side="left", padx=5)  # Reducido
 
         # Botón de cerrar
         btn_cerrar = tk.Button(frame_botones, text="❌ CERRAR", 
                              command=ventana.destroy,
-                             font=("INTER", 10, "bold"), bg="#282828", fg="#FFFFFF", 
-                             relief="flat", padx=20, pady=10)
-        btn_cerrar.pack(side="left", padx=10)
+                             font=("INTER", 9, "bold"), bg="#282828", fg="#FFFFFF", 
+                             relief="flat", padx=15, pady=8)  # Reducido
+        btn_cerrar.pack(side="left", padx=5)  # Reducido
 
 
     except Exception as e:
