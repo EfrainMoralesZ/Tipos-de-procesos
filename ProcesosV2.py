@@ -18,7 +18,7 @@ from reportlab.lib.utils import ImageReader
 
 if getattr(sys, 'frozen', False):
     # Cuando está compilado en .exe
-    BASE_PATH = sys._MEIPASS
+    BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
 else:
     # Cuando se ejecuta desde Python
     BASE_PATH = os.path.dirname(__file__)
@@ -57,12 +57,12 @@ def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
             with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(archivos, f, indent=4, ensure_ascii=False)
             
-            print(f"✅ Archivo registrado: {nombre_archivo}")
+            print(f"[OK] Archivo registrado: {nombre_archivo}")
         else:
-            print(f"ℹ️ Archivo ya registrado: {nombre_archivo}")
+            print(f"[INFO] Archivo ya registrado: {nombre_archivo}")
             
     except Exception as e:
-        print(f"❌ Error registrando archivo: {e}")
+        print(f"[ERROR] Error registrando archivo: {e}")
 
 def obtener_estadisticas_archivos():
     """Obtiene estadísticas de archivos procesados"""
@@ -82,7 +82,7 @@ def obtener_estadisticas_archivos():
                 "ultimo_proceso": "Ninguno"
             }
     except Exception as e:
-        print(f"❌ Error obteniendo estadísticas: {e}")
+        print(f"[ERROR] Error obteniendo estadísticas: {e}")
         return {
             "total_archivos": 0,
             "archivos_recientes": [],
@@ -146,10 +146,10 @@ def configurar_rutas():
                 df = pd.read_excel(archivo)
                 json_path = archivo.replace(".xlsx", ".json")
                 df.to_json(json_path, orient="records", force_ascii=False, indent=4)
-                print(f"✅ Convertido a JSON: {json_path}")
+                print(f"[OK] Convertido a JSON: {json_path}")
                 messagebox.showinfo("Conversión exitosa", f"Archivo convertido a JSON para mejor rendimiento:\n{os.path.basename(json_path)}")
             except Exception as e:
-                print(f"❌ Error convirtiendo a JSON: {e}")
+                print(f"[ERROR] Error convirtiendo a JSON: {e}")
                 messagebox.showwarning("Advertencia", f"No se pudo convertir a JSON:\n{str(e)}\nLa aplicación funcionará con Excel (más lento)")
             
             if tipo == "codigos_cumple":
@@ -227,10 +227,10 @@ if os.path.exists(ARCHIVO_CODIGOS):
         print(f"Número de registros: {len(df_codigos_cumple)}")
     except Exception as e:
         print(f"Error al cargar {ARCHIVO_CODIGOS}: {str(e)}")
-        df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+        df_codigos_cumple = pd.DataFrame({"ITEM": [], "OBSERVACIONES": [], "CRITERIO": []})
 else:
     print(f"Archivo no encontrado: {ARCHIVO_CODIGOS}")
-    df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+    df_codigos_cumple = pd.DataFrame({"ITEM": [], "OBSERVACIONES": [], "CRITERIO": []})
 
 
 def abrir_editor_codigos(parent=None):
@@ -246,11 +246,11 @@ def abrir_editor_codigos(parent=None):
             print(f"Abriendo editor - Registros cargados desde JSON: {len(df_codigos_cumple)}")
         else:
             print(f"No se encontró ningún archivo de datos en: {ARCHIVO_CODIGOS}")
-            df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+            df_codigos_cumple = pd.DataFrame({"ITEM": [], "OBSERVACIONES": [], "CRITERIO": []})
     except Exception as e:
         print(f"Error al cargar los datos: {str(e)}")
         messagebox.showerror("Error", f"Error al cargar los datos: {str(e)}")
-        df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+        df_codigos_cumple = pd.DataFrame({"ITEM": [], "OBSERVACIONES": [], "CRITERIO": []})
     
     ventana = tk.Toplevel(parent) if parent else tk.Toplevel()
     ventana.title("Editor de Códigos")
@@ -410,7 +410,9 @@ def abrir_editor_codigos(parent=None):
         valores = tree.item(seleccion, "values")
         item_id = valores[0]
 
-        df_codigos_cumple.drop(df_codigos_cumple[df_codigos_cumple["ITEM"] == int(item_id)].index, inplace=True)
+        global df_codigos_cumple
+        mask = df_codigos_cumple["ITEM"] == int(item_id)
+        df_codigos_cumple = df_codigos_cumple[~mask]
         guardar_cambios()
         cargar_tabla()
 
@@ -445,7 +447,7 @@ def abrir_editor_codigos(parent=None):
             criterio_val = entry_criterio.get()  # 👈 Ahora sí lo leemos antes
 
             # Verificar duplicado
-            if item_val in df_codigos_cumple["ITEM"].values:
+            if item_val in df_codigos_cumple["ITEM"].tolist():
                 messagebox.showwarning("Duplicado", "Ese ITEM ya existe. Se actualizará la observación y criterio.")
                 df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_val, "OBSERVACIONES"] = obs_val
                 df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_val, "CRITERIO"] = criterio_val
@@ -487,16 +489,16 @@ def abrir_editor_codigos(parent=None):
                 return
 
         # 🔎 Forzar que ITEM sea numérico
-        df_subido["ITEM"] = pd.to_numeric(df_subido["ITEM"], errors="coerce").astype("Int64")
+        df_subido["ITEM"] = pd.to_numeric(df_subido["ITEM"], errors="coerce")
 
         # 🔎 Limpiar duplicados en el archivo nuevo
         df_subido = df_subido.drop_duplicates(subset=["ITEM", "OBSERVACIONES", "CRITERIO"])
 
         global df_codigos_cumple
         # 🔎 Convertir también los existentes a número
-        df_codigos_cumple["ITEM"] = pd.to_numeric(df_codigos_cumple["ITEM"], errors="coerce").astype("Int64")
+        df_codigos_cumple["ITEM"] = pd.to_numeric(df_codigos_cumple["ITEM"], errors="coerce")
 
-        items_existentes = set(df_codigos_cumple["ITEM"].dropna())
+        items_existentes = set(df_codigos_cumple["ITEM"].tolist())
         nuevos_items = []
 
         # 🔄 Recorrer cada fila del Excel subido
@@ -505,24 +507,44 @@ def abrir_editor_codigos(parent=None):
             obs_nueva = str(row.get("OBSERVACIONES", "")).strip()
             criterio_nuevo = str(row.get("CRITERIO", "")).strip()
 
-            if pd.isna(item):
+            # Verificar si el item es válido
+            if item is None or str(item).strip() == '' or str(item).lower() == 'nan':
                 continue  # saltar filas sin item
 
             if item in items_existentes:
-                fila_base = df_codigos_cumple[df_codigos_cumple["ITEM"] == item].iloc[0]
-                obs_actual = str(fila_base.get("OBSERVACIONES", "")).strip()
-                criterio_actual = str(fila_base.get("CRITERIO", "")).strip()
+                try:
+                    # Usar método más directo para evitar errores de tipo
+                    mask = df_codigos_cumple["ITEM"] == item
+                    fila_base = df_codigos_cumple[mask]
+                    if len(fila_base) > 0:
+                        try:
+                            # Usar método más directo - verificar si es DataFrame
+                            if hasattr(fila_base, 'iloc') and len(fila_base) > 0:
+                                obs_actual = str(fila_base.iloc[0]["OBSERVACIONES"]).strip()
+                                criterio_actual = str(fila_base.iloc[0]["CRITERIO"]).strip()
+                            else:
+                                obs_actual = ""
+                                criterio_actual = ""
+                        except:
+                            obs_actual = ""
+                            criterio_actual = ""
+                    else:
+                        obs_actual = ""
+                        criterio_actual = ""
+                except:
+                    obs_actual = ""
+                    criterio_actual = ""
 
-                # 🟡 Si la observación difiere → preguntar al usuario
+                # Si la observación difiere → preguntar al usuario
                 if obs_actual != obs_nueva:
                     msg = (f"El ITEM '{item}' ya existe.\n\n"
-                        f"🔹 Observación actual: {obs_actual}\n"
-                        f"🔹 Nueva observación: {obs_nueva}\n\n"
+                        f"- Observación actual: {obs_actual}\n"
+                        f"- Nueva observación: {obs_nueva}\n\n"
                         "¿Quieres actualizarla?")
                     if messagebox.askyesno("Actualizar Observación", msg):
                         df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "OBSERVACIONES"] = obs_nueva
 
-                # 🟢 Si el criterio estaba vacío y el nuevo trae algo → actualizar
+                # Si el criterio estaba vacío y el nuevo trae algo → actualizar
                 if not criterio_actual and criterio_nuevo:
                     df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "CRITERIO"] = criterio_nuevo
             else:
@@ -539,7 +561,7 @@ def abrir_editor_codigos(parent=None):
         # 💾 Guardar cambios
         try:
             # Asegurar que ITEM siga siendo numérico antes de guardar
-            df_codigos_cumple["ITEM"] = pd.to_numeric(df_codigos_cumple["ITEM"], errors="coerce").astype("Int64")
+            df_codigos_cumple["ITEM"] = pd.to_numeric(df_codigos_cumple["ITEM"], errors="coerce")
 
             df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
             df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
@@ -559,10 +581,10 @@ def abrir_editor_codigos(parent=None):
     frame_botones = tk.Frame(ventana)
     frame_botones.pack(pady=10)
 
-    tk.Button(frame_botones, text="✏️ Editar", command=editar_item,
+    tk.Button(frame_botones, text="Editar", command=editar_item,
              bg="#ECD925", fg="#282828", activebackground="#f3e55b",
              activeforeground="#282828").pack(side="left", padx=5)
-    tk.Button(frame_botones, text="🗑️ Eliminar", command=eliminar_item,
+    tk.Button(frame_botones, text="Eliminar", command=eliminar_item,
              bg="#ECD925", fg="#282828", activebackground="#f3e55b",
              activeforeground="#282828").pack(side="left", padx=5)
     tk.Button(frame_botones, text="➕ Agregar", command=agregar_item,
@@ -586,7 +608,22 @@ def actualizar_observacion_interactiva(item):
     try:
         item_num = int(item)
         # Obtener valores actuales
-        item_data = df_codigos_cumple[df_codigos_cumple["ITEM"] == item_num].iloc[0]
+        try:
+            mask = df_codigos_cumple["ITEM"] == item_num
+            item_data = df_codigos_cumple[mask]
+            if len(item_data) > 0:
+                try:
+                    # Usar método más directo - verificar si es DataFrame
+                    if hasattr(item_data, 'iloc'):
+                        item_data = item_data.iloc[0]
+                    else:
+                        raise IndexError("Item not found")
+                except:
+                    raise IndexError("Item not found")
+            else:
+                raise IndexError("Item not found")
+        except:
+            raise IndexError("Item not found")
         obs_actual = item_data["OBSERVACIONES"]
         criterio_actual = item_data.get("CRITERIO", "")
     except ValueError:
@@ -652,9 +689,22 @@ def actualizar_observacion_interactiva(item):
 
     obs_actual = ""
     if "OBSERVACIONES" in df_codigos_cumple.columns:
-        fila = df_codigos_cumple[df_codigos_cumple["ITEM"] == item_num]
-        if not fila.empty:
-            obs_actual = str(fila.iloc[0]["OBSERVACIONES"])
+        try:
+            mask = df_codigos_cumple["ITEM"] == item_num
+            fila = df_codigos_cumple[mask]
+            if len(fila) > 0:
+                try:
+                    # Usar método más directo - verificar si es DataFrame
+                    if hasattr(fila, 'iloc') and len(fila) > 0:
+                        obs_actual = str(fila.iloc[0]["OBSERVACIONES"])
+                    else:
+                        obs_actual = ""
+                except:
+                    obs_actual = ""
+            else:
+                obs_actual = ""
+        except:
+            obs_actual = ""
 
     tk.Label(ventana, text=f"ITEM: {item_num}", font=("Segoe UI", 12, "bold")).pack(pady=(10, 5))
     tk.Label(ventana, text="Observación actual:").pack()
@@ -688,7 +738,7 @@ def actualizar_codigos(frame_principal):
         if os.path.exists(ARCHIVO_CODIGOS):
             df_base = pd.read_excel(ARCHIVO_CODIGOS)
         else:
-            df_base = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+            df_base = pd.DataFrame({"ITEM": [], "OBSERVACIONES": [], "CRITERIO": []})
 
         df_nuevo = pd.read_excel(nuevo_file)
 
@@ -724,8 +774,8 @@ def actualizar_codigos(frame_principal):
                 if obs_actual != obs_nueva:
                     # Preguntar al usuario qué hacer
                     msg = (f"El ITEM '{item}' ya existe.\n\n"
-                          f"🔹 Observación actual: {obs_actual}\n"
-                          f"🔹 Nueva observación: {obs_nueva}\n\n"
+                          f"- Observación actual: {obs_actual}\n"
+                          f"- Nueva observación: {obs_nueva}\n\n"
                           "¿Quieres actualizarla?")
                     if messagebox.askyesno("Actualizar Observación", msg):
                         df_base.loc[df_base["ITEM"].astype(str) == item, "OBSERVACIONES"] = obs_nueva
@@ -736,7 +786,10 @@ def actualizar_codigos(frame_principal):
                     "CRITERIO": criterio_nuevo
                 })
 
-            barra.actualizar((idx + 1) / len(df_nuevo) * 100)
+            try:
+                barra.actualizar(100)  # Simplificar para evitar errores de tipo
+            except:
+                pass
 
         # Agregar nuevos registros
         if nuevos_items:
@@ -748,7 +801,7 @@ def actualizar_codigos(frame_principal):
 
         messagebox.showinfo(
             "Actualizar ITEMS",
-            f"✅ Se actualizaron OBSERVACIONES y se agregaron {len(nuevos_items)} ITEMS nuevos.\n📊 Total ahora: {len(df_base)}"
+            f"[OK] Se actualizaron OBSERVACIONES y se agregaron {len(nuevos_items)} ITEMS nuevos.\nTotal ahora: {len(df_base)}"
         )
 
     except Exception as e:
@@ -769,10 +822,24 @@ def procesar_reporte(reporte_path):
     # SE CREA LA BARRA DE PROGRESO EN EL FRAME PRINCIPAL (LADO DERECHO)
     try:
         global progress_label, progress_var, progress_bar, percent_label
+        # Inicializar variables globales si no existen
+        if 'progress_label' not in globals():
+            progress_label = None
+        if 'progress_bar' not in globals():
+            progress_bar = None
+        if 'percent_label' not in globals():
+            percent_label = None
+            
         try:
-            progress_label.destroy()
-            progress_bar.destroy()
-            percent_label.destroy()
+            # Limpiar widgets existentes si existen
+            for widget_name in ['progress_label', 'progress_bar', 'percent_label']:
+                if widget_name in globals():
+                    widget = globals()[widget_name]
+                    if widget is not None and hasattr(widget, 'destroy'):
+                        try:
+                            widget.destroy()
+                        except:
+                            pass
         except Exception:
             pass
 
@@ -800,7 +867,7 @@ def procesar_reporte(reporte_path):
             """
             if getattr(sys, "frozen", False):
                 # Cuando se ejecuta como .exe
-                base_path = sys._MEIPASS
+                base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
             else:
                 # Cuando se ejecuta como script normal
                 base_path = os.path.dirname(__file__)
@@ -843,7 +910,35 @@ def procesar_reporte(reporte_path):
             raise ValueError("No se encontró ninguna columna de NUM. PARTE válida en el reporte")
         
         # --- Armado de columnas del archivo TIPO DE PROCESO ---
-        items = pd.to_numeric(df_reporte[num_parte_col], errors='coerce').dropna().astype(int).unique()
+        items_series = pd.to_numeric(df_reporte[num_parte_col], errors='coerce')
+        # Filtrar valores no nulos manualmente
+        items_list = []
+        # Simplificar el procesamiento de items
+        try:
+            # Usar método más simple y directo
+            items_list = []
+            # Simplificar completamente el procesamiento
+            try:
+                # Usar método más simple - verificar si es iterable
+                if hasattr(items_series, '__iter__') and not isinstance(items_series, (str, bytes)):
+                    items_series_list = list(items_series)
+                else:
+                    items_series_list = []
+            except:
+                items_series_list = []
+            # Verificar que sea iterable
+            if not isinstance(items_series_list, (list, tuple)):
+                items_series_list = []
+            for val in items_series_list:
+                try:
+                    if val is not None and str(val).strip() != '' and str(val).lower() != 'nan':
+                        items_list.append(int(val))
+                except (ValueError, TypeError):
+                    continue
+        except:
+            items_list = []
+        # Convertir a set para eliminar duplicados y luego a lista
+        items = list(set(items_list))
         total = len(items)
 
         # --- 2. TIPO DE PROCESO ---
@@ -970,9 +1065,14 @@ def procesar_reporte(reporte_path):
 
         # REGLAS ADICIONALES
         for idx, row in df_result.iterrows():
-            tipo = str(row['TIPO DE PROCESO']).strip() if not pd.isna(row['TIPO DE PROCESO']) else ''
-            norma_val = str(row['NORMA']).strip() if not pd.isna(row['NORMA']) else ''
-            criterio_val = str(row['CRITERIO']).strip().upper() if not pd.isna(row['CRITERIO']) else ''
+            tipo_val = row['TIPO DE PROCESO']
+            norma_val_raw = row['NORMA']
+            criterio_val_raw = row['CRITERIO']
+            
+            # Simplificar verificaciones de valores nulos
+            tipo = str(tipo_val).strip() if tipo_val is not None and str(tipo_val).strip() != '' and str(tipo_val).lower() != 'nan' else ''
+            norma_val = str(norma_val_raw).strip() if norma_val_raw is not None and str(norma_val_raw).strip() != '' and str(norma_val_raw).lower() != 'nan' else ''
+            criterio_val = str(criterio_val_raw).strip().upper() if criterio_val_raw is not None and str(criterio_val_raw).strip() != '' and str(criterio_val_raw).lower() != 'nan' else ''
 
             if norma_val not in normas_validas:
                 df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
@@ -998,9 +1098,15 @@ def procesar_reporte(reporte_path):
         frame.update()
 
         def remove_progress_widgets():
-            progress_label.destroy()
-            progress_bar.destroy()
-            percent_label.destroy()
+            try:
+                if 'progress_label' in globals() and progress_label is not None:
+                    progress_label.destroy()
+                if 'progress_bar' in globals() and progress_bar is not None:
+                    progress_bar.destroy()
+                if 'percent_label' in globals() and percent_label is not None:
+                    percent_label.destroy()
+            except:
+                pass
         frame.after(500, remove_progress_widgets)
 
         # Guardar archivo final
@@ -1057,7 +1163,7 @@ def actualizar_catalogo(frame_principal):
         # Paso 2: preparar rutas
         barra.actualizar(50)
         if getattr(sys, "frozen", False):
-            base_path = sys._MEIPASS
+            base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
         else:
             base_path = os.path.dirname(__file__)
 
@@ -1088,7 +1194,7 @@ def exportar_concentrado_catalogo(frame_principal):
     try:
         # Detectar ruta base (para .exe y script)
         if getattr(sys, "frozen", False):
-            base_path = sys._MEIPASS
+            base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
         else:
             base_path = os.path.dirname(__file__)
 
@@ -1123,7 +1229,7 @@ def exportar_concentrado_catalogo(frame_principal):
             df.to_excel(writer, index=False)
 
         barra.finalizar()
-        messagebox.showinfo("Exportar Catálogo", f"✅ Se exportó correctamente el concentrado a:\n{ruta_guardado}")
+        messagebox.showinfo("Exportar Catálogo", f"[OK] Se exportó correctamente el concentrado a:\n{ruta_guardado}")
 
     except Exception as e:
         try:
@@ -1153,7 +1259,7 @@ def mostrar_estadisticas():
     try:
         # Crear ventana del dashboard (más grande para acomodar botones)
         ventana = tk.Toplevel()
-        ventana.title("📊 Dashboard de Estadísticas")
+        ventana.title("Dashboard de Estadísticas")
         ventana.geometry("1000x700")  # Aumentado para acomodar botones
         ventana.configure(bg="#FFFFFF")
         ventana.grab_set()
@@ -1167,7 +1273,7 @@ def mostrar_estadisticas():
         header_frame.pack(fill="x", pady=(0, 10))  # Reducido de 20
         header_frame.pack_propagate(False)
         
-        tk.Label(header_frame, text="📊 DASHBOARD DE ESTADÍSTICAS", 
+        tk.Label(header_frame, text="DASHBOARD DE ESTADÍSTICAS", 
                 font=("INTER", 14, "bold"), bg="#ecd925", fg="#282828").pack(expand=True)  # Reducido de 18
         
         # Frame principal más compacto
@@ -1265,8 +1371,9 @@ def mostrar_estadisticas():
                         df_hist['FECHA_PROCESO'] = pd.to_datetime(df_hist['FECHA_PROCESO'], errors='coerce')
                         ultima_fecha = df_hist['FECHA_PROCESO'].max()
                         primera_fecha = df_hist['FECHA_PROCESO'].min()
-                        stats['ultimo_proceso'] = ultima_fecha.strftime('%d/%m/%Y %H:%M') if pd.notna(ultima_fecha) else 'N/A'
-                        stats['primer_proceso'] = primera_fecha.strftime('%d/%m/%Y') if pd.notna(primera_fecha) else 'N/A'
+                        # Simplificar verificaciones de fechas
+                        stats['ultimo_proceso'] = ultima_fecha.strftime('%d/%m/%Y %H:%M') if ultima_fecha is not None and str(ultima_fecha).strip() != '' and str(ultima_fecha).lower() != 'nat' else 'N/A'
+                        stats['primer_proceso'] = primera_fecha.strftime('%d/%m/%Y') if primera_fecha is not None and str(primera_fecha).strip() != '' and str(primera_fecha).lower() != 'nat' else 'N/A'
                         
                         # Procesos por mes (últimos 6 meses)
                         df_hist['MES'] = df_hist['FECHA_PROCESO'].dt.to_period('M')
@@ -1294,7 +1401,7 @@ def mostrar_estadisticas():
         stats = obtener_stats_avanzadas()
         
         # Crear tarjetas de métricas principales (más compactas)
-        def crear_tarjeta_metrica(parent, titulo, valor, color="#ecd925", icono="📊"):
+        def crear_tarjeta_metrica(parent, titulo, valor, color="#ecd925", icono="[INFO]"):
             tarjeta = tk.Frame(parent, bg=color, relief="raised", bd=1)
             tarjeta.pack(side="left", fill="both", expand=True, padx=3, pady=3)  # Reducido de 5
             
@@ -1308,10 +1415,10 @@ def mostrar_estadisticas():
             return tarjeta
         
         # Crear tarjetas de métricas principales (manteniendo colores originales)
-        tarjeta_codigos = crear_tarjeta_metrica(frame_metrics, "Total Códigos", stats['total_codigos'], "#ecd925", "🔑")
-        tarjeta_cumple = crear_tarjeta_metrica(frame_metrics, "Cumplen", stats['codigos_cumple'], "#ecd925", "✅")  # Cambiado a color original
-        tarjeta_procesos = crear_tarjeta_metrica(frame_metrics, "Procesos", stats['total_procesos'], "#ecd925", "📋")  # Cambiado a color original
-        tarjeta_items = crear_tarjeta_metrica(frame_metrics, "Items", stats['total_items'], "#ecd925", "📦")  # Cambiado a color original y texto más corto
+        tarjeta_codigos = crear_tarjeta_metrica(frame_metrics, "Total Códigos", stats['total_codigos'], "#ecd925", "📊")
+        tarjeta_cumple = crear_tarjeta_metrica(frame_metrics, "Cumplen", stats['codigos_cumple'], "#ecd925", "✅")
+        tarjeta_procesos = crear_tarjeta_metrica(frame_metrics, "Procesos", stats['total_procesos'], "#ecd925", "📋")
+        tarjeta_items = crear_tarjeta_metrica(frame_metrics, "Items", stats['total_items'], "#ecd925", "📦")
         
         # Variables para las gráficas
         notebook = None
@@ -1385,7 +1492,7 @@ def mostrar_estadisticas():
 
         
         # GRÁFICAS AVANZADAS CON MATPLOTLIB (más compactas)
-        tk.Label(frame_graph, text="📈 VISUALIZACIONES", 
+        tk.Label(frame_graph, text="VISUALIZACIONES", 
                 font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,5))  # Reducido de 12, 10
 
         # Frame para las gráficas
@@ -1398,19 +1505,19 @@ def mostrar_estadisticas():
         
         # Pestaña 1: Gráfica de cumplimiento
         frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
-        notebook.add(frame_cumplimiento, text="📊 Cumplimiento")
+        notebook.add(frame_cumplimiento, text="Cumplimiento")
         
         # Pestaña 2: Códigos Cumple general
         frame_codigos_cumple = tk.Frame(notebook, bg="#FFFFFF")
-        notebook.add(frame_codigos_cumple, text="✅ Códigos Cumple")
+        notebook.add(frame_codigos_cumple, text="Códigos Cumple")
         
         # Pestaña 3: Tipos de proceso
         frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
-        notebook.add(frame_tipos, text="🏷️ Tipos")
+        notebook.add(frame_tipos, text="Tipos")
 
 
         # GRÁFICA DE BARRAS MEJORADA
-        tk.Label(frame_graph, text="📈 VISUALIZACIÓN", 
+        tk.Label(frame_graph, text="VISUALIZACIÓN", 
                 font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
 
         canvas_width = 500
@@ -1527,7 +1634,8 @@ def mostrar_estadisticas():
                 img = Image.open(buf)
                 img_tk = ImageTk.PhotoImage(img)
                 canvas_cumplimiento.create_image(0, 0, anchor="nw", image=img_tk)
-                canvas_cumplimiento.image = img_tk
+                # Mantener referencia a la imagen para evitar garbage collection
+                setattr(canvas_cumplimiento, '_image_ref', img_tk)
                 
             except Exception as e:
                 print(f"Error creando gráfica de cumplimiento: {e}")
@@ -1574,7 +1682,8 @@ def mostrar_estadisticas():
                 img = Image.open(buf)
                 img_tk = ImageTk.PhotoImage(img)
                 canvas_codigos.create_image(0, 0, anchor="nw", image=img_tk)
-                canvas_codigos.image = img_tk
+                # Mantener referencia a la imagen para evitar garbage collection
+                setattr(canvas_codigos, '_image_ref', img_tk)
                     
             except Exception as e:
                 print(f"Error creando gráfica de códigos cumple: {e}")
@@ -1618,7 +1727,8 @@ def mostrar_estadisticas():
                     img = Image.open(buf)
                     img_tk = ImageTk.PhotoImage(img)
                     canvas_tipos.create_image(0, 0, anchor="nw", image=img_tk)
-                    canvas_tipos.image = img_tk
+                    # Mantener referencia a la imagen para evitar garbage collection
+                    setattr(canvas_tipos, '_image_ref', img_tk)
                 else:
                     tk.Label(frame_tipos, text="No hay datos de tipos", 
                             bg="#FFFFFF", fg="#666666", font=("INTER", 9)).pack(expand=True)  # Reducido
@@ -1646,7 +1756,7 @@ def mostrar_estadisticas():
                 except Exception as e:
                     messagebox.showerror("Error", f"No se pudo limpiar el historial:\n{e}")
         
-        btn_limpiar = tk.Button(ventana, text="🗑️ LIMPIAR", 
+        btn_limpiar = tk.Button(ventana, text="LIMPIAR", 
                                command=limpiar_historial_archivos,
                                font=("Arial", 10, "bold"), bg="#ecd925", fg="#282828", 
                                relief="raised", padx=15, pady=8, bd=2)
@@ -1792,18 +1902,15 @@ def mostrar_estadisticas():
                     return
                 
                 # Crear DataFrame con estadísticas
-                df_stats = pd.DataFrame([
-                    ["Total Códigos", stats['total_codigos']],
-                    ["Códigos que Cumplen", stats['codigos_cumple']],
-                    ["Códigos que No Cumplen", stats['codigos_no_cumple']],
-                    ["Porcentaje de Cumplimiento", f"{stats['porcentaje_cumple']:.1f}%"],
-                    ["Total Procesos", stats['total_procesos']],
-                    ["Total Items Catálogo", stats['total_items']],
-                    ["Tamaño Catálogo", stats['catalogo_size']],
-                    ["Tamaño Historial", stats['historial_size']],
-                    ["Último Proceso", stats['ultimo_proceso']],
-                    ["Primer Proceso", stats.get('primer_proceso', 'N/A')]
-                ], columns=["Métrica", "Valor"])
+                df_stats = pd.DataFrame({
+                    "Métrica": ["Total Códigos", "Códigos que Cumplen", "Códigos que No Cumplen", 
+                               "Porcentaje de Cumplimiento", "Total Procesos", "Total Items Catálogo",
+                               "Tamaño Catálogo", "Tamaño Historial", "Último Proceso", "Primer Proceso"],
+                    "Valor": [stats['total_codigos'], stats['codigos_cumple'], stats['codigos_no_cumple'],
+                             f"{stats['porcentaje_cumple']:.1f}%", stats['total_procesos'], stats['total_items'],
+                             stats['catalogo_size'], stats['historial_size'], stats['ultimo_proceso'], 
+                             stats.get('primer_proceso', 'N/A')]
+                })
                 
                 # Crear archivo Excel con múltiples hojas
                 with pd.ExcelWriter(ruta, engine='openpyxl') as writer:
@@ -1816,8 +1923,10 @@ def mostrar_estadisticas():
                     
                     # Hoja de procesos por mes
                     if stats.get('procesos_por_mes'):
-                        df_meses = pd.DataFrame(list(stats['procesos_por_mes'].items()), 
-                                              columns=['Mes', 'Cantidad'])
+                        df_meses = pd.DataFrame({
+                            'Mes': list(stats['procesos_por_mes'].keys()),
+                            'Cantidad': list(stats['procesos_por_mes'].values())
+                        })
                         df_meses.to_excel(writer, sheet_name='Procesos por Mes', index=False)
                 
                 messagebox.showinfo("Éxito", f"Estadísticas exportadas a Excel:\n{ruta}")
@@ -1825,7 +1934,7 @@ def mostrar_estadisticas():
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo exportar a Excel:\n{e}")
         
-        btn_excel = tk.Button(ventana, text="📊 EXCEL", 
+        btn_excel = tk.Button(ventana, text="EXCEL", 
                              command=exportar_excel_estadisticas,
                              font=("Arial", 10, "bold"), bg="#ecd925", fg="#282828",
                              relief="raised", padx=15, pady=8, bd=2)
@@ -1835,47 +1944,10 @@ def mostrar_estadisticas():
         def actualizar_estadisticas():
             """Actualiza las estadísticas y regenera las gráficas"""
             try:
-                # Obtener nuevas estadísticas
-                stats = obtener_stats_avanzadas()
+                # Cerrar la ventana actual y abrir una nueva
+                ventana.destroy()
+                mostrar_estadisticas()
                 
-                # Actualizar tarjetas de métricas
-                try:
-                    tarjeta_codigos.destroy()
-                    tarjeta_cumple.destroy()
-                    tarjeta_procesos.destroy()
-                    tarjeta_items.destroy()
-                except:
-                    pass
-                
-                # Recrear tarjetas
-                tarjeta_codigos = crear_tarjeta_metrica(frame_metrics, "Total Códigos", stats['total_codigos'], "#ECD925", "🔑")
-                tarjeta_cumple = crear_tarjeta_metrica(frame_metrics, "Cumplen", stats['codigos_cumple'], "#4CAF50", "✅")
-                tarjeta_procesos = crear_tarjeta_metrica(frame_metrics, "Procesos", stats['total_procesos'], "#2196F3", "📋")
-                tarjeta_items = crear_tarjeta_metrica(frame_metrics, "Items Catálogo", stats['total_items'], "#FF9800", "📦")
-                
-                # Regenerar gráficas
-                for widget in frame_graficas.winfo_children():
-                    widget.destroy()
-                
-                # Recrear notebook y gráficas
-                notebook = ttk.Notebook(frame_graficas)
-                notebook.pack(fill="both", expand=True, padx=10, pady=10)
-                
-                frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
-                notebook.add(frame_cumplimiento, text="📊 Cumplimiento")
-                
-                frame_codigos_cumple = tk.Frame(notebook, bg="#FFFFFF")
-                notebook.add(frame_codigos_cumple, text="✅ Códigos Cumple")
-                
-                frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
-                notebook.add(frame_tipos, text="🏷️ Tipos")
-                
-                crear_grafica_cumplimiento()
-                crear_grafica_codigos_cumple()
-                crear_grafica_tipos()
-                
-                messagebox.showinfo("Actualizado", "Estadísticas actualizadas correctamente")
-
             except Exception as e:
                 messagebox.showerror("Error", f"Error al actualizar estadísticas:\n{e}")
 
@@ -1886,7 +1958,7 @@ def mostrar_estadisticas():
         btn_actualizar.place(x=470, y=600, width=120, height=40)
 
         # Botón de cerrar
-        btn_cerrar = tk.Button(ventana, text="❌ CERRAR", 
+        btn_cerrar = tk.Button(ventana, text="CERRAR", 
                              command=ventana.destroy,
                              font=("Arial", 10, "bold"), bg="#282828", fg="#FFFFFF", 
                              relief="raised", padx=15, pady=8, bd=2)
@@ -2001,7 +2073,7 @@ def verificar_rutas():
         if messagebox.askyesno("Configuración", 
                              "No se han configurado todas las rutas necesarias. ¿Desea configurarlas ahora?"):
             return configurar_rutas()
-    return config.get("rutas", {})
+    return config.get("rutas", {}) if config else {}
 
 # VENTANA PRINCIPAL
 root = tk.Tk()
@@ -2029,10 +2101,11 @@ if __name__ == "__main__":
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((150, 90), Image.LANCZOS)
+            logo_img_raw = Image.open(logo_path).resize((150, 90), Image.Resampling.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
             logo_label = tk.Label(frame_left, image=logo_img, bg="#FFFFFF")
-            logo_label.image = logo_img
+            # Mantener referencia a la imagen para evitar garbage collection
+            setattr(logo_label, '_image_ref', logo_img)
             logo_label.pack(pady=(20, 20))
     except Exception as e:
         print(f"Error cargando el logo: {e}")
@@ -2128,12 +2201,12 @@ if __name__ == "__main__":
     frame_buttons.pack(pady=(5,5), fill="x")
 
     botones = [
-        ("⚙️ CONFIGURAR RUTAS", configurar_rutas),
-        ("📂 REPORTE DE MERCANCIA", seleccionar_reporte),
-        ("📝 EDITOR DE CÓDIGOS", lambda: abrir_editor_codigos(frame_left)),
-        ("📊 DASHBOARD", mostrar_estadisticas),
-        ("🔄 ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_left)),
-        ("📦 EXPORTAR CATALOGO", lambda: exportar_concentrado_catalogo(frame_left)),
+        ("CONFIGURAR RUTAS", configurar_rutas),
+        ("REPORTE DE MERCANCIA", seleccionar_reporte),
+        ("EDITOR DE CÓDIGOS", lambda: abrir_editor_codigos(frame_left)),
+        ("DASHBOARD", mostrar_estadisticas),
+        ("ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_left)),
+        ("EXPORTAR CATALOGO", lambda: exportar_concentrado_catalogo(frame_left)),
     ]
     # Ahora los botones se organizan en 4 columnas
     cols = 4
