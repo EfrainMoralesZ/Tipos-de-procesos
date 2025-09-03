@@ -1151,10 +1151,10 @@ def exportar_concentrado_catalogo(frame_principal):
 def mostrar_estadisticas():
     """Muestra un dashboard mejorado con estadísticas avanzadas de la aplicación"""
     try:
-        # Crear ventana del dashboard (más compacta)
+        # Crear ventana del dashboard (más grande para acomodar botones)
         ventana = tk.Toplevel()
         ventana.title("📊 Dashboard de Estadísticas")
-        ventana.geometry("900x600")  # Reducido de 1200x700
+        ventana.geometry("1000x700")  # Aumentado para acomodar botones
         ventana.configure(bg="#FFFFFF")
         ventana.grab_set()
         
@@ -1400,9 +1400,9 @@ def mostrar_estadisticas():
         frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
         notebook.add(frame_cumplimiento, text="📊 Cumplimiento")
         
-        # Pestaña 2: Procesos por mes
-        frame_temporal = tk.Frame(notebook, bg="#FFFFFF")
-        notebook.add(frame_temporal, text="📅 Temporal")
+        # Pestaña 2: Códigos Cumple general
+        frame_codigos_cumple = tk.Frame(notebook, bg="#FFFFFF")
+        notebook.add(frame_codigos_cumple, text="✅ Códigos Cumple")
         
         # Pestaña 3: Tipos de proceso
         frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
@@ -1533,51 +1533,53 @@ def mostrar_estadisticas():
                 print(f"Error creando gráfica de cumplimiento: {e}")
                 tk.Label(frame_cumplimiento, text="Error al cargar gráfica", bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
 
-        def crear_grafica_temporal():
-            """Crear gráfica temporal de procesos (más compacta)"""
+        def crear_grafica_codigos_cumple():
+            """Crear gráfica general de códigos cumple sin división por normas"""
             try:
-                if stats.get('procesos_por_mes'):
-                    fig, ax = plt.subplots(figsize=(6, 3))  # Reducido de 8,4
-                    fig.patch.set_facecolor('#FFFFFF')
-                    
-                    meses = list(stats['procesos_por_mes'].keys())
-                    valores = list(stats['procesos_por_mes'].values())
-                    
-                    # Gráfica de línea
-                    ax.plot(meses, valores, marker='o', linewidth=2, markersize=4, color='#ecd925')  # Color original
-                    ax.fill_between(meses, valores, alpha=0.3, color='#ecd925')  # Color original
-                    
-                    ax.set_title('Procesos por Mes', fontsize=10, fontweight='bold', color='#282828')  # Reducido
-                    ax.set_ylabel('Cantidad', color='#282828', fontsize=9)  # Reducido
-                    ax.set_xlabel('Mes', color='#282828', fontsize=9)  # Reducido
-                    
-                    # Rotar etiquetas del eje X
-                    plt.xticks(rotation=45, fontsize=8)  # Reducido
-                    plt.tight_layout()
-                    
-                    # Convertir a imagen para tkinter
-                    canvas_temporal = tk.Canvas(frame_temporal, bg="#FFFFFF", highlightthickness=0)
-                    canvas_temporal.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido
-                    
-                    # Guardar figura en buffer
-                    buf = BytesIO()
-                    plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')  # Reducido
-                    buf.seek(0)
-                    plt.close()
-                    
-                    # Mostrar en canvas
-                    img = Image.open(buf)
-                    img_tk = ImageTk.PhotoImage(img)
-                    canvas_temporal.create_image(0, 0, anchor="nw", image=img_tk)
-                    canvas_temporal.image = img_tk
-                else:
-                    tk.Label(frame_temporal, text="No hay datos temporales", 
-                            bg="#FFFFFF", fg="#666666", font=("INTER", 9)).pack(expand=True)  # Reducido
+                # Crear gráfica de códigos cumple general
+                fig, ax = plt.subplots(figsize=(6, 3))
+                fig.patch.set_facecolor('#FFFFFF')
+                
+                # Datos de códigos cumple
+                categorias = ['Total Códigos', 'Códigos Cumple', 'Códigos No Cumple']
+                valores = [stats['total_codigos'], stats['codigos_cumple'], stats['codigos_no_cumple']]
+                colores = ['#ecd925', '#4CAF50', '#F44336']
+                
+                # Crear gráfica de barras
+                bars = ax.bar(categorias, valores, color=colores, alpha=0.8)
+                ax.set_title('Resumen General de Códigos Cumple', fontsize=10, fontweight='bold', color='#282828')
+                ax.set_ylabel('Cantidad', color='#282828', fontsize=9)
+                
+                # Agregar valores en las barras
+                for bar, valor in zip(bars, valores):
+                    height = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                            f'{valor}', ha='center', va='bottom', fontweight='bold', fontsize=8)
+                
+                # Rotar etiquetas del eje X si es necesario
+                plt.xticks(rotation=45, fontsize=8)
+                plt.tight_layout()
+                
+                # Convertir a imagen para tkinter
+                canvas_codigos = tk.Canvas(frame_codigos_cumple, bg="#FFFFFF", highlightthickness=0)
+                canvas_codigos.pack(fill="both", expand=True, padx=5, pady=5)
+                
+                # Guardar figura en buffer
+                buf = BytesIO()
+                plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')
+                buf.seek(0)
+                plt.close()
+                
+                # Mostrar en canvas
+                img = Image.open(buf)
+                img_tk = ImageTk.PhotoImage(img)
+                canvas_codigos.create_image(0, 0, anchor="nw", image=img_tk)
+                canvas_codigos.image = img_tk
                     
             except Exception as e:
-                print(f"Error creando gráfica temporal: {e}")
-                tk.Label(frame_temporal, text="Error al cargar gráfica", 
-                        bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
+                print(f"Error creando gráfica de códigos cumple: {e}")
+                tk.Label(frame_codigos_cumple, text="Error al cargar gráfica de códigos cumple", 
+                        bg="#FFFFFF", fg="#282828").pack(expand=True)
 
         def crear_grafica_tipos():
             """Crear gráfica de tipos de proceso (más compacta)"""
@@ -1626,16 +1628,8 @@ def mostrar_estadisticas():
                 tk.Label(frame_tipos, text="Error al cargar gráfica", 
                         bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
 
-        # Crear las gráficas
-        crear_grafica_cumplimiento()
-        crear_grafica_temporal()
-        crear_grafica_tipos()
-        
-        # Botones en la parte inferior (más compactos)
-        frame_botones = tk.Frame(ventana, bg="#FFFFFF")
-        frame_botones.pack(pady=10)  # Reducido de 20
-        
-        # Botón de actualizar (removido - ya no se usa)
+        # Botones DIRECTAMENTE en la ventana (SIN FRAMES)
+        # Crear botones directamente en la ventana principal
         
         # Botón para limpiar historial de archivos
         def limpiar_historial_archivos():
@@ -1652,11 +1646,11 @@ def mostrar_estadisticas():
                 except Exception as e:
                     messagebox.showerror("Error", f"No se pudo limpiar el historial:\n{e}")
         
-        btn_limpiar = tk.Button(frame_botones, text="🗑️ LIMPIAR", 
+        btn_limpiar = tk.Button(ventana, text="🗑️ LIMPIAR", 
                                command=limpiar_historial_archivos,
-                               font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828", 
-                               relief="flat", padx=15, pady=8)  # Reducido
-        btn_limpiar.pack(side="left", padx=5)  # Reducido
+                               font=("Arial", 10, "bold"), bg="#ecd925", fg="#282828", 
+                               relief="raised", padx=15, pady=8, bd=2)
+        btn_limpiar.place(x=50, y=600, width=120, height=40)
         
 
         def exportar_pdf_simple():
@@ -1778,12 +1772,12 @@ def mostrar_estadisticas():
                 messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
                 print(f"Error detallado: {e}")
 
-        # --- Botones mejorados del dashboard (más compactos) ---
-        btn_pdf = tk.Button(frame_botones, text="📄 PDF", 
+        # --- Botones mejorados del dashboard ---
+        btn_pdf = tk.Button(ventana, text="📄 PDF", 
                             command=exportar_pdf_simple,
-                            font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828", 
-                            relief="flat", padx=15, pady=8)  # Reducido
-        btn_pdf.pack(side="left", padx=5)  # Reducido
+                            font=("Arial", 10, "bold"), bg="#ecd925", fg="#282828", 
+                            relief="raised", padx=15, pady=8, bd=2)
+        btn_pdf.place(x=190, y=600, width=120, height=40)
         
         # Botón para exportar datos a Excel
         def exportar_excel_estadisticas():
@@ -1831,11 +1825,11 @@ def mostrar_estadisticas():
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo exportar a Excel:\n{e}")
         
-        btn_excel = tk.Button(frame_botones, text="📊 EXCEL", 
+        btn_excel = tk.Button(ventana, text="📊 EXCEL", 
                              command=exportar_excel_estadisticas,
-                             font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828",  # Color original
-                             relief="flat", padx=15, pady=8)  # Reducido
-        btn_excel.pack(side="left", padx=5)  # Reducido
+                             font=("Arial", 10, "bold"), bg="#ecd925", fg="#282828",
+                             relief="raised", padx=15, pady=8, bd=2)
+        btn_excel.place(x=330, y=600, width=120, height=40)
 
         # Botón de actualizar estadísticas
         def actualizar_estadisticas():
@@ -1870,14 +1864,14 @@ def mostrar_estadisticas():
                 frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
                 notebook.add(frame_cumplimiento, text="📊 Cumplimiento")
                 
-                frame_temporal = tk.Frame(notebook, bg="#FFFFFF")
-                notebook.add(frame_temporal, text="📅 Temporal")
+                frame_codigos_cumple = tk.Frame(notebook, bg="#FFFFFF")
+                notebook.add(frame_codigos_cumple, text="✅ Códigos Cumple")
                 
                 frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
                 notebook.add(frame_tipos, text="🏷️ Tipos")
                 
                 crear_grafica_cumplimiento()
-                crear_grafica_temporal()
+                crear_grafica_codigos_cumple()
                 crear_grafica_tipos()
                 
                 messagebox.showinfo("Actualizado", "Estadísticas actualizadas correctamente")
@@ -1885,18 +1879,23 @@ def mostrar_estadisticas():
             except Exception as e:
                 messagebox.showerror("Error", f"Error al actualizar estadísticas:\n{e}")
 
-        btn_actualizar = tk.Button(frame_botones, text="🔄 ACTUALIZAR", 
+        btn_actualizar = tk.Button(ventana, text="🔄 ACTUALIZAR", 
                                  command=actualizar_estadisticas,
-                                 font=("INTER", 9, "bold"), bg="#ecd925", fg="#282828",  # Color original
-                                 relief="flat", padx=15, pady=8)  # Reducido
-        btn_actualizar.pack(side="left", padx=5)  # Reducido
+                                 font=("Arial", 10, "bold"), bg="#ecd925", fg="#282828",
+                                 relief="raised", padx=15, pady=8, bd=2)
+        btn_actualizar.place(x=470, y=600, width=120, height=40)
 
         # Botón de cerrar
-        btn_cerrar = tk.Button(frame_botones, text="❌ CERRAR", 
+        btn_cerrar = tk.Button(ventana, text="❌ CERRAR", 
                              command=ventana.destroy,
-                             font=("INTER", 9, "bold"), bg="#282828", fg="#FFFFFF", 
-                             relief="flat", padx=15, pady=8)  # Reducido
-        btn_cerrar.pack(side="left", padx=5)  # Reducido
+                             font=("Arial", 10, "bold"), bg="#282828", fg="#FFFFFF", 
+                             relief="raised", padx=15, pady=8, bd=2)
+        btn_cerrar.place(x=610, y=600, width=120, height=40)
+
+        # Crear las gráficas DESPUÉS de los botones
+        crear_grafica_cumplimiento()
+        crear_grafica_codigos_cumple()
+        crear_grafica_tipos()
 
 
     except Exception as e:
