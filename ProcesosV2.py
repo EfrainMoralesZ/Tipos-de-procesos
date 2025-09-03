@@ -1518,7 +1518,7 @@ def mostrar_estadisticas():
 
         # GRÁFICA DE BARRAS MEJORADA
         tk.Label(frame_graph, text="VISUALIZACIÓN", 
-                font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
+                font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#ffffff").pack(pady=(0,20))
 
         canvas_width = 500
         canvas_height = 220
