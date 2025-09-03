@@ -1145,7 +1145,9 @@ def exportar_concentrado_catalogo(frame_principal):
 
 
 
+
 #VENTANA DEL DASHBOARD MEJORADO
+
 def mostrar_estadisticas():
     """Muestra un dashboard mejorado con estadísticas avanzadas de la aplicación"""
     try:
@@ -1222,6 +1224,7 @@ def mostrar_estadisticas():
                     })
             except Exception as e:
                 print(f"Error leyendo códigos: {e}")
+
                 stats.update({
                     'total_codigos': 0, 'codigos_activos': 0, 'codigos_cumple': 0,
                     'codigos_no_cumple': 0, 'porcentaje_cumple': 0
@@ -1245,6 +1248,10 @@ def mostrar_estadisticas():
             except Exception as e:
                 print(f"Error leyendo catálogo: {e}")
                 stats.update({'total_items': 0, 'catalogo_size': '0 MB', 'tipos_proceso': {}})
+
+                stats['total_codigos'] = 0
+
+
             
             # Estadísticas del historial con análisis temporal
             try:
@@ -1321,6 +1328,7 @@ def mostrar_estadisticas():
         tk.Label(frame_stats, text=str(stats['total_codigos']), font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")
         row += 1
         
+
         tk.Label(frame_stats, text="Cumplen:", font=("INTER", 9), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, sticky="w", padx=(15,5))
         tk.Label(frame_stats, text=f"{stats['codigos_cumple']} ({stats['porcentaje_cumple']:.1f}%)", 
                 font=("INTER", 9, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=1, sticky="w")  # Cambiado a color original
@@ -1332,6 +1340,9 @@ def mostrar_estadisticas():
         row += 1
         
         # ESTADISTICAS DE ARCHIVOS PROCESADOS (más compacta)
+
+        # ESTADISTICAS DE ARCHIVOS PROCESADOS
+
         tk.Label(frame_stats, text="📁 ARCHIVOS PROCESADOS", 
                 font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828").grid(row=row, column=0, columnspan=2, sticky="w", pady=(10,5))  # Reducido de 12, 20,10
         row += 1
@@ -1371,6 +1382,7 @@ def mostrar_estadisticas():
                 tk.Label(frame_archivos, text=fecha_corta, font=("INTER", 7), 
                         bg="#FFFFFF", fg="#282828").grid(row=i, column=1, sticky="w", padx=(5,0))  # Reducido de 8, 10
                 row += 1
+
         
         # GRÁFICAS AVANZADAS CON MATPLOTLIB (más compactas)
         tk.Label(frame_graph, text="📈 VISUALIZACIONES", 
@@ -1395,6 +1407,83 @@ def mostrar_estadisticas():
         # Pestaña 3: Tipos de proceso
         frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
         notebook.add(frame_tipos, text="🏷️ Tipos")
+
+
+        # GRÁFICA DE BARRAS MEJORADA
+        tk.Label(frame_graph, text="📈 VISUALIZACIÓN", 
+                font=("INTER", 12, "bold"), bg="#FFFFFF", fg="#282828").pack(pady=(0,20))
+
+        canvas_width = 500
+        canvas_height = 220
+        canvas = tk.Canvas(frame_graph, width=canvas_width, height=canvas_height, bg="#FFFFFF", highlightthickness=0)
+        canvas.pack()
+
+        def dibujar_grafica():
+            canvas.delete("all")
+            
+            # --- Leer codigos_cumple.json para calcular los códigos que cumplen ---
+            try:
+                with open("resources/codigos_cumple.json", "r", encoding="utf-8") as f:
+                    codigos_data = json.load(f)
+
+                # Total de códigos que cumplen según OBSERVACION
+                total_cumple = sum(
+                    1 for d in codigos_data
+                    if isinstance(d, dict) and "OBSERVACION" in d and "CUMPLE" in str(d["OBSERVACION"]).upper()
+                )
+                # Códigos que no cumplen
+                total_no_cumple = stats['total_codigos'] - total_cumple
+                if total_no_cumple < 0:
+                    total_no_cumple = 0
+            except Exception as e:
+                print(f"Error leyendo codigos_cumple.json: {e}")
+                total_cumple = 0
+                total_no_cumple = 0
+
+            # --- Datos de la gráfica: 4 columnas ---
+            datos = [
+                ("Total Códigos", stats['total_codigos']),
+                ("Códigos Ingresados", stats['total_procesos']),
+                ("Códigos cumplen", total_cumple),
+                ("Códigos no cumplen", total_no_cumple),
+            ]
+
+            margen = 40
+            ancho_barra = 60
+            espacio = 40
+            altura_max = 150
+            
+            max_valor = max([d[1] for d in datos if isinstance(d[1], (int, float))], default=1)
+            if max_valor == 0:
+                max_valor = 1
+
+            # Dibujar ejes con ticks
+            canvas.create_line(margen, altura_max + margen, canvas_width - margen, altura_max + margen, fill="#282828", width=2)
+            canvas.create_line(margen, margen, margen, altura_max + margen, fill="#282828", width=2)
+            for i in range(0, max_valor + 1, max(1, max_valor // 5)):
+                y_tick = altura_max + margen - (i / max_valor) * altura_max
+                canvas.create_line(margen-5, y_tick, margen, y_tick, fill="#282828", width=1)
+                canvas.create_text(margen-10, y_tick, text=str(i), font=("Segoe UI", 8), fill="#282828", anchor="e")
+            
+            # Dibujar barras
+            x_inicio = margen + espacio
+            for i, (nombre, valor) in enumerate(datos):
+                altura_barra = (valor / max_valor) * altura_max if valor > 0 else 0
+                x1 = x_inicio + i * (ancho_barra + espacio)
+                y1 = altura_max + margen - altura_barra
+                x2 = x1 + ancho_barra
+                y2 = altura_max + margen
+
+                # Barra
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#ECD925", outline="#282828", width=1.5)
+                
+                # Valor sobre la barra
+                canvas.create_text((x1 + x2)/2, y1 - 10, text=str(valor), font=("INTER", 9, "bold"), fill="#282828")
+                
+                # Nombre debajo
+                canvas.create_text((x1 + x2)/2, altura_max + margen + 20, text=nombre, font=("INTER", 9), fill="#282828")
+
+
 
         def crear_grafica_cumplimiento():
             """Crear gráfica de cumplimiento con matplotlib (más compacta)"""
@@ -1626,7 +1715,55 @@ def mostrar_estadisticas():
                 c.drawString(70, y, f"• Último archivo: {stats_archivos['ultimo_proceso']}")
                 y -= 30
 
+
                 # Pie de página
+
+                if stats_archivos['archivos_recientes']:
+                    c.drawString(70, y, "Archivos recientes:")
+                    y -= 15
+                    for archivo in stats_archivos['archivos_recientes'][-3:]:
+                        c.drawString(90, y, f"• {archivo['nombre']} ({archivo['fecha_proceso']})")
+                        y -= 15
+                    y -= 10
+
+                # --- Preparar datos para la gráfica desde JSON ---
+                with open("resources/codigos_cumple.json", "r", encoding="utf-8") as f:
+                    codigos_data = json.load(f)
+
+                # Contar los códigos que cumplen
+                total_cumple = sum(1 for d in codigos_data if d.get("OBSERVACION", "").lower() == "cumple")
+                total_items = stats.get('total_codigos', 0)
+
+                nombres = ["Total de códigos", "Códigos que cumplen"]
+                valores = [total_items, total_cumple]
+
+                # --- Gráfica ---
+                ancho_figura = 6
+                plt.figure(figsize=(ancho_figura, 4))
+                bars = plt.bar(nombres, valores, color="#ecd925")
+
+                for bar in bars:
+                    plt.text(bar.get_x() + bar.get_width()/2,
+                            bar.get_height(),
+                            str(bar.get_height()),
+                            ha="center", va="bottom", fontsize=10, color="#282828")
+
+                plt.title("Visualización de Estadísticas", color="#282828")
+                plt.ylabel("Cantidad", color="#282828")
+                plt.xticks(color="#282828")
+                plt.yticks(color="#282828")
+                plt.tight_layout()
+
+                buf = BytesIO()
+                plt.savefig(buf, format="PNG")
+                plt.close()
+                buf.seek(0)
+
+                imagen_grafica = ImageReader(buf)
+                c.drawImage(imagen_grafica, 100, y - 300, width=400, height=250)
+
+                # --- Pie de página ---
+
                 c.setFillColor("#282828")
                 c.rect(0, 0, ancho, 30, fill=1, stroke=0)
                 c.setFillColor("#FFFFFF")
