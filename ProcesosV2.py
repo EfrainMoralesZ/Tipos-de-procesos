@@ -1242,25 +1242,14 @@ def exportar_concentrado_catalogo(frame_principal):
 
 
 
-
-
-
-
-
-
-
-
-
-
 #VENTANA DEL DASHBOARD MEJORADO
-
 def mostrar_estadisticas():
     """Muestra un dashboard mejorado con estadísticas avanzadas de la aplicación"""
     try:
         # Crear ventana del dashboard (más grande para acomodar botones)
         ventana = tk.Toplevel()
         ventana.title("Dashboard de Estadísticas")
-        ventana.geometry("1000x700")  # Aumentado para acomodar botones
+        ventana.geometry("1000x600")  # Aumentado para acomodar botones
         ventana.configure(bg="#FFFFFF")
         ventana.grab_set()
         
@@ -1414,12 +1403,6 @@ def mostrar_estadisticas():
             
             return tarjeta
         
-        # Crear tarjetas de métricas principales (manteniendo colores originales)
-        tarjeta_codigos = crear_tarjeta_metrica(frame_metrics, "Total Códigos", stats['total_codigos'], "#ecd925", "📊")
-        tarjeta_cumple = crear_tarjeta_metrica(frame_metrics, "Cumplen", stats['codigos_cumple'], "#ecd925", "✅")
-        tarjeta_procesos = crear_tarjeta_metrica(frame_metrics, "Procesos", stats['total_procesos'], "#ecd925", "📋")
-        tarjeta_items = crear_tarjeta_metrica(frame_metrics, "Items", stats['total_items'], "#ecd925", "📦")
-        
         # Variables para las gráficas
         notebook = None
         
@@ -1503,17 +1486,10 @@ def mostrar_estadisticas():
         notebook = ttk.Notebook(frame_graficas)
         notebook.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido de 10
         
-        # Pestaña 1: Gráfica de cumplimiento
-        frame_cumplimiento = tk.Frame(notebook, bg="#FFFFFF")
-        notebook.add(frame_cumplimiento, text="Cumplimiento")
         
         # Pestaña 2: Códigos Cumple general
         frame_codigos_cumple = tk.Frame(notebook, bg="#FFFFFF")
         notebook.add(frame_codigos_cumple, text="Códigos Cumple")
-        
-        # Pestaña 3: Tipos de proceso
-        frame_tipos = tk.Frame(notebook, bg="#FFFFFF")
-        notebook.add(frame_tipos, text="Tipos")
 
 
         # GRÁFICA DE BARRAS MEJORADA
@@ -1591,56 +1567,6 @@ def mostrar_estadisticas():
                 canvas.create_text((x1 + x2)/2, altura_max + margen + 20, text=nombre, font=("INTER", 9), fill="#282828")
 
 
-
-        def crear_grafica_cumplimiento():
-            """Crear gráfica de cumplimiento con matplotlib (más compacta)"""
-            try:
-                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6, 3))  # Reducido de 8,4
-                fig.patch.set_facecolor('#FFFFFF')
-                
-                # Gráfica de barras de cumplimiento
-                categorias = ['Cumplen', 'No Cumplen']
-                valores = [stats['codigos_cumple'], stats['codigos_no_cumple']]
-                colores = ['#ecd925', '#ecd925']  # Usar colores originales
-                
-                bars = ax1.bar(categorias, valores, color=colores, alpha=0.8)
-                ax1.set_title('Códigos de Cumplimiento', fontsize=10, fontweight='bold', color='#282828')  # Reducido de 12
-                ax1.set_ylabel('Cantidad', color='#282828', fontsize=9)  # Reducido
-                
-                # Agregar valores en las barras
-                for bar, valor in zip(bars, valores):
-                    height = bar.get_height()
-                    ax1.text(bar.get_x() + bar.get_width()/2., height + 0.1,
-                            f'{valor}', ha='center', va='bottom', fontweight='bold', fontsize=8)  # Reducido
-                
-                # Gráfica de pastel
-                if sum(valores) > 0:
-                    ax2.pie(valores, labels=categorias, colors=colores, autopct='%1.1f%%', startangle=90)
-                    ax2.set_title('Distribución', fontsize=10, fontweight='bold', color='#282828')  # Reducido
-                
-                plt.tight_layout()
-                
-                # Convertir a imagen para tkinter
-                canvas_cumplimiento = tk.Canvas(frame_cumplimiento, bg="#FFFFFF", highlightthickness=0)
-                canvas_cumplimiento.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido de 10
-                
-                # Guardar figura en buffer
-                buf = BytesIO()
-                plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')  # Reducido de 100
-                buf.seek(0)
-                plt.close()
-                
-                # Mostrar en canvas
-                img = Image.open(buf)
-                img_tk = ImageTk.PhotoImage(img)
-                canvas_cumplimiento.create_image(0, 0, anchor="nw", image=img_tk)
-                # Mantener referencia a la imagen para evitar garbage collection
-                setattr(canvas_cumplimiento, '_image_ref', img_tk)
-                
-            except Exception as e:
-                print(f"Error creando gráfica de cumplimiento: {e}")
-                tk.Label(frame_cumplimiento, text="Error al cargar gráfica", bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
-
         def crear_grafica_codigos_cumple():
             """Crear gráfica general de códigos cumple sin división por normas"""
             try:
@@ -1690,53 +1616,6 @@ def mostrar_estadisticas():
                 tk.Label(frame_codigos_cumple, text="Error al cargar gráfica de códigos cumple", 
                         bg="#FFFFFF", fg="#282828").pack(expand=True)
 
-        def crear_grafica_tipos():
-            """Crear gráfica de tipos de proceso (más compacta)"""
-            try:
-                if stats.get('tipos_proceso'):
-                    fig, ax = plt.subplots(figsize=(6, 3))  # Reducido de 8,4
-                    fig.patch.set_facecolor('#FFFFFF')
-                    
-                    tipos = list(stats['tipos_proceso'].keys())[:5]  # Top 5 para ahorrar espacio
-                    valores = list(stats['tipos_proceso'].values())[:5]
-                    
-                    # Gráfica de barras horizontales
-                    bars = ax.barh(tipos, valores, color='#ecd925', alpha=0.8)  # Color original
-                    ax.set_title('Tipos de Proceso (Top 5)', fontsize=10, fontweight='bold', color='#282828')  # Reducido
-                    ax.set_xlabel('Cantidad', color='#282828', fontsize=9)  # Reducido
-                    
-                    # Agregar valores en las barras
-                    for i, (bar, valor) in enumerate(zip(bars, valores)):
-                        width = bar.get_width()
-                        ax.text(width + 0.1, bar.get_y() + bar.get_height()/2,
-                               f'{valor}', ha='left', va='center', fontweight='bold', fontsize=8)  # Reducido
-                    
-                    plt.tight_layout()
-                    
-                    # Convertir a imagen para tkinter
-                    canvas_tipos = tk.Canvas(frame_tipos, bg="#FFFFFF", highlightthickness=0)
-                    canvas_tipos.pack(fill="both", expand=True, padx=5, pady=5)  # Reducido
-                    
-                    # Guardar figura en buffer
-                    buf = BytesIO()
-                    plt.savefig(buf, format='PNG', dpi=80, bbox_inches='tight', facecolor='#FFFFFF')  # Reducido
-                    buf.seek(0)
-                    plt.close()
-                    
-                    # Mostrar en canvas
-                    img = Image.open(buf)
-                    img_tk = ImageTk.PhotoImage(img)
-                    canvas_tipos.create_image(0, 0, anchor="nw", image=img_tk)
-                    # Mantener referencia a la imagen para evitar garbage collection
-                    setattr(canvas_tipos, '_image_ref', img_tk)
-                else:
-                    tk.Label(frame_tipos, text="No hay datos de tipos", 
-                            bg="#FFFFFF", fg="#666666", font=("INTER", 9)).pack(expand=True)  # Reducido
-                    
-            except Exception as e:
-                print(f"Error creando gráfica de tipos: {e}")
-                tk.Label(frame_tipos, text="Error al cargar gráfica", 
-                        bg="#FFFFFF", fg="#282828").pack(expand=True)  # Color original
 
         # Botones DIRECTAMENTE en la ventana (SIN FRAMES)
         # Crear botones directamente en la ventana principal
@@ -1965,20 +1844,13 @@ def mostrar_estadisticas():
         btn_cerrar.place(x=610, y=600, width=120, height=40)
 
         # Crear las gráficas DESPUÉS de los botones
-        crear_grafica_cumplimiento()
         crear_grafica_codigos_cumple()
-        crear_grafica_tipos()
+
 
 
     except Exception as e:
         messagebox.showerror("Error", f"Error al mostrar estadísticas:\n{e}")
         print(f"Error en dashboard: {e}")
-
-
-
-
-
-
 
 
 
