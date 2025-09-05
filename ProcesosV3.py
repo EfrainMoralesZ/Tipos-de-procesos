@@ -234,9 +234,6 @@ else:
     df_codigos_cumple = pd.DataFrame({"ITEM": [], "OBSERVACIONES": [], "CRITERIO": []})
 
 
-
-
-# FUNCION PARA ACTUALIZAR CODIGOS
 def abrir_editor_codigos(parent=None):
     global df_codigos_cumple
     
@@ -504,12 +501,11 @@ def abrir_editor_codigos(parent=None):
 
         items_existentes = set(df_codigos_cumple["ITEM"].tolist())
         nuevos_items = []
-        items_actualizados = 0
 
         # 🔄 Recorrer cada fila del Excel subido
         for _, row in df_subido.iterrows():
             item = row["ITEM"]
-            obs_nueva = str(row.get("OBSERVACIONES", "")).strip().upper()
+            obs_nueva = str(row.get("OBSERVACIONES", "")).strip()
             criterio_nuevo = str(row.get("CRITERIO", "")).strip()
 
             # Verificar si el item es válido
@@ -518,13 +514,21 @@ def abrir_editor_codigos(parent=None):
 
             if item in items_existentes:
                 try:
-                    # Obtener la observación actual
+                    # Usar método más directo para evitar errores de tipo
                     mask = df_codigos_cumple["ITEM"] == item
                     fila_base = df_codigos_cumple[mask]
-                    
                     if len(fila_base) > 0:
-                        obs_actual = str(fila_base.iloc[0]["OBSERVACIONES"]).strip().upper()
-                        criterio_actual = str(fila_base.iloc[0]["CRITERIO"]).strip()
+                        try:
+                            # Usar método más directo - verificar si es DataFrame
+                            if hasattr(fila_base, 'iloc') and len(fila_base) > 0:
+                                obs_actual = str(fila_base.iloc[0]["OBSERVACIONES"]).strip()
+                                criterio_actual = str(fila_base.iloc[0]["CRITERIO"]).strip()
+                            else:
+                                obs_actual = ""
+                                criterio_actual = ""
+                        except:
+                            obs_actual = ""
+                            criterio_actual = ""
                     else:
                         obs_actual = ""
                         criterio_actual = ""
@@ -532,34 +536,18 @@ def abrir_editor_codigos(parent=None):
                     obs_actual = ""
                     criterio_actual = ""
 
-                # CASO 1: Si la observación actual es diferente a "CUMPLE" 
-                # y la nueva observación es diferente → preguntar al usuario
-                if obs_actual != "CUMPLE" and obs_nueva != obs_actual:
+                # Si la observación difiere → preguntar al usuario
+                if obs_actual != obs_nueva:
                     msg = (f"El ITEM '{item}' ya existe.\n\n"
                         f"- Observación actual: {obs_actual}\n"
                         f"- Nueva observación: {obs_nueva}\n\n"
-                        "¿Quieres actualizar la observación?")
+                        "¿Quieres actualizarla?")
                     if messagebox.askyesno("Actualizar Observación", msg):
                         df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "OBSERVACIONES"] = obs_nueva
-                        items_actualizados += 1
-
-                # CASO 2: Si la observación actual es "CUMPLE" 
-                # y la nueva observación es diferente → NO actualizar automáticamente
-                # (a menos que sea explícitamente autorizado por el usuario)
-                elif obs_actual == "CUMPLE" and obs_nueva != obs_actual and obs_nueva != "CUMPLE":
-                    msg = (f"El ITEM '{item}' tiene observación 'CUMPLE'.\n\n"
-                        f"- Observación actual: {obs_actual}\n"
-                        f"- Nueva observación: {obs_nueva}\n\n"
-                        "⚠️  No se recomienda cambiar observaciones 'CUMPLE'.\n"
-                        "¿Estás seguro de que quieres actualizarla?")
-                    if messagebox.askyesno("Confirmar Cambio de CUMPLE", msg):
-                        df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "OBSERVACIONES"] = obs_nueva
-                        items_actualizados += 1
 
                 # Si el criterio estaba vacío y el nuevo trae algo → actualizar
                 if not criterio_actual and criterio_nuevo:
                     df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item, "CRITERIO"] = criterio_nuevo
-                    
             else:
                 nuevos_items.append({
                     "ITEM": item,
@@ -578,16 +566,11 @@ def abrir_editor_codigos(parent=None):
 
             df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
             df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
-            
-            mensaje = f"Se importaron {len(nuevos_items)} ITEMS nuevos."
-            if items_actualizados > 0:
-                mensaje += f"\nSe actualizaron {items_actualizados} observaciones existentes."
-                
-            messagebox.showinfo("Éxito", mensaje)
+            messagebox.showinfo("Éxito", f"Se importaron {len(nuevos_items)} ITEMS nuevos y se actualizaron los existentes.")
             cargar_tabla()
-            
         except Exception as e:
             messagebox.showerror("Error", f"No se pudieron guardar los cambios: {str(e)}")
+
 
 
     # Guardar Excel + JSON
@@ -653,6 +636,58 @@ def actualizar_observacion_interactiva(item):
         ventana.destroy()
         return
         
+        # Crear campos de entrada
+        tk.Label(ventana, text="ITEM:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        tk.Label(ventana, text=str(item_num), bg="#FFFFFF", fg="#282828", font=("Arial", 10, "bold")).pack()
+
+        tk.Label(ventana, text="Observación:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_obs = tk.Entry(ventana, width=50, bg="#FFFFFF", fg="#282828")
+        entry_obs.insert(0, obs_actual)
+        entry_obs.pack(pady=5)
+
+        tk.Label(ventana, text="Criterio:", bg="#FFFFFF", fg="#282828").pack(pady=5)
+        entry_criterio = tk.Entry(ventana, width=50, bg="#FFFFFF", fg="#282828")
+        entry_criterio.insert(0, criterio_actual)
+        entry_criterio.pack(pady=5)
+
+        def guardar_cambios():
+            nueva_obs = entry_obs.get()
+            nuevo_criterio = entry_criterio.get()
+            
+            if not nueva_obs.strip():
+                messagebox.showwarning("Advertencia", "La observación no puede estar vacía")
+                return
+                
+            # Actualizar DataFrame
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "OBSERVACIONES"] = nueva_obs
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "CRITERIO"] = nuevo_criterio
+            
+            # Guardar cambios en archivos
+            df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
+            df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
+            
+            messagebox.showinfo("Éxito", "Cambios guardados correctamente")
+            ventana.destroy()
+
+        tk.Button(ventana, text="Guardar Cambios", command=guardar_cambios,
+                 bg="#ECD925", fg="#282828", activebackground="#f3e55b",
+                 activeforeground="#282828").pack(pady=20)
+
+        def guardar_cambios():
+            nueva_obs = entry_obs.get()
+            nuevo_criterio = entry_criterio.get()
+            
+            # Actualizar DataFrame
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "OBSERVACIONES"] = nueva_obs
+            df_codigos_cumple.loc[df_codigos_cumple["ITEM"] == item_num, "CRITERIO"] = nuevo_criterio
+            
+            # Guardar cambios en archivos
+            df_codigos_cumple.to_excel(ARCHIVO_CODIGOS, index=False)
+            df_codigos_cumple.to_json(ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
+            
+            messagebox.showinfo("Éxito", "Cambios guardados correctamente")
+            ventana.destroy()
+
     obs_actual = ""
     if "OBSERVACIONES" in df_codigos_cumple.columns:
         try:
@@ -689,6 +724,7 @@ def actualizar_observacion_interactiva(item):
 
     ventana.wait_window()
 
+# FUNCION PARA ACTUALIZAR CODIGOS
 def actualizar_codigos(frame_principal):
     try:
         # Seleccionar archivo nuevo
@@ -776,7 +812,19 @@ def actualizar_codigos(frame_principal):
 
 
 
-# ------------------------- FUNCION PARA GENERAR EL TIPO DE REPORTE -------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+# FUNCION PARA GENERAR EL TIPO DE REPORTE
 def procesar_reporte(reporte_path):
     global frame
 
@@ -977,12 +1025,12 @@ def procesar_reporte(reporte_path):
 
         # REGLAS PARA MODIFICAR TIPO DE PROCESO, NORMA Y CRITERIO
         normas_adherible = [
-            'NOM-050-SCFI-2004', 'NOM-121-SCFI-2004',
-            'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004',
+            '015', '050', '004-SE', '024', '141',
+            'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004', 'NOM-004-SE-2021',
             'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
-            'NOM004TEXX', 'NOM020INS', 'NOM-115-STPS-2009','NOM-189-SSA1/SCFI-2018'
+            'NOM004TEXX', 'NOM020INS'
         ]
-        normas_costura = ['NOM-004-SE-2021', 'NOM-020-SCFI-1997', 'NOM004', 'NOM020']
+        normas_costura = ['004', '020', 'NOM004', 'NOM020']
 
         def contiene_numero(texto, lista_numeros):
             texto = str(texto)
@@ -993,7 +1041,7 @@ def procesar_reporte(reporte_path):
             tipo = str(row['TIPO DE PROCESO'])
             if 'NOM004TEXX' in tipo or 'TEXX' in norma_val:
                 return 'ADHERIBLE'
-            if 'NOM004' in tipo or '004' or 'NOM-004-SE-2021' in norma_val:
+            if 'NOM004' in tipo or '004' in norma_val:
                 return 'COSTURA'
             if 'NOM020INS' in norma_val:
                 return 'ADHERIBLE'
@@ -1027,8 +1075,8 @@ def procesar_reporte(reporte_path):
         df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
         # LISTADO DE NORMAS VALIDAS
-        normas_validas = ['003','NOM-004-SE-2021','008','NOM-015-SCFI-2007','020','NOM-020-SCFI-1997',
-                          'NOM-024-SCFI-2013','035','NOM-050-SCFI-2004','051','116','NOM-141-SSA1/SCFI-2012','142','173','185','186','NOM-189-SSA1/SCFI-2018','192','199','235','NOM-115-STPS-2009','NOM-121-SCFI-2004']
+        normas_validas = ['003','004','NOM-004-SE-2021','008','015','020','NOM-020-SCFI-1997',
+                          '024','NOM-024-SCFI-2013','035','050','051','116','141','142','173','185','186','189','192','199','235']
 
         # REGLAS ADICIONALES
         for idx, row in df_result.iterrows():
@@ -1099,6 +1147,23 @@ def procesar_reporte(reporte_path):
 
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def seleccionar_reporte():
     ruta = filedialog.askopenfilename(
@@ -1205,6 +1270,7 @@ def exportar_concentrado_catalogo(frame_principal):
             pass
         messagebox.showerror("Error", f"No se pudo exportar el catálogo:\n{e}")
 
+
 #VENTANA DEL DASHBOARD MEJORADO
 def mostrar_estadisticas():
     """Llama al archivo Dashboard.py para mostrar el dashboard externo"""
@@ -1214,7 +1280,7 @@ def mostrar_estadisticas():
         print(f"Error al abrir el dashboard: {e}")
 
 # FUNCION PARA LA BARRA DE PROGRESO
-class BarraProgreso:
+class   BarraProgreso:
     def __init__(self, frame, texto="Procesando...", ancho=250, posicion="derecha"):
         """
         frame: contenedor donde se mostrará la barra
@@ -1296,7 +1362,7 @@ def verificar_rutas():
             return configurar_rutas()
     return config.get("rutas", {}) if config else {}
 
-# ------------------------- VENTANA PRINCIPAL -------------------------
+# VENTANA PRINCIPAL
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
 root.geometry("1100x570")
@@ -1305,7 +1371,7 @@ root.configure(bg="#FFFFFF")
 # Verificar rutas al iniciar la aplicación
 RUTAS = verificar_rutas()
 
-# ------------------------- DISEÑO DE LA VENTANA -------------------------
+# --- DISEÑO DE LA VENTANA ---
 if __name__ == "__main__":
     frame = tk.Frame(root, bg="#FFFFFF")
     frame.pack(expand=True, fill="both", padx=20, pady=20)
