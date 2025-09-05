@@ -11,6 +11,7 @@ from reportlab.lib.utils import ImageReader
 
 # ---------------- Configuración ---------------- #
 ARCHIVO_JSON = "resources/codigos_cumple.json"
+ARCHIVO_PROCESADOS = "archivos_procesados.json"  # Nuevo archivo para archivos procesados
 archivos_procesados = []
 
 # Manteniendo los colores originales del dashboard
@@ -29,6 +30,82 @@ COL_DANGER = "#F44336"  # Rojo para "No cumple"
 COL_TEXT_LIGHT = "#666666"  # Texto secundario
 
 # ---------------- Funciones ---------------- #
+
+def cargar_archivos_procesados():
+    """Carga la lista de archivos procesados desde el archivo JSON"""
+    global archivos_procesados
+    try:
+        if os.path.exists(ARCHIVO_PROCESADOS):
+            with open(ARCHIVO_PROCESADOS, "r", encoding="utf-8") as f:
+                datos = json.load(f)
+                # Asegurarse de que es una lista
+                if isinstance(datos, list):
+                    archivos_procesados = datos
+                else:
+                    archivos_procesados = []
+                    print("Formato inválido en archivo de procesados")
+        else:
+            archivos_procesados = []
+            print(f"Archivo {ARCHIVO_PROCESADOS} no encontrado, se creará uno nuevo")
+    except Exception as e:
+        archivos_procesados = []
+        print(f"Error cargando archivos procesados: {e}")
+    
+    return archivos_procesados
+
+def guardar_archivos_procesados():
+    """Guarda la lista de archivos procesados en el archivo JSON"""
+    try:
+        # Crear directorio si no existe
+        os.makedirs(os.path.dirname(ARCHIVO_PROCESADOS), exist_ok=True)
+        
+        with open(ARCHIVO_PROCESADOS, "w", encoding="utf-8") as f:
+            json.dump(archivos_procesados, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error guardando archivos procesados: {e}")
+
+def borrar_archivo_procesados():
+    """Elimina físicamente el archivo JSON de archivos procesados"""
+    try:
+        if os.path.exists(ARCHIVO_PROCESADOS):
+            os.remove(ARCHIVO_PROCESADOS)
+            print(f"Archivo {ARCHIVO_PROCESADOS} eliminado correctamente")
+            return True
+        else:
+            print(f"Archivo {ARCHIVO_PROCESADOS} no existe, no se necesita eliminar")
+            return True
+    except Exception as e:
+        print(f"Error eliminando archivo {ARCHIVO_PROCESADOS}: {e}")
+        return False
+
+def actualizar_lista_archivos(lst_archivos):
+    """Actualiza la lista visual con los archivos procesados"""
+    lst_archivos.delete(0, tk.END)
+    for archivo in archivos_procesados:
+        # Si el archivo es un string (solo nombre), mostrarlo tal cual
+        if isinstance(archivo, str):
+            lst_archivos.insert(tk.END, archivo)
+        # Si es un diccionario, mostrar el nombre o información relevante
+        elif isinstance(archivo, dict) and 'nombre' in archivo:
+            lst_archivos.insert(tk.END, archivo['nombre'])
+        else:
+            # Mostrar representación string para otros tipos
+            lst_archivos.insert(tk.END, str(archivo))
+
+def limpiar_lista(lst_archivos):
+    """Limpia la lista de archivos procesados y elimina el archivo JSON"""
+    global archivos_procesados
+    archivos_procesados = []
+    
+    # Eliminar el archivo JSON físicamente
+    if borrar_archivo_procesados():
+        messagebox.showinfo("Lista Limpiada", "Se han eliminado todos los archivos de la lista")
+    else:
+        # Si no se pudo eliminar el archivo, al menos guardar lista vacía
+        guardar_archivos_procesados()
+        messagebox.showinfo("Lista Limpiada", "Se han eliminado todos los archivos de la lista")
+    
+    actualizar_lista_archivos(lst_archivos)
 
 def leer_datos():
     total_codigos = 0
@@ -50,7 +127,7 @@ def leer_datos():
         print(f"Error leyendo JSON: {e}")
     return total_codigos, codigos_cumple, codigos_revisados
 
-def dibujar_grafica(canvas, lbl_totales):
+def dibujar_grafica(canvas, lbl_totales, lst_archivos):
     canvas.delete("all")
     total_codigos, codigos_cumple, codigos_revisados = leer_datos()
     
@@ -77,7 +154,7 @@ def dibujar_grafica(canvas, lbl_totales):
     # --- Ajustes de espacio dinámicos ---
     ancho, alto = int(canvas["width"]), int(canvas["height"])
     margen_sup = 30
-    margen_inf = 60   # más espacio para etiquetas de abajo
+    margen_inf = 60
     margen_lat = 20
     ancho_barra = 80
     espacio = 60
@@ -89,8 +166,8 @@ def dibujar_grafica(canvas, lbl_totales):
 
     # --- Dibujar ejes ---
     eje_x_y = alto - margen_inf
-    canvas.create_line(margen_lat, eje_x_y, ancho - margen_lat, eje_x_y, fill=COL_TEXT, width=2)  # eje X
-    canvas.create_line(margen_lat, margen_sup, margen_lat, eje_x_y, fill=COL_TEXT, width=2)       # eje Y
+    canvas.create_line(margen_lat, eje_x_y, ancho - margen_lat, eje_x_y, fill=COL_TEXT, width=2)
+    canvas.create_line(margen_lat, margen_sup, margen_lat, eje_x_y, fill=COL_TEXT, width=2)
 
     # --- Dibujar barras ---
     x_inicio = margen_lat + espacio
@@ -117,13 +194,11 @@ def dibujar_grafica(canvas, lbl_totales):
         canvas.create_text((x1 + x2) / 2, eje_x_y + 20, text=nombre, font=("INTER", 8, "bold"), 
                           fill=COL_TEXT, width=100, justify='center')
 
-    # --- Auto-refresh cada 2 segundos ---
-    canvas.after(2000, lambda: dibujar_grafica(canvas, lbl_totales))
+    # --- Actualizar lista de archivos ---
+    actualizar_lista_archivos(lst_archivos)
 
-def limpiar_lista(lst_archivos):
-    global archivos_procesados
-    archivos_procesados = []
-    lst_archivos.delete(0, tk.END)
+    # --- Auto-refresh cada 2 segundos ---
+    canvas.after(2000, lambda: dibujar_grafica(canvas, lbl_totales, lst_archivos))
 
 def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     """Crea una tarjeta de estadística moderna"""
@@ -171,9 +246,8 @@ def exportar_pdf_simple():
         # Preparar información de archivos
         stats_archivos = {
             'total_archivos': len(archivos_procesados),
-            'ultimo_proceso': os.path.basename(archivos_procesados[-1]) if archivos_procesados else "Ninguno",
-            'archivos_recientes': [{'nombre': os.path.basename(f), 'fecha_proceso': datetime.now().strftime('%d/%m/%Y')} 
-                                  for f in archivos_procesados[-3:]]
+            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
+            'archivos_recientes': archivos_procesados[-3:] if archivos_procesados else []
         }
         
         ruta = filedialog.asksaveasfilename(
@@ -231,15 +305,16 @@ def exportar_pdf_simple():
         y -= 30
 
         c.setFont("Helvetica", 10)
-        c.drawString(70, y, f"• Último archivo: {stats_archivos['ultimo_proceso']}")
+        c.drawString(70, y, f"• Total de archivos: {stats_archivos['total_archivos']}")
         y -= 20
 
-        # Pie de página
+        # Archivos recientes
         if stats_archivos['archivos_recientes']:
             c.drawString(70, y, "Archivos recientes:")
             y -= 15
-            for archivo in stats_archivos['archivos_recientes'][-3:]:
-                c.drawString(90, y, f"• {archivo['nombre']} ({archivo['fecha_proceso']})")
+            for archivo in stats_archivos['archivos_recientes']:
+                nombre_archivo = archivo if isinstance(archivo, str) else archivo.get('nombre', str(archivo))
+                c.drawString(90, y, f"• {nombre_archivo}")
                 y -= 15
             y -= 10
 
@@ -307,6 +382,9 @@ root.title("Dashboard de Códigos - V&C")
 root.geometry("1000x600")
 root.configure(bg=COL_BG)
 
+# Cargar archivos procesados al iniciar
+archivos_procesados = cargar_archivos_procesados()
+
 # Frame principal
 main_container = tk.Frame(root, bg=COL_BG)
 main_container.pack(fill="both", expand=True, padx=15, pady=15)
@@ -362,7 +440,7 @@ lbl_totales = tk.Label(graph_card, text="", bg=COL_CARD_BG,
 lbl_totales.pack(pady=(0, 10))
 
 # Frame derecho para archivos
-right_frame = tk.Frame(content_frame, bg=COL_BG, width=250)
+right_frame = tk.Frame(content_frame, bg=COL_BG, width=400)
 right_frame.pack(side="right", fill="y")
 right_frame.pack_propagate(False)
 
@@ -370,7 +448,7 @@ files_card = tk.Frame(right_frame, bg=COL_CARD_BG, relief="flat", bd=1,
                      highlightbackground=COL_BORDER, highlightthickness=1)
 files_card.pack(fill="both", expand=True)
 
-lbl_archivos = tk.Label(files_card, text="📁 ARCHIVOS", 
+lbl_archivos = tk.Label(files_card, text="📁 ARCHIVOS PROCESADOS", 
                        bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
 lbl_archivos.pack(pady=(10, 5))
 
@@ -408,8 +486,8 @@ btn_cerrar = tk.Button(footer_frame, text="❌ Cerrar",
                       relief="flat", padx=15, pady=6, cursor="hand2")
 btn_cerrar.pack(side="right")
 
-# Iniciar gráfica
-dibujar_grafica(canvas_grafica, lbl_totales)
+# Iniciar gráfica (pasar lst_archivos como parámetro)
+dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
 
 # Centrar ventana
 root.eval('tk::PlaceWindow . center')
