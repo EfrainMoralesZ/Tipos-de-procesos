@@ -28,7 +28,7 @@ else:
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
 
-# 👈 NUEVO: SISTEMA DE CONTADOR DE ARCHIVOS PROCESADOS
+# NUEVO: SISTEMA DE CONTADOR DE ARCHIVOS PROCESADOS
 ARCHIVOS_PROCESADOS_FILE = os.path.join(BASE_PATH, "archivos_procesados.json")
 CODIGOS_CUMPLE = "codigos_cumple.xlsx"   # Ruta del Excel
 CODIGOS_JSON = "codigos_cumple.json"     # Ruta del respaldo JSON
