@@ -668,142 +668,147 @@ class BarraProgreso:
 #  VENTANA PRINCIPAL 
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("1100x600")
+root.geometry("900x600")
 root.configure(bg="#FFFFFF")
 
 
 #  DISEÑO DE LA VENTANA 
 if __name__ == "__main__":
+    # Configurar estilo global
+    style = ttk.Style()
+    style.theme_use('clam')
+    
+    # Frame principal con fondo blanco
     frame = tk.Frame(root, bg="#FFFFFF")
-    frame.pack(expand=True, fill="both", padx=20, pady=20)
+    frame.pack(expand=True, fill="both", padx=30, pady=30)
 
-    # --- Frame superior: logo + barra izquierda, botones derecha ---
-    frame_top = tk.Frame(frame, bg="#FFFFFF")
-    frame_top.pack(expand=True, fill="both")
-
-    # --- Frame izquierdo: logo y barra de progreso ---
-    frame_left = tk.Frame(frame_top, bg="#FFFFFF")
-    frame_left.pack(side="left", fill="both", expand=True, padx=(0,20))
-
-    # --- Logo ---
-    try:
-        logo_path = os.path.join(BASE_PATH, "img", "logo.png")
-        if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((150, 90), Image.Resampling.LANCZOS)
-            logo_img = ImageTk.PhotoImage(logo_img_raw)
-            logo_label = tk.Label(frame_left, image=logo_img, bg="#FFFFFF")
-            # Mantener referencia a la imagen para evitar garbage collection
-            setattr(logo_label, '_image_ref', logo_img)
-            logo_label.pack(pady=(20, 20))
-    except Exception as e:
-        print(f"Error cargando el logo: {e}")
-
-    # --- Barra de progreso TIPO DE PROCESO (abajo a la izquierda) ---
-    progress_var_tipo = tk.DoubleVar()
-    progress_bar_tipo = ttk.Progressbar(frame_left, variable=progress_var_tipo, maximum=100, length=250)
-    progress_label_tipo = tk.Label(frame_left, text="", bg="#FFFFFF", fg="#282828", font=("INTER", 10, "bold"))
-    percent_label_tipo = tk.Label(frame_left, text="", bg="#FFFFFF", fg="#282828", font=("INTER", 10, "bold"))
-
-    def iniciar_barra_progreso_tipo():
-        """Muestra la barra de progreso del TIPO DE PROCESO abajo a la izquierda."""
-        progress_var_tipo.set(0)
-        progress_label_tipo.config(text="Procesando tipo de proceso...")
-        percent_label_tipo.config(text="0%")
-
-        progress_label_tipo.pack(side="bottom", anchor="w", pady=(0,0))
-        progress_bar_tipo.pack(side="bottom", anchor="w", pady=(0,2))
-        percent_label_tipo.pack(side="bottom", anchor="w", pady=(0,5))
-        frame_left.update()
-
-    def actualizar_barra_tipo(valor):
-        """Actualiza la barra de progreso y el porcentaje del TIPO DE PROCESO."""
-        progress_var_tipo.set(valor)
-        percent_label_tipo.config(text=f"{int(valor)}%")
-        frame_left.update()
-
-    def finalizar_barra_progreso_tipo():
-        """Completa y oculta la barra de progreso del TIPO DE PROCESO."""
-        progress_var_tipo.set(100)
-        progress_label_tipo.config(text="¡Completado!")
-        percent_label_tipo.config(text="100%")
-        frame_left.update()
-
-        def remove_widgets():
-            progress_bar_tipo.pack_forget()
-            progress_label_tipo.pack_forget()
-            percent_label_tipo.pack_forget()
-
-        frame_left.after(500, remove_widgets)
-
-    # --- Frame derecho: botones ---
-    # --- FRAME DE BOTONES CENTRADOS ---
-    # --- Encabezado en dos niveles ---
-    header_frame = tk.Frame(frame_left, bg="#FFFFFF")
-    header_frame.pack(pady=(10,10), fill="x")
-
-    # Línea superior amarilla (decorativa)
-    linea = tk.Frame(header_frame, bg="#ecd925", height=5)
-    linea.pack(fill="x", pady=(0,10))
+    # --- Header con título ---
+    header_frame = tk.Frame(frame, bg="#FFFFFF")
+    header_frame.pack(fill="x", pady=(0, 25))
 
     # Título principal
     label_titulo = tk.Label(
         header_frame, 
         text="INSPECCIÓN DE CUMPLIMIENTO\nNORMATIVO AL ARRIBO",
-        font=("INTER", 30, "bold"), 
+        font=("Inter", 24, "bold"), 
         fg="#282828", 
         bg="#FFFFFF", 
         justify="center"
     )
-    label_titulo.pack(pady=(0,10))
+    label_titulo.pack(pady=(0, 8))
 
     # Subtítulo
     label_sub = tk.Label(
         header_frame, 
-        text="Sube el reporte de mercancía para generar el TIPO DE PROCESO",
-        font=("INTER", 12, "bold"), 
-        fg="#4d4d4d", 
+        text="Sistema integral para la gestión de procesos normativos",
+        font=("Inter", 11), 
+        fg="#4B4B4B", 
         bg="#FFFFFF",
         justify="center"
     )
     label_sub.pack()
 
-    # --- Botones debajo del título ---
-    style = ttk.Style()
-    style.theme_use('clam')
+    # --- Contenido principal: Logo y Botones ---
+    content_frame = tk.Frame(frame, bg="#FFFFFF")
+    content_frame.pack(fill="both", expand=True, pady=(0, 15))
+
+    # Panel izquierdo: Logo centrado
+    left_panel = tk.Frame(content_frame, bg="#FFFFFF", width=250)
+    left_panel.pack(side="left", fill="y")
+    left_panel.pack_propagate(False)
+
+    # Logo más pequeño
+    try:
+        logo_path = os.path.join(BASE_PATH, "img", "logo.png")
+        if os.path.exists(logo_path):
+            logo_img_raw = Image.open(logo_path).resize((250, 190), Image.Resampling.LANCZOS)
+            logo_img = ImageTk.PhotoImage(logo_img_raw)
+            logo_label = tk.Label(left_panel, image=logo_img, bg="#FFFFFF")
+            logo_label.image = logo_img
+            logo_label.pack(pady=(15, 0))
+    except Exception as e:
+        print(f"Error cargando el logo: {e}")
+
+    # Separador visual
+    separator = tk.Frame(left_panel, bg="#ECD925", height=2)
+    separator.pack(fill="x", pady=10, padx=8)
+
+    # Texto descriptivo bajo el logo
+    tk.Label(left_panel, 
+             text="Expertos en NOM's\n Líderes en evaluación regulatoria.", 
+             font=("Inter", 9), 
+             fg="#4B4B4B", 
+             bg="#FFFFFF",
+             justify="center").pack()
+
+    # Panel derecho: Botones organizados
+    right_panel = tk.Frame(content_frame, bg="#FFFFFF")
+    right_panel.pack(side="right", fill="both", expand=True)
+
+    # Configurar estilo de botones MÁS PEQUEÑOS
+        # --- Estilo más compacto y estético de botones ---
     style.configure(
-        'TButton', 
-        background='#ecd925', 
-        foreground='#282828', 
-        font=('INTER', 10, 'bold'), 
-        borderwidth=0, 
-        padding=(2,2)
+        'SmallCard.TButton',
+        background='#ecd925',   # Amarillo corporativo
+        foreground='#282828',
+        font=('Inter', 10, 'bold'),
+        borderwidth=0,
+        padding=(6, 4),
+        focusthickness=0,
+        focuscolor='none'
     )
     style.map(
-        'TButton', 
-        background=[('active', "#B8AA00")], 
-        foreground=[('active', '#282828')]
+        'SmallCard.TButton',
+        background=[('active', '#Ecd926'), ('hover', '#FFF176')],
+        relief=[('pressed', 'sunken')]
     )
 
-    # Contenedor de botones debajo del header
-    frame_buttons = tk.Frame(frame_left, bg="#FFFFFF")
-    frame_buttons.pack(pady=(5,5), fill="x")
+    # Contenedor principal
+    main_button_container = tk.Frame(right_panel, bg="#FFFFFF")
+    main_button_container.pack(fill="both", expand=True, padx=5, pady=5)
 
+    # Botones más pequeños con emojis arriba
     botones = [
-        ("CONFIGURAR RUTAS", configurar_rutas),
-        ("REPORTE DE MERCANCIA", seleccionar_reporte),
-        ("EDITOR DE CÓDIGOS", lambda: abrir_editor_codigos(frame_left)),
-        ("DASHBOARD", mostrar_estadisticas),
-        ("ACTUALIZAR CATALOGO", lambda: actualizar_catalogo(frame_left)),
-        ("EXPORTAR CATALOGO", lambda: exportar_concentrado_catalogo(frame_left)),
+        ("⚙️ Configurar", configurar_rutas),
+        ("📊 Reportes", seleccionar_reporte),
+        ("📋 Editor", lambda: abrir_editor_codigos(right_panel)),
+        ("📈 Dashboard", mostrar_estadisticas),
+        ("🔄 Actualizar", lambda: actualizar_catalogo(right_panel)),
+        ("💾 Exportar", lambda: exportar_concentrado_catalogo(right_panel))
     ]
-    # Ahora los botones se organizan en 4 columnas
-    cols = 4
-    for i, (texto, comando) in enumerate(botones):
-        btn = ttk.Button(frame_buttons, text=texto, command=comando, style='TButton', width=25)
-        btn.grid(row=i // cols, column=i % cols, padx=10, pady=10, ipadx=10, ipady=10, sticky="nsew")
-    
-    # Configurar las columnas para que se expandan de forma proporcional
-    for col in range(cols):
-        frame_buttons.grid_columnconfigure(col, weight=1)
 
-    root.mainloop()
+    cols = 3
+    for i, (texto, comando) in enumerate(botones):
+        row = i // cols
+        col = i % cols
+
+        btn = ttk.Button(
+            main_button_container,
+            text=texto,
+            command=comando,
+            style='SmallCard.TButton',
+            width=5
+        )
+        btn.grid(row=row, column=col, padx=8, pady=8, sticky="nsew", ipadx=3, ipady=6)
+
+    # Ajuste de filas/columnas
+    for i in range(2):
+        main_button_container.grid_rowconfigure(i, weight=1)
+    for i in range(cols):
+        main_button_container.grid_columnconfigure(i, weight=1)
+
+    # Footer minimalista más pequeño
+    footer_frame = tk.Frame(frame, bg="#FFFFFF")
+    footer_frame.pack(fill="x", pady=(10, 0))
+
+    # Línea decorativa más delgada
+    footer_line = tk.Frame(footer_frame, bg="#ECD925", height=1)
+    footer_line.pack(fill="x", pady=(0, 8))
+
+    tk.Label(footer_frame, 
+             text="Sistema de Gestión de Procesos V&C - Versión 2.0 • © 2025", 
+             font=("Inter", 8,'bold'),  # Fuente más pequeña
+             fg="#4B4B4B", 
+             bg="#FFFFFF").pack()
+
+root.mainloop()
