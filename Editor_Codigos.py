@@ -66,21 +66,21 @@ class EditorCodigos:
         search_inner_frame.pack(fill="x", padx=10, pady=10)
         
         tk.Label(search_inner_frame, text="🔍 Buscar:", bg="#F5F5F5", fg="#282828",
-                 font=("Segoe UI", 11)).pack(side="left", padx=10)
-        
+                 font=("INTER", 11)).pack(side="left", padx=10)
+
         self.search_var = tk.StringVar()
         self.search_entry = tk.Entry(search_inner_frame, textvariable=self.search_var,
-                                     font=("Segoe UI", 11), bg="#FFFFFF", fg="#282828",
+                                     font=("INTER", 11), bg="#FFFFFF", fg="#282828",
                                      relief="flat", width=50)
         self.search_entry.pack(side="left", padx=5, fill="x", expand=True)
         
         # Botones de búsqueda con nuevo color
         btn_search = tk.Button(search_inner_frame, text="Buscar", bg="#ECD925", fg="#282828",
-                  font=("Segoe UI", 9, "bold"), command=self.filtrar_tabla, relief="flat", padx=15)
+                  font=("INTER", 9, "bold"), command=self.filtrar_tabla, relief="flat", padx=15)
         btn_search.pack(side="left", padx=5)
         
         btn_clear = tk.Button(search_inner_frame, text="Limpiar", bg="#E0E0E0", fg="#282828",
-                  font=("Segoe UI", 9), command=self.actualizar_tabla, relief="flat", padx=15)
+                  font=("INTER", 9), command=self.actualizar_tabla, relief="flat", padx=15)
         btn_clear.pack(side="left", padx=5)
 
         # Frame para tabla con scrollbars
@@ -137,18 +137,18 @@ class EditorCodigos:
             ("➕ Agregar Item", self.abrir_agregar_item),
             ("✏️ Editar Item", self.abrir_editar_item),
             ("📤 Subir Excel", self.importar_excel),
-            ("💾 Guardar", self.guardar_datos),
+            # ("💾 Guardar", self.guardar_datos),
             # ("🔄 Actualizar", self.actualizar_tabla), -- 
             ("❌ Cerrar", self.ventana.destroy)
         ]
         
         for text, command in buttons_config:
             if text == "❌ Cerrar":
-                btn = tk.Button(button_frame, text=text, bg="#F56565", fg="#FFFFFF",
-                          font=("Segoe UI", 10, "bold"), command=command, relief="flat", padx=15, pady=8)
+                btn = tk.Button(button_frame, text=text, bg="#282828", fg="#FFFFFF",
+                          font=("INTER", 10, "bold"), command=command, relief="flat", padx=15, pady=8)
             else:
                 btn = tk.Button(button_frame, text=text, bg="#ECD925", fg="#282828",
-                          font=("Segoe UI", 10, "bold"), command=command, relief="flat", padx=15, pady=8)
+                          font=("INTER", 10, "bold"), command=command, relief="flat", padx=15, pady=8)
             btn.pack(side="left", padx=5)
 
         self.actualizar_tabla()
