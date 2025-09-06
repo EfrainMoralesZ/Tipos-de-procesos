@@ -44,14 +44,45 @@ def configurar_rutas():
         messagebox.showerror("❌ Error", f"No se pudo abrir la configuración:\n{e}")
 
 # REGISTRAR LOS ARCHIVOS PROCESADOS
-def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
-    """Registra un archivo procesado en el sistema de estadísticas"""
+# Carpeta donde se guardarán las configuraciones y JSONs
+# Carpeta de configuración
+CONFIG_DIR = "Guardar Archivos Generados"
+os.makedirs(CONFIG_DIR, exist_ok=True)
+
+# Ruta del archivo de procesados
+ARCHIVOS_PROCESADOS_FILE = os.path.join(CONFIG_DIR, "archivos_procesados.json")
+
+# Lista global de archivos procesados
+archivos_procesados = []
+
+def cargar_archivos_procesados():
+    """Carga la lista de archivos procesados, crea el JSON si no existe"""
+    global archivos_procesados
     try:
         if os.path.exists(ARCHIVOS_PROCESADOS_FILE):
             with open(ARCHIVOS_PROCESADOS_FILE, 'r', encoding='utf-8') as f:
-                archivos = json.load(f)
+                datos = json.load(f)
+                archivos_procesados = datos if isinstance(datos, list) else []
         else:
-            archivos = []
+            archivos_procesados = []
+            # Crear archivo vacío
+            with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=4, ensure_ascii=False)
+            print(f"📁 Archivo {ARCHIVOS_PROCESADOS_FILE} no encontrado. Se creó uno nuevo.")
+    except Exception as e:
+        archivos_procesados = []
+        print(f"❌ Error cargando archivos procesados: {e}")
+    return archivos_procesados
+
+def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
+    """Registra un archivo procesado en el sistema de estadísticas"""
+    try:
+        cargar_archivos_procesados()
+        
+        # Evitar duplicados
+        if any(a["nombre"] == nombre_archivo for a in archivos_procesados):
+            print(f"ℹ️ Archivo ya registrado: {nombre_archivo}")
+            return
         
         # Agregar nuevo archivo
         archivo_info = {
@@ -59,21 +90,16 @@ def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
             "fecha_proceso": fecha_proceso,
             "fecha_archivo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
+        archivos_procesados.append(archivo_info)
         
-        # Verificar si ya existe para no duplicar
-        if not any(a["nombre"] == nombre_archivo for a in archivos):
-            archivos.append(archivo_info)
-            
-            # Guardar archivo actualizado
-            with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
-                json.dump(archivos, f, indent=4, ensure_ascii=False)
-            
-            print(f"[OK] Archivo registrado: {nombre_archivo}")
-        else:
-            print(f"[INFO] Archivo ya registrado: {nombre_archivo}")
-            
+        # Guardar cambios en JSON
+        with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
+        
+        print(f"✅ Archivo registrado correctamente: {nombre_archivo}")
+    
     except Exception as e:
-        print(f"[ERROR] Error registrando archivo: {e}")
+        print(f"❌ Error registrando archivo: {e}")
 
 # OBTENER ESTADISTICAS DE ARCHIVOS
 def obtener_estadisticas_archivos():
@@ -137,6 +163,7 @@ def abrir_editor_codigos(parent):
     else:
         messagebox.showwarning("Advertencia", "Primero debe configurar los archivos en Configuración de Rutas")
         return None
+
 #  FUNCION PARA GENERAR EL TIPO DE REPORTE 
 def procesar_reporte(reporte_path):
     global frame

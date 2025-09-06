@@ -288,7 +288,6 @@ class EditorCodigos:
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo importar el Excel: {str(e)}")
 
-
 class AgregarItem:
     def __init__(self, editor: EditorCodigos):
         self.editor = editor
@@ -380,7 +379,6 @@ class AgregarItem:
         self.ventana.destroy()
         messagebox.showinfo("Éxito", "Item agregado correctamente")
 
-
 class EditorItem:
     def __init__(self, editor: EditorCodigos, index):
         self.editor = editor
@@ -470,7 +468,6 @@ class EditorItem:
         self.editor.actualizar_tabla()
         self.ventana.destroy()
         messagebox.showinfo("Éxito", "Cambios guardados correctamente")
-
 
 if __name__ == "__main__":
     root = tk.Tk()

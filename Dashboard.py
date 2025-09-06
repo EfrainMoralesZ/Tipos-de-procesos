@@ -31,14 +31,23 @@ COL_TEXT_LIGHT = "#666666"  # Texto secundario
 
 # ---------------- Funciones ---------------- #
 
+# Carpeta de configuración
+CONFIG_DIR = "Guardar Archivos Generados"
+os.makedirs(CONFIG_DIR, exist_ok=True)
+
+# Ruta del archivo de procesados
+ARCHIVOS_PROCESADOS_FILE = os.path.join(CONFIG_DIR, "archivos_procesados.json")
+
+# Lista global
+archivos_procesados = []
+
 def cargar_archivos_procesados():
-    """Carga la lista de archivos procesados desde el archivo JSON"""
+    """Carga la lista de archivos procesados desde el JSON, crea el archivo si no existe"""
     global archivos_procesados
     try:
-        if os.path.exists(ARCHIVO_PROCESADOS):
-            with open(ARCHIVO_PROCESADOS, "r", encoding="utf-8") as f:
+        if os.path.exists(ARCHIVOS_PROCESADOS_FILE):
+            with open(ARCHIVOS_PROCESADOS_FILE, "r", encoding="utf-8") as f:
                 datos = json.load(f)
-                # Asegurarse de que es una lista
                 if isinstance(datos, list):
                     archivos_procesados = datos
                 else:
@@ -46,12 +55,42 @@ def cargar_archivos_procesados():
                     print("Formato inválido en archivo de procesados")
         else:
             archivos_procesados = []
-            print(f"Archivo {ARCHIVO_PROCESADOS} no encontrado, se creará uno nuevo")
+            # Crear archivo vacío
+            with open(ARCHIVOS_PROCESADOS_FILE, "w", encoding="utf-8") as f:
+                json.dump([], f, indent=4, ensure_ascii=False)
+            print(f"Archivo {ARCHIVOS_PROCESADOS_FILE} no encontrado. Se creó uno nuevo en '{CONFIG_DIR}'.")
     except Exception as e:
         archivos_procesados = []
         print(f"Error cargando archivos procesados: {e}")
     
     return archivos_procesados
+
+def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
+    """Registra un archivo procesado en el JSON dentro de la carpeta de configuración"""
+    try:
+        cargar_archivos_procesados()
+        
+        # Evitar duplicados
+        if any(a["nombre"] == nombre_archivo for a in archivos_procesados):
+            print(f"[INFO] Archivo ya registrado: {nombre_archivo}")
+            return
+        
+        # Agregar nuevo archivo
+        archivo_info = {
+            "nombre": nombre_archivo,
+            "fecha_proceso": fecha_proceso,
+            "fecha_archivo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        archivos_procesados.append(archivo_info)
+        
+        # Guardar cambios en el JSON
+        with open(ARCHIVOS_PROCESADOS_FILE, "w", encoding="utf-8") as f:
+            json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
+        
+        print(f"[OK] Archivo registrado: {nombre_archivo}")
+    
+    except Exception as e:
+        print(f"[ERROR] Error registrando archivo: {e}")
 
 def guardar_archivos_procesados():
     """Guarda la lista de archivos procesados en el archivo JSON"""
@@ -67,15 +106,12 @@ def guardar_archivos_procesados():
 def borrar_archivo_procesados():
     """Elimina físicamente el archivo JSON de archivos procesados"""
     try:
-        if os.path.exists(ARCHIVO_PROCESADOS):
-            os.remove(ARCHIVO_PROCESADOS)
-            print(f"Archivo {ARCHIVO_PROCESADOS} eliminado correctamente")
+        if os.path.exists(ARCHIVOS_PROCESADOS_FILE):
+            os.remove(ARCHIVOS_PROCESADOS_FILE)
             return True
-        else:
-            print(f"Archivo {ARCHIVO_PROCESADOS} no existe, no se necesita eliminar")
-            return True
+        return False
     except Exception as e:
-        print(f"Error eliminando archivo {ARCHIVO_PROCESADOS}: {e}")
+        print(f"❌ Error al borrar archivo de procesados: {e}")
         return False
 
 def actualizar_lista_archivos(lst_archivos):
@@ -96,15 +132,16 @@ def limpiar_lista(lst_archivos):
     """Limpia la lista de archivos procesados y elimina el archivo JSON"""
     global archivos_procesados
     archivos_procesados = []
-    
-    # Eliminar el archivo JSON físicamente
+
+    # Intentar borrar el JSON
     if borrar_archivo_procesados():
-        messagebox.showinfo("Lista Limpiada", "Se han eliminado todos los archivos de la lista")
+        messagebox.showinfo("🗑️ Lista Limpiada", "Se han eliminado todos los archivos de la lista")
     else:
-        # Si no se pudo eliminar el archivo, al menos guardar lista vacía
+        # Si no se pudo borrar el archivo, al menos guardar lista vacía
         guardar_archivos_procesados()
-        messagebox.showinfo("Lista Limpiada", "Se han eliminado todos los archivos de la lista")
-    
+        messagebox.showinfo("🗑️ Lista Limpiada", "Se han eliminado todos los archivos de la lista")
+
+    # Actualizar visualización de la lista en la interfaz
     actualizar_lista_archivos(lst_archivos)
 
 def leer_datos():
