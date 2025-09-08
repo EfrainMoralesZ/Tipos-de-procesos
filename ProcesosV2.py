@@ -18,28 +18,27 @@ from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import subprocess
 
+# Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):
     # Cuando está compilado en .exe
-    BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
+    BASE_PATH = sys._MEIPASS
 else:
     # Cuando se ejecuta desde Python
-    BASE_PATH = os.path.dirname(__file__)
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-# Configuración de rutas y archivos
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+# Archivos de configuración
 CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
-
-# SISTEMA DE CONTADOR DE ARCHIVOS PROCESADOS
 ARCHIVOS_PROCESADOS_FILE = os.path.join(BASE_PATH, "archivos_procesados.json")
-CODIGOS_CUMPLE = "codigos_cumple.xlsx"   # Ruta del Excel
-CODIGOS_JSON = "codigos_cumple.json"     # Ruta del respaldo JSON
+CODIGOS_CUMPLE = os.path.join(BASE_PATH, "codigos_cumple.xlsx")
+CODIGOS_JSON = os.path.join(BASE_PATH, "codigos_cumple.json")
 
-# Configuracion de Rutas
+# Configuración de Rutas
 def configurar_rutas():
     """Abre la ventana de configuración de rutas externa"""
     try:
-        # Llama al script externo que maneja la configuración de rutas
-        subprocess.Popen(["python", "Rutas.py"])
+        # Si corres desde exe, busca el script en BASE_PATH
+        rutas_py = os.path.join(BASE_PATH, "Rutas.py")
+        subprocess.Popen([sys.executable, rutas_py])
     except Exception as e:
         messagebox.showerror("❌ Error", f"No se pudo abrir la configuración:\n{e}")
 
