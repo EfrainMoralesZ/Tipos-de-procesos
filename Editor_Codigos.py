@@ -266,28 +266,114 @@ class EditorCodigos:
         )
         if not file_path:
             return
+
         try:
             df_nuevo = pd.read_excel(file_path)
-            # Verificar que tenga las columnas correctas
-            if not all(col in df_nuevo.columns for col in ["ITEM", "OBSERVACIONES", "CRITERIO"]):
-                messagebox.showerror("Error", "El archivo Excel debe contener las columnas: ITEM, OBSERVACIONES, CRITERIO")
+
+            columnas_requeridas = {"ITEM", "OBSERVACIONES", "CRITERIO"}
+            if not columnas_requeridas.issubset(df_nuevo.columns):
+                messagebox.showerror("Error", f"El archivo Excel debe contener las columnas: {columnas_requeridas}")
                 return
-            
-            # Reemplazar NaN por cadenas vacías en CRITERIO cuando OBSERVACIONES es "CUMPLE"
+
+            df_nuevo = df_nuevo.fillna("")
             mask_cumple = df_nuevo["OBSERVACIONES"].astype(str).str.upper() == "CUMPLE"
             df_nuevo.loc[mask_cumple, "CRITERIO"] = ""
-                
-            self.df_codigos_cumple = pd.concat([self.df_codigos_cumple, df_nuevo], ignore_index=True)
-            self.df_codigos_cumple = self.df_codigos_cumple.drop_duplicates(subset=["ITEM"])
-            
-            # Limpiar valores NaN en CRITERIO
-            self.df_codigos_cumple["CRITERIO"] = self.df_codigos_cumple["CRITERIO"].replace({np.nan: "", "nan": ""})
-            
-            self.actualizar_tabla()
-            messagebox.showinfo("Importar Excel", "Datos importados correctamente")
+
+            if self.df_codigos_cumple is None or self.df_codigos_cumple.empty:
+                self.df_codigos_cumple = df_nuevo.copy()
+                self.actualizar_tabla()
+                return
+
+            dict_existente = self.df_codigos_cumple.set_index("ITEM").to_dict("index")
+
+            # --- Detectar cambios ---
+            cambios = []
+            for _, row in df_nuevo.iterrows():
+                item = row["ITEM"]
+                obs_nuevo = str(row["OBSERVACIONES"]).strip()
+                crit_nuevo = str(row["CRITERIO"]).strip()
+
+                if item in dict_existente:
+                    obs_actual = dict_existente[item].get("OBSERVACIONES", "")
+                    crit_actual = dict_existente[item].get("CRITERIO", "")
+                    if obs_actual != obs_nuevo or crit_actual != crit_nuevo:
+                        cambios.append((item, obs_actual, crit_actual, obs_nuevo, crit_nuevo))
+                else:
+                    cambios.append((item, "", "", obs_nuevo, crit_nuevo))
+
+            if not cambios:
+                messagebox.showinfo("Importar Excel", "No se encontraron cambios para actualizar.")
+                return
+
+            # --- Mostrar ventana de revisión ---
+            win = tk.Toplevel(self.parent if hasattr(self, "parent") else None)
+            win.title("Revisión de cambios")
+            win.geometry("1200x600")
+
+            cols = ("ITEM", "OBS_ACTUAL", "CRIT_ACTUAL", "OBS_NUEVO", "CRIT_NUEVO", "ACTUALIZAR")
+            tree = ttk.Treeview(win, columns=cols, show="headings", height=15)
+            for col in cols:
+                tree.heading(col, text=col)
+                tree.column(col, width=150)
+
+            # Insertar cambios
+            for item, obs_a, crit_a, obs_n, crit_n in cambios:
+                tree.insert("", "end", values=(item, obs_a, crit_a, obs_n, crit_n, "Sí"))
+
+            tree.pack(fill="both", expand=True)
+
+            # --- Función para editar celdas ---
+            def editar_celda(event):
+                seleccion = tree.selection()
+                if not seleccion:
+                    return
+                item_id = seleccion[0]
+                col = tree.identify_column(event.x)  # columna clicada
+                col_num = int(col.replace("#", "")) - 1  # índice de columna
+
+                # No permitir editar columnas "OBS_ACTUAL" ni "CRIT_ACTUAL"
+                if col_num in [1, 2]:
+                    return
+
+                x, y, w, h = tree.bbox(item_id, col)
+                valor_actual = tree.set(item_id, column=cols[col_num])
+
+                entry = tk.Entry(tree)
+                entry.place(x=x, y=y, width=w, height=h)
+                entry.insert(0, valor_actual)
+                entry.focus()
+
+                def guardar_edicion(event):
+                    nuevo_valor = entry.get()
+                    tree.set(item_id, column=cols[col_num], value=nuevo_valor)
+                    entry.destroy()
+
+                entry.bind("<Return>", guardar_edicion)
+                entry.bind("<FocusOut>", lambda e: entry.destroy())
+
+            tree.bind("<Double-1>", editar_celda)
+
+            # --- Aplicar cambios seleccionados ---
+            def aplicar_cambios():
+                seleccionados = tree.get_children()
+                for sel in seleccionados:
+                    vals = tree.item(sel)["values"]
+                    item, obs_a, crit_a, obs_n, crit_n, act = vals
+                    if act == "Sí":
+                        dict_existente[item] = {"OBSERVACIONES": obs_n, "CRITERIO": crit_n}
+
+                self.df_codigos_cumple = pd.DataFrame.from_dict(dict_existente, orient="index").reset_index()
+                self.df_codigos_cumple = self.df_codigos_cumple.rename(columns={"index": "ITEM"})
+                self.actualizar_tabla()
+                win.destroy()
+                messagebox.showinfo("Importar Excel", "Los cambios seleccionados fueron aplicados.")
+
+            btn_aplicar = tk.Button(win, text="Aplicar cambios", command=aplicar_cambios,
+                                    bg="#4CAF50", fg="white", font=("Arial", 10, "bold"))
+            btn_aplicar.pack(pady=10)
+
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo importar el Excel: {str(e)}")
-
 class AgregarItem:
     def __init__(self, editor: EditorCodigos):
         self.editor = editor
@@ -378,7 +464,6 @@ class AgregarItem:
         self.editor.actualizar_tabla()
         self.ventana.destroy()
         messagebox.showinfo("Éxito", "Item agregado correctamente")
-
 class EditorItem:
     def __init__(self, editor: EditorCodigos, index):
         self.editor = editor

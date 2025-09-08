@@ -204,24 +204,25 @@ def configurar_rutas():
                            command=limpiar_configuracion)
     btn_limpiar.pack(side="left", padx=(0, 15))
     
-    btn_continuar = tk.Button(action_frame, text="🚀 CONTINUAR AL SISTEMA", font=("Inter", 10, "bold"),
-                             bg="#4B4B4B", fg="#FFFFFF", relief="flat", padx=25, pady=10,
-                             command=lambda: [ventana.destroy(), abrir_procesos()],
-                             state="disabled")
-    btn_continuar.pack(side="left")
+    btn_cerrar = tk.Button(
+    action_frame,
+    text="❌ CERRAR",
+    font=("Inter", 10, "bold"),
+    bg="#4B4B4B",
+    fg="#FFFFFF",
+    relief="flat",
+    padx=25,
+    pady=10,
+    command=ventana.destroy
+    )
+    btn_cerrar.pack(side="left")
+
 
     # Actualizar estado inicial
     actualizar_estado()
 
     ventana.wait_window()
     return config["rutas"]
-
-def abrir_procesos():
-    """Abre el script ProcesosV2.py después de configurar rutas"""
-    if os.path.exists(PROCESOS_SCRIPT):
-        subprocess.Popen(["python", PROCESOS_SCRIPT])
-    else:
-        messagebox.showerror("❌ Error", f"No se encontró el archivo {PROCESOS_SCRIPT}")
 
 # --- PROGRAMA PRINCIPAL ---
 if __name__ == "__main__":

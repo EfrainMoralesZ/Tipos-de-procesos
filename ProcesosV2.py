@@ -20,10 +20,6 @@ import subprocess
 import Editor_Codigos
 import Dashboard
 
-
-
-
-
 # Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):
     # Cuando está compilado en .exe
@@ -37,7 +33,6 @@ CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
 ARCHIVOS_PROCESADOS_FILE = os.path.join(BASE_PATH, "archivos_procesados.json")
 CODIGOS_CUMPLE = os.path.join(BASE_PATH, "codigos_cumple.xlsx")
 CODIGOS_JSON = os.path.join(BASE_PATH, "codigos_cumple.json")
-
 
 # Configuración de Rutas integrada
 def configurar_rutas():
@@ -739,7 +734,7 @@ if __name__ == "__main__":
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((250, 190), Image.Resampling.LANCZOS)
+            logo_img_raw = Image.open(logo_path).resize((150, 100), Image.Resampling.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
             logo_label = tk.Label(left_panel, image=logo_img, bg="#FFFFFF")
             logo_label.image = logo_img
@@ -769,7 +764,7 @@ if __name__ == "__main__":
         'SmallCard.TButton',
         background='#ecd925',   # Amarillo corporativo
         foreground='#282828',
-        font=('Inter', 10, 'bold'),
+        font=('Inter', 14, 'bold'),
         borderwidth=0,
         padding=(6, 4),
         focusthickness=0,
