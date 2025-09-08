@@ -17,6 +17,12 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import subprocess
+import Editor_Codigos
+import Dashboard
+
+
+
+
 
 # Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):
@@ -32,13 +38,12 @@ ARCHIVOS_PROCESADOS_FILE = os.path.join(BASE_PATH, "archivos_procesados.json")
 CODIGOS_CUMPLE = os.path.join(BASE_PATH, "codigos_cumple.xlsx")
 CODIGOS_JSON = os.path.join(BASE_PATH, "codigos_cumple.json")
 
-# Configuración de Rutas
+
+# Configuración de Rutas integrada
 def configurar_rutas():
-    """Abre la ventana de configuración de rutas externa"""
     try:
-        # Si corres desde exe, busca el script en BASE_PATH
-        rutas_py = os.path.join(BASE_PATH, "Rutas.py")
-        subprocess.Popen([sys.executable, rutas_py])
+        import Rutas  # El módulo debe estar en la misma carpeta que ProcesosV2.py
+        Rutas.configurar_rutas()  # Llamada sin argumentos
     except Exception as e:
         messagebox.showerror("❌ Error", f"No se pudo abrir la configuración:\n{e}")
 
@@ -144,23 +149,35 @@ def cargar_configuracion():
 
 # FUNCION PARA ACTUALIZAR CODIGOS 
 def abrir_editor_codigos(parent):
-    """Abre el editor de códigos"""
-    # Cargar la configuración para obtener las rutas
-    config = cargar_configuracion()
-    
-    if not config:
-        messagebox.showerror("Error", "No se pudo cargar la configuración")
-        return
-    
-    rutas = config.get("rutas", {})
-    ARCHIVO_CODIGOS = rutas.get("codigos_cumple", "")
-    ARCHIVO_JSON = rutas.get("codigos_cumple", "").replace(".xlsx", ".json").replace(".xls", ".json")
-    
-    if ARCHIVO_CODIGOS and ARCHIVO_JSON:
-        editor = EditorCodigos(parent, ARCHIVO_CODIGOS, ARCHIVO_JSON)
-        return editor
-    else:
-        messagebox.showwarning("Advertencia", "Primero debe configurar los archivos en Configuración de Rutas")
+    """Abre el editor de códigos según la configuración de rutas"""
+    try:
+        config = cargar_configuracion()
+        if not config:
+            messagebox.showerror("Error", "No se pudo cargar la configuración")
+            return None
+
+        # Obtener rutas de archivos
+        rutas = config.get("rutas", {})
+        archivo_codigos = rutas.get("codigos_cumple", "")
+        archivo_json = ""
+        
+        if archivo_codigos:
+            archivo_json = archivo_codigos.replace(".xlsx", ".json").replace(".xls", ".json")
+
+        # Validar que existan los archivos
+        if os.path.exists(archivo_codigos) and os.path.exists(archivo_json):
+            editor = EditorCodigos(parent, archivo_codigos, archivo_json)
+            return editor
+        else:
+            messagebox.showwarning(
+                "Advertencia",
+                "Primero debe configurar los archivos en Configuración de Rutas.\n"
+                f"Archivos esperados:\n{archivo_codigos}\n{archivo_json}"
+            )
+            return None
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Ocurrió un error al abrir el editor de códigos:\n{e}")
         return None
 
 #  FUNCION PARA GENERAR EL TIPO DE REPORTE 
@@ -486,6 +503,7 @@ def seleccionar_reporte():
     )
     if ruta:
         procesar_reporte(ruta)
+
 #  CATALOGO DE DECATHLON 
 def actualizar_catalogo(frame_principal):
     barra = None
@@ -583,11 +601,12 @@ def exportar_concentrado_catalogo(frame_principal):
             pass
         messagebox.showerror("Error", f"No se pudo exportar el catálogo:\n{e}")
 
-#  VENTANA DEL DASHBOARD MEJORADO 
+#  VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
     """Llama al archivo Dashboard.py para mostrar el dashboard externo"""
     try:
-        subprocess.Popen(["python", "Dashboard.py"])
+        import Dashboard
+        Dashboard.main()
     except Exception as e:
         print(f"Error al abrir el dashboard: {e}")
 

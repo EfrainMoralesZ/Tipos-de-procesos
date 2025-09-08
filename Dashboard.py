@@ -4,6 +4,7 @@ import json
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas as pdf_canvas
 import os
+import sys
 from datetime import datetime
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -13,6 +14,21 @@ from reportlab.lib.utils import ImageReader
 ARCHIVO_JSON = "resources/codigos_cumple.json"
 ARCHIVO_PROCESADOS = "archivos_procesados.json"  # Nuevo archivo para archivos procesados
 archivos_procesados = []
+
+
+# ------------------ Rutas seguras para PyInstaller ------------------
+def recurso_path(ruta_relativa):
+    """Devuelve la ruta absoluta correcta dentro del ejecutable o desarrollo"""
+    try:
+        base_path = sys._MEIPASS  # PyInstaller
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, ruta_relativa)
+
+ARCHIVO_JSON = recurso_path("resources/codigos_cumple.json")
+ARCHIVO_PROCESADOS_FILE = recurso_path("Guardar Archivos Generados/archivos_procesados.json")
+LOGO_PATH = recurso_path("img/logo_empresarial.png")
+
 
 # Manteniendo los colores originales del dashboard
 COL_BG = "#FFFFFF"  # Fondo blanco
@@ -260,6 +276,7 @@ def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     
     return frame, lbl_valor, lbl_porcentaje if porcentaje else (frame, lbl_valor, None)
 
+
 # --- Función para generar el PDF con plantilla ---
 def exportar_pdf_simple():
     """Genera un PDF simple con estadísticas"""
@@ -414,119 +431,125 @@ def exportar_pdf_simple():
 
 # ---------------- Ventana principal ---------------- #
 
-root = tk.Tk()
-root.title("Dashboard de Códigos - V&C")
-root.geometry("1000x600")
-root.configure(bg=COL_BG)
+def main():
+    global lbl_total_valor, lbl_cumple_valor, lbl_cumple_porcentaje, lbl_no_cumple_valor, lbl_no_cumple_porcentaje
 
-# Cargar archivos procesados al iniciar
-archivos_procesados = cargar_archivos_procesados()
+    root = tk.Tk()
+    root.title("Dashboard de Códigos - V&C")
+    root.geometry("1000x600")
+    root.configure(bg=COL_BG)
 
-# Frame principal
-main_container = tk.Frame(root, bg=COL_BG)
-main_container.pack(fill="both", expand=True, padx=15, pady=15)
+    # Cargar archivos procesados al iniciar
+    archivos_procesados = cargar_archivos_procesados()
 
-# Header
-header_frame = tk.Frame(main_container, bg=COL_BG)
-header_frame.pack(fill="x", pady=(0, 10))
+    # Frame principal
+    main_container = tk.Frame(root, bg=COL_BG)
+    main_container.pack(fill="both", expand=True, padx=15, pady=15)
 
-lbl_titulo = tk.Label(header_frame, text="📊 Dashboard de Análisis de Códigos", 
-                     bg=COL_BG, fg=COL_TEXT, font=("INTER", 16, "bold"))
-lbl_titulo.pack(side="left")
+    # Header
+    header_frame = tk.Frame(main_container, bg=COL_BG)
+    header_frame.pack(fill="x", pady=(0, 10))
 
-lbl_subtitulo = tk.Label(header_frame, text="Reporte de Mercancía - V&C", 
-                        bg=COL_BG, fg=COL_TEXT_LIGHT, font=("INTER", 10))
-lbl_subtitulo.pack(side="left", padx=(10, 0))
+    lbl_titulo = tk.Label(header_frame, text="📊 Dashboard de Análisis de Códigos",
+                          bg=COL_BG, fg=COL_TEXT, font=("INTER", 16, "bold"))
+    lbl_titulo.pack(side="left")
 
-# Tarjetas
-stats_frame = tk.Frame(main_container, bg=COL_BG)
-stats_frame.pack(fill="x", pady=(0, 10))
+    lbl_subtitulo = tk.Label(header_frame, text="Reporte de Mercancía - V&C",
+                             bg=COL_BG, fg=COL_TEXT_LIGHT, font=("INTER", 10))
+    lbl_subtitulo.pack(side="left", padx=(10, 0))
 
-tarjeta_total, lbl_total_valor, _ = crear_tarjeta(stats_frame, "TOTAL DE CÓDIGOS", "0", color=COL_BAR)
-tarjeta_total.pack(side="left", padx=(0, 10), fill="both", expand=True)
+    # Tarjetas
+    stats_frame = tk.Frame(main_container, bg=COL_BG)
+    stats_frame.pack(fill="x", pady=(0, 10))
 
-tarjeta_cumple, lbl_cumple_valor, lbl_cumple_porcentaje = crear_tarjeta(stats_frame, "CÓDIGOS CUMPLEN", "0", "0%", color=COL_SUCCESS)
-tarjeta_cumple.pack(side="left", padx=(0, 10), fill="both", expand=True)
+    tarjeta_total, lbl_total_valor, _ = crear_tarjeta(stats_frame, "TOTAL DE CÓDIGOS", "0", color=COL_BAR)
+    tarjeta_total.pack(side="left", padx=(0, 10), fill="both", expand=True)
 
-tarjeta_no_cumple, lbl_no_cumple_valor, lbl_no_cumple_porcentaje = crear_tarjeta(stats_frame, "CÓDIGOS NO CUMPLEN", "0", "0%", color=COL_DANGER)
-tarjeta_no_cumple.pack(side="left", fill="both", expand=True)
+    tarjeta_cumple, lbl_cumple_valor, lbl_cumple_porcentaje = crear_tarjeta(stats_frame, "CÓDIGOS CUMPLEN", "0", "0%", color=COL_SUCCESS)
+    tarjeta_cumple.pack(side="left", padx=(0, 10), fill="both", expand=True)
 
-# Contenido principal
-content_frame = tk.Frame(main_container, bg=COL_BG)
-content_frame.pack(fill="both", expand=True, pady=10)
+    tarjeta_no_cumple, lbl_no_cumple_valor, lbl_no_cumple_porcentaje = crear_tarjeta(stats_frame, "CÓDIGOS NO CUMPLEN", "0", "0%", color=COL_DANGER)
+    tarjeta_no_cumple.pack(side="left", fill="both", expand=True)
 
-# Frame izquierdo para la gráfica
-left_frame = tk.Frame(content_frame, bg=COL_BG)
-left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    # Contenido principal
+    content_frame = tk.Frame(main_container, bg=COL_BG)
+    content_frame.pack(fill="both", expand=True, pady=10)
 
-# Gráfica
-graph_card = tk.Frame(left_frame, bg=COL_CARD_BG, relief="flat", bd=1,
-                     highlightbackground=COL_BORDER, highlightthickness=1)
-graph_card.pack(fill="both", expand=True)
+    # Frame izquierdo para la gráfica
+    left_frame = tk.Frame(content_frame, bg=COL_BG)
+    left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
-lbl_graph_title = tk.Label(graph_card, text="DISTRIBUCIÓN DE CÓDIGOS", 
-                          bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
-lbl_graph_title.pack(pady=(10, 5))
+    # Gráfica
+    graph_card = tk.Frame(left_frame, bg=COL_CARD_BG, relief="flat", bd=1,
+                          highlightbackground=COL_BORDER, highlightthickness=1)
+    graph_card.pack(fill="both", expand=True)
 
-canvas_grafica = tk.Canvas(graph_card, width=400, height=250, 
-                          bg=COL_CARD_BG, highlightthickness=0)
-canvas_grafica.pack(pady=(0, 5), padx=10, fill="both", expand=True)
+    lbl_graph_title = tk.Label(graph_card, text="DISTRIBUCIÓN DE CÓDIGOS",
+                               bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
+    lbl_graph_title.pack(pady=(10, 5))
 
-lbl_totales = tk.Label(graph_card, text="", bg=COL_CARD_BG, 
-                      fg=COL_TEXT_LIGHT, font=("INTER", 9))
-lbl_totales.pack(pady=(0, 10))
+    canvas_grafica = tk.Canvas(graph_card, width=400, height=250,
+                               bg=COL_CARD_BG, highlightthickness=0)
+    canvas_grafica.pack(pady=(0, 5), padx=10, fill="both", expand=True)
 
-# Frame derecho para archivos
-right_frame = tk.Frame(content_frame, bg=COL_BG, width=400)
-right_frame.pack(side="right", fill="y")
-right_frame.pack_propagate(False)
+    lbl_totales = tk.Label(graph_card, text="", bg=COL_CARD_BG,
+                           fg=COL_TEXT_LIGHT, font=("INTER", 9))
+    lbl_totales.pack(pady=(0, 10))
 
-files_card = tk.Frame(right_frame, bg=COL_CARD_BG, relief="flat", bd=1,
-                     highlightbackground=COL_BORDER, highlightthickness=1)
-files_card.pack(fill="both", expand=True)
+    # Frame derecho para archivos
+    right_frame = tk.Frame(content_frame, bg=COL_BG, width=400)
+    right_frame.pack(side="right", fill="y")
+    right_frame.pack_propagate(False)
 
-lbl_archivos = tk.Label(files_card, text="📁 ARCHIVOS PROCESADOS", 
-                       bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
-lbl_archivos.pack(pady=(10, 5))
+    files_card = tk.Frame(right_frame, bg=COL_CARD_BG, relief="flat", bd=1,
+                          highlightbackground=COL_BORDER, highlightthickness=1)
+    files_card.pack(fill="both", expand=True)
 
-list_frame = tk.Frame(files_card, bg=COL_CARD_BG)
-list_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+    lbl_archivos = tk.Label(files_card, text="📁 ARCHIVOS PROCESADOS",
+                            bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
+    lbl_archivos.pack(pady=(10, 5))
 
-scrollbar = tk.Scrollbar(list_frame)
-scrollbar.pack(side="right", fill="y")
+    list_frame = tk.Frame(files_card, bg=COL_CARD_BG)
+    list_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
-lst_archivos = tk.Listbox(list_frame, bg=COL_LIST_BG, fg=COL_TEXT, font=("INTER", 9),
-                         yscrollcommand=scrollbar.set, relief="flat", bd=0,
-                         highlightthickness=0)
-lst_archivos.pack(side="left", fill="both", expand=True)
-scrollbar.config(command=lst_archivos.yview)
+    scrollbar = tk.Scrollbar(list_frame)
+    scrollbar.pack(side="right", fill="y")
 
-# Footer con botones
-footer_frame = tk.Frame(main_container, bg=COL_BG)
-footer_frame.pack(fill="x", pady=(10, 0))
+    lst_archivos = tk.Listbox(list_frame, bg=COL_LIST_BG, fg=COL_TEXT, font=("INTER", 9),
+                              yscrollcommand=scrollbar.set, relief="flat", bd=0,
+                              highlightthickness=0)
+    lst_archivos.pack(side="left", fill="both", expand=True)
+    scrollbar.config(command=lst_archivos.yview)
 
-btn_limpiar = tk.Button(footer_frame, text="🗑️ Limpiar Lista", 
-                       command=lambda: limpiar_lista(lst_archivos),
-                       bg=COL_TEXT_LIGHT, fg="white", font=("INTER", 9, "bold"), 
-                       relief="flat", padx=15, pady=6, cursor="hand2")
-btn_limpiar.pack(side="left", padx=(0, 5))
+    # Footer con botones
+    footer_frame = tk.Frame(main_container, bg=COL_BG)
+    footer_frame.pack(fill="x", pady=(10, 0))
 
-btn_exportar = tk.Button(footer_frame, text="📊 Exportar PDF", 
-                        command=exportar_pdf_simple,
-                        bg=COL_BTN, fg=COL_TEXT, font=("INTER", 9, "bold"), 
-                        relief="flat", padx=15, pady=6, cursor="hand2")
-btn_exportar.pack(side="left", padx=(0, 5))
+    btn_limpiar = tk.Button(footer_frame, text="🗑️ Limpiar Lista",
+                            command=lambda: limpiar_lista(lst_archivos),
+                            bg=COL_TEXT_LIGHT, fg="white", font=("INTER", 9, "bold"),
+                            relief="flat", padx=15, pady=6, cursor="hand2")
+    btn_limpiar.pack(side="left", padx=(0, 5))
 
-btn_cerrar = tk.Button(footer_frame, text="❌ Cerrar", 
-                      command=root.destroy,
-                      bg=COL_BTN_CERRAR, fg="white", font=("INTER", 9, "bold"), 
-                      relief="flat", padx=15, pady=6, cursor="hand2")
-btn_cerrar.pack(side="right")
+    btn_exportar = tk.Button(footer_frame, text="📊 Exportar PDF",
+                             command=exportar_pdf_simple,
+                             bg=COL_BTN, fg=COL_TEXT, font=("INTER", 9, "bold"),
+                             relief="flat", padx=15, pady=6, cursor="hand2")
+    btn_exportar.pack(side="left", padx=(0, 5))
 
-# Iniciar gráfica (pasar lst_archivos como parámetro)
-dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
+    btn_cerrar = tk.Button(footer_frame, text="❌ Cerrar",
+                           command=root.destroy,
+                           bg=COL_BTN_CERRAR, fg="white", font=("INTER", 9, "bold"),
+                           relief="flat", padx=15, pady=6, cursor="hand2")
+    btn_cerrar.pack(side="right")
 
-# Centrar ventana
-root.eval('tk::PlaceWindow . center')
+    # Dibujar gráfica inicial
+    dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
 
-root.mainloop()
+    # Centrar ventana
+    root.eval('tk::PlaceWindow . center')
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

@@ -7,7 +7,6 @@ import subprocess
 
 CONFIG_DIR = "Guardar Configuracion"  # Cambiado el nombre de la carpeta
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
-PROCESOS_SCRIPT = "ProcesosV2.py"
 
 # Asegurar que exista la carpeta para guardar configuración
 os.makedirs(CONFIG_DIR, exist_ok=True)
