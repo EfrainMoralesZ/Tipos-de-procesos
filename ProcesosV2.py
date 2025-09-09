@@ -683,134 +683,142 @@ root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
 root.geometry("900x500")
 root.configure(bg="#FFFFFF")
+
 # --- Estilo global ---
-style = ttk.Style()
-style.theme_use('clam')
-
-style.configure(
-    'Serious.TButton',
-    background='#FFFFFF',
-    foreground='#282828',
-    font=('Inter', 12, 'bold'),
-    borderwidth=2,
-    relief='flat',
-    padding=(12, 10)
-)
-style.map(
-    'Serious.TButton',
-    background=[('active', '#FFF9C4'), ('hover', '#FFFDE7')],
-    foreground=[('active', '#282828')]
-)
-
-# --- Contenedor principal ---
-main_container = tk.Frame(root, bg="#FFFFFF")
-main_container.pack(expand=True, fill="both", padx=20, pady=20)
-
-# --- Header ---
-header_frame = tk.Frame(main_container, bg="#FFFFFF", height=120)
-header_frame.pack(fill="x", pady=(0, 20))
-header_frame.pack_propagate(False)
-
-header_content = tk.Frame(header_frame, bg="#FFFFFF")
-header_content.pack(fill="both", expand=True, padx=20)
-
-# Logo
-try:
-    logo_path = os.path.join(BASE_PATH, "img", "logo.png")
-    if os.path.exists(logo_path):
-        logo_img_raw = Image.open(logo_path).resize((80, 60), Image.Resampling.LANCZOS)
-        logo_img = ImageTk.PhotoImage(logo_img_raw)
-        logo_label = tk.Label(header_content, image=logo_img, bg="#FFFFFF")
-        logo_label.image = logo_img
-        logo_label.pack(side="left", padx=(0, 20))
-except Exception as e:
-    print(f"Error cargando el logo: {e}")
-
-# Títulos
-title_container = tk.Frame(header_content, bg="#FFFFFF")
-title_container.pack(side="left", fill="y", pady=10)
-
-tk.Label(
-    title_container, 
-    text="INSPECCIÓN DE CUMPLIMIENTO",
-    font=("Inter", 20, "bold"),
-    fg="#282828",
-    bg="#FFFFFF"
-).pack(anchor="w")
-
-tk.Label(
-    title_container, 
-    text="NORMATIVO AL ARRIBO",
-    font=("Inter", 16, "bold"),
-    fg="#ECD925",
-    bg="#FFFFFF"
-).pack(anchor="w")
-
-tk.Label(
-    title_container, 
-    text="Sistema integral para la gestión de procesos normativos",
-    font=("Inter", 10),
-    fg="#4D4D4D",
-    bg="#FFFFFF"
-).pack(anchor="w", pady=(2, 0))
-
-# --- Botones en tarjetas serias ---
-cards_container = tk.Frame(main_container, bg="#FFFFFF")
-cards_container.pack(fill="both", expand=True)
-
-botones = [
-    ("⚙️", "Configurar", configurar_rutas),
-    ("📊", "Reportes", seleccionar_reporte),
-    ("📋", "Editor", lambda: abrir_editor_codigos(cards_container)),
-    ("📈", "Dashboard", mostrar_estadisticas),
-    ("🔄", "Actualizar", lambda: actualizar_catalogo(cards_container)),
-    ("💾", "Exportar", lambda: exportar_concentrado_catalogo(cards_container))
-]
-
-grid_frame = tk.Frame(cards_container, bg="#FFFFFF")
-grid_frame.pack(expand=True)
-
-for i, (emoji, texto, comando) in enumerate(botones):
-    row = i // 3
-    col = i % 3
+if __name__ == "__main__":
+    # Configurar estilo global
+    style = ttk.Style()
+    style.theme_use('clam')
     
-    card_frame = tk.Frame(grid_frame, bg="#F7F7F7", relief="ridge", bd=1)
-    card_frame.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
-    
-    btn = ttk.Button(
-        card_frame,
-        text=f"{emoji}\n{texto}",
-        command=comando,
-        style='Serious.TButton',
-        width=15
+    # Frame principal con fondo blanco
+    frame = tk.Frame(root, bg="#FFFFFF")
+    frame.pack(expand=True, fill="both", padx=20, pady=20)
+
+    # --- Header con título ---
+    header_frame = tk.Frame(frame, bg="#FFFFFF")
+    header_frame.pack(fill="x", pady=(0, 15))
+
+    # Título principal
+    label_titulo = tk.Label(
+        header_frame, 
+        text="INSPECCIÓN DE CUMPLIMIENTO\nNORMATIVO AL ARRIBO",
+        font=("Inter", 18, "bold"),
+        fg="#282828", 
+        bg="#FFFFFF", 
+        justify="center"
     )
-    btn.pack(fill="both", expand=True, padx=5, pady=5)
-    
-    # Hover efecto
-    def on_enter(e, frame=card_frame):
-        frame.configure(bg="#FFF9C4")
-    def on_leave(e, frame=card_frame):
-        frame.configure(bg="#F7F7F7")
-    btn.bind("<Enter>", on_enter)
-    btn.bind("<Leave>", on_leave)
+    label_titulo.pack(pady=(0, 3))
 
-# Grid responsivo
-for i in range(2):
-    grid_frame.grid_rowconfigure(i, weight=1)
-for i in range(3):
-    grid_frame.grid_columnconfigure(i, weight=1)
+    # Subtítulo
+    label_sub = tk.Label(
+        header_frame, 
+        text="Sistema integral para la gestión de procesos normativos",
+        font=("Inter", 9),
+        fg="#4B4B4B", 
+        bg="#FFFFFF",
+        justify="center"
+    )
+    label_sub.pack()
 
-# --- Footer serio ---
-footer_frame = tk.Frame(main_container, bg="#FFFFFF", height=40)
-footer_frame.pack(fill="x", pady=(20, 0))
-footer_frame.pack_propagate(False)
+    # Separador debajo del título
+    title_separator = tk.Frame(header_frame, height=1, bg="#E0E0E0")
+    title_separator.pack(fill="x", pady=(10, 0))
 
-tk.Label(
-    footer_frame,
-    text="Sistema de Gestión de Procesos V&C • Versión 2.0 • © 2025",
-    font=("Inter", 9, "bold"),
-    fg="#4D4D4D",
-    bg="#FFFFFF"
-).pack()
+    # --- Contenido principal: Logo y Botones ---
+    content_frame = tk.Frame(frame, bg="#FFFFFF")
+    content_frame.pack(fill="both", expand=True, pady=(5, 5))
+
+    # Panel izquierdo: Logo centrado
+    left_panel = tk.Frame(content_frame, bg="#FFFFFF", width=180)
+    left_panel.pack(side="left", fill="y")
+    left_panel.pack_propagate(False)
+
+    # Logo más compacto
+    try:
+        logo_path = os.path.join(BASE_PATH, "img", "logo.png")
+        if os.path.exists(logo_path):
+            logo_img_raw = Image.open(logo_path).resize((140, 80), Image.Resampling.LANCZOS)
+            logo_img = ImageTk.PhotoImage(logo_img_raw)
+            logo_label = tk.Label(left_panel, image=logo_img, bg="#FFFFFF")
+            logo_label.image = logo_img
+            logo_label.pack(pady=(15, 10))
+    except Exception as e:
+        print(f"Error cargando el logo: {e}")
+
+    # Separador visual más discreto (con color modificado)
+    separator = tk.Frame(left_panel, bg="#F5E769", height=1)  # Color más claro #F5E769
+    separator.pack(fill="x", pady=12, padx=5)
+
+    # Texto descriptivo más compacto
+    tk.Label(left_panel, 
+             text="Sistema certificado", 
+             font=("Inter", 8),
+             fg="#4B4B4B", 
+             bg="#FFFFFF",
+             justify="center").pack()
+
+    # Panel derecho: Botones organizados en 3 columnas
+    right_panel = tk.Frame(content_frame, bg="#FFFFFF")
+    right_panel.pack(side="right", fill="both", expand=True, padx=(10, 0))
+
+    # Configurar estilo de botones COMPACTOS con color modificado
+    style.configure('Compact.TButton', 
+                   background='#F5E769',  # Color más claro #F5E769
+                   foreground='#282828', 
+                   font=('Inter', 9, 'bold'),
+                   borderwidth=0,
+                   padding=(8, 5),
+                   focuscolor='none')
+    style.map('Compact.TButton',
+             background=[('active', '#E5D760')],  # Versión ligeramente más oscura al activar
+             foreground=[('active', '#282828')])
+
+    # Contenedor principal de botones - 3 COLUMNAS
+    main_button_container = tk.Frame(right_panel, bg="#FFFFFF")
+    main_button_container.pack(fill="both", expand=True)
+
+    # Definir todos los botones en una lista
+    botones = [
+        ("⚙️ CONFIGURAR", configurar_rutas),
+        ("📊 REPORTE", seleccionar_reporte),
+        ("📋 EDITOR", lambda: abrir_editor_codigos(right_panel)),
+        ("📈 DASHBOARD", mostrar_estadisticas),
+        ("🔄 ACTUALIZAR", lambda: actualizar_catalogo(right_panel)),
+        ("💾 EXPORTAR", lambda: exportar_concentrado_catalogo(right_panel))
+    ]
+
+    # Configurar grid para 3 columnas y 2 filas
+    for i, (texto, comando) in enumerate(botones):
+        row = i // 3
+        col = i % 3
+        
+        # Crear frame contenedor para cada botón
+        btn_container = tk.Frame(main_button_container, bg="#FFFFFF")
+        btn_container.grid(row=row, column=col, padx=4, pady=4, sticky="nsew")
+        
+        # Crear botón COMPACTO
+        btn = ttk.Button(btn_container, text=texto, command=comando, 
+                        style='Compact.TButton', width=11)
+        btn.pack(fill="both", expand=True, ipady=3)
+
+    # Configurar peso de filas y columnas
+    for i in range(2):
+        main_button_container.grid_rowconfigure(i, weight=1)
+    for i in range(3):
+        main_button_container.grid_columnconfigure(i, weight=1)
+
+    # Footer minimalista
+    footer_frame = tk.Frame(frame, bg="#FFFFFF")
+    footer_frame.pack(fill="x", pady=(10, 0))
+
+    # Separador antes del footer
+    footer_separator = tk.Frame(footer_frame, height=1, bg="#E0E0E0")
+    footer_separator.pack(fill="x", pady=(0, 8))
+
+    tk.Label(footer_frame, 
+             text="Sistema V&C v2.0 • © 2025",
+             font=("Inter", 7),
+             fg="#4B4B4B", 
+             bg="#FFFFFF").pack()
 
 root.mainloop()
