@@ -57,10 +57,6 @@ def configurar_rutas():
     x = (ventana.winfo_screenwidth() // 2) - (width // 2)
     y = (ventana.winfo_screenheight() // 2) - (height // 2)
     ventana.geometry(f'+{x}+{y}')
-
-    # Variables globales para los botones
-    global btn_continuar, lbl_codigos, lbl_base, btn_codigos, btn_base
-
     # --- Funciones internas ---
     def seleccionar_archivo(tipo, label_widget, button_widget):
         archivo = filedialog.askopenfilename(
@@ -103,14 +99,12 @@ def configurar_rutas():
     def actualizar_estado():
         rutas_configuradas = sum(1 for ruta in config["rutas"].values() if ruta)
         if rutas_configuradas == 2:
-            lbl_estado.config(text="✅ Configuración completa - Listo para continuar", fg="#282828")
-            btn_continuar.config(state="normal", bg="#282828")
+            lbl_estado.config(text="✅ Configuración completa - Listo para cerrar", fg="#282828")
         elif rutas_configuradas == 1:
             lbl_estado.config(text="⚠️  Falta 1 archivo por configurar", fg="#4B4B4B")
-            btn_continuar.config(state="disabled", bg="#4B4B4B")
         else:
             lbl_estado.config(text="❌ No hay archivos configurados", fg="#4B4B4B")
-            btn_continuar.config(state="disabled", bg="#4B4B4B")
+
 
     # Frame principal
     main_frame = tk.Frame(ventana, bg="#FFFFFF", padx=40, pady=30)
@@ -199,23 +193,41 @@ def configurar_rutas():
     action_frame = tk.Frame(main_frame, bg="#FFFFFF")
     action_frame.pack(fill="x")
     
-    btn_limpiar = tk.Button(action_frame, text="🗑️ LIMPIAR CONFIGURACIÓN", font=("Inter", 10, "bold"),
-                           bg="#4B4B4B", fg="#FFFFFF", relief="flat", padx=25, pady=10,
-                           command=limpiar_configuracion)
-    btn_limpiar.pack(side="left", padx=(0, 15))
-    
-    btn_cerrar = tk.Button(
-    action_frame,
-    text="❌ CERRAR",
-    font=("Inter", 10, "bold"),
-    bg="#4B4B4B",
-    fg="#FFFFFF",
-    relief="flat",
-    padx=25,
-    pady=10,
-    command=ventana.destroy
+    # Frame contenedor para los botones (parte inferior)
+    action_frame = tk.Frame(ventana, bg="#FFFFFF")
+    action_frame.pack(side="bottom", pady=20)
+
+    # Frame interno para centrar los botones
+    btn_frame = tk.Frame(action_frame, bg="#FFFFFF")
+    btn_frame.pack()
+
+    # Botón LIMPIAR CONFIGURACIÓN
+    btn_limpiar = tk.Button(
+        btn_frame,
+        text="🗑️ LIMPIAR CONFIGURACIÓN",
+        font=("Inter", 10, "bold"),
+        bg="#4B4B4B",
+        fg="#FFFFFF",
+        relief="flat",
+        padx=25,
+        pady=10,
+        command=limpiar_configuracion
     )
-    btn_cerrar.pack(side="left")
+    btn_limpiar.pack(side="left", padx=10)
+
+    # Botón CERRAR
+    btn_cerrar = tk.Button(
+        btn_frame,
+        text="❌ CERRAR",
+        font=("Inter", 10, "bold"),
+        bg="#4B4B4B",
+        fg="#FFFFFF",
+        relief="flat",
+        padx=25,
+        pady=10,
+        command=ventana.destroy
+    )
+    btn_cerrar.pack(side="left", padx=10)
 
 
     # Actualizar estado inicial
