@@ -11,10 +11,19 @@ from io import BytesIO
 from reportlab.lib.utils import ImageReader
 
 # ---------------- Configuración ---------------- #
-ARCHIVO_JSON = "resources/codigos_cumple.json"
-ARCHIVO_PROCESADOS = "archivos_procesados.json"  # Nuevo archivo para archivos procesados
-archivos_procesados = []
+COL_BG = "#FFFFFF"  # Fondo blanco
+COL_TEXT = "#282828"  # Texto oscuro
+COL_BTN = "#ECD925"  # Amarillo para botones
+COL_LIST_BG = "#d8d8d8"  # Gris claro para lista
+COL_BAR = "#ECD925"  # Amarillo para barras
+COL_BTN_CERRAR = "#282828"  # Oscuro para botón cerrar
 
+# Colores para las tarjetas
+COL_CARD_BG = "#FFFFFF"  # Fondo de tarjetas blanco
+COL_BORDER = "#E2E8F0"  # Bordes grises suaves
+COL_SUCCESS = "#4CAF50"  # Verde para "Cumple"
+COL_DANGER = "#F44336"  # Rojo para "No cumple"
+COL_TEXT_LIGHT = "#666666"  # Texto secundario
 
 # ------------------ Rutas seguras para PyInstaller ------------------
 def recurso_path(ruta_relativa):
@@ -25,37 +34,19 @@ def recurso_path(ruta_relativa):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, ruta_relativa)
 
+# Rutas de archivos
 ARCHIVO_JSON = recurso_path("resources/codigos_cumple.json")
-ARCHIVO_PROCESADOS_FILE = recurso_path("Guardar Archivos Generados/archivos_procesados.json")
+CONFIG_DIR = recurso_path("Guardar Archivos Generados")
+ARCHIVOS_PROCESADOS_FILE = recurso_path("Guardar Archivos Generados/archivos_procesados.json")
 LOGO_PATH = recurso_path("img/logo_empresarial.png")
 
-
-# Manteniendo los colores originales del dashboard
-COL_BG = "#FFFFFF"  # Fondo blanco
-COL_TEXT = "#282828"  # Texto oscuro
-COL_BTN = "#ECD925"  # Amarillo para botones
-COL_LIST_BG = "#d8d8d8"  # Gris claro para lista
-COL_BAR = "#ECD925"  # Amarillo para barras
-COL_BTN_CERRAR = "#282828"  # Oscuro para botón cerrar
-
-# Colores para las tarjetas (basados en la paleta original)
-COL_CARD_BG = "#FFFFFF"  # Fondo de tarjetas blanco
-COL_BORDER = "#E2E8F0"  # Bordes grises suaves
-COL_SUCCESS = "#4CAF50"  # Verde para "Cumple"
-COL_DANGER = "#F44336"  # Rojo para "No cumple"
-COL_TEXT_LIGHT = "#666666"  # Texto secundario
-
-# ---------------- Funciones ---------------- #
-
-# Carpeta de configuración
-CONFIG_DIR = "Guardar Archivos Generados"
+# Crear directorios si no existen
 os.makedirs(CONFIG_DIR, exist_ok=True)
-
-# Ruta del archivo de procesados
-ARCHIVOS_PROCESADOS_FILE = os.path.join(CONFIG_DIR, "archivos_procesados.json")
 
 # Lista global
 archivos_procesados = []
+
+# ---------------- Funciones ---------------- #
 
 def cargar_archivos_procesados():
     """Carga la lista de archivos procesados desde el JSON, crea el archivo si no existe"""
@@ -74,15 +65,23 @@ def cargar_archivos_procesados():
             # Crear archivo vacío
             with open(ARCHIVOS_PROCESADOS_FILE, "w", encoding="utf-8") as f:
                 json.dump([], f, indent=4, ensure_ascii=False)
-            print(f"Archivo {ARCHIVOS_PROCESADOS_FILE} no encontrado. Se creó uno nuevo en '{CONFIG_DIR}'.")
+            print(f"Archivo {ARCHIVOS_PROCESADOS_FILE} no encontrado. Se creó uno nuevo.")
     except Exception as e:
         archivos_procesados = []
         print(f"Error cargando archivos procesados: {e}")
     
     return archivos_procesados
 
+def guardar_archivos_procesados():
+    """Guarda la lista de archivos procesados en el archivo JSON"""
+    try:
+        with open(ARCHIVOS_PROCESADOS_FILE, "w", encoding="utf-8") as f:
+            json.dump(archivos_procesados, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error guardando archivos procesados: {e}")
+
 def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
-    """Registra un archivo procesado en el JSON dentro de la carpeta de configuración"""
+    """Registra un archivo procesado en el JSON"""
     try:
         cargar_archivos_procesados()
         
@@ -100,24 +99,12 @@ def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
         archivos_procesados.append(archivo_info)
         
         # Guardar cambios en el JSON
-        with open(ARCHIVOS_PROCESADOS_FILE, "w", encoding="utf-8") as f:
-            json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
+        guardar_archivos_procesados()
         
         print(f"[OK] Archivo registrado: {nombre_archivo}")
     
     except Exception as e:
         print(f"[ERROR] Error registrando archivo: {e}")
-
-def guardar_archivos_procesados():
-    """Guarda la lista de archivos procesados en el archivo JSON"""
-    try:
-        # Crear directorio si no existe
-        os.makedirs(os.path.dirname(ARCHIVO_PROCESADOS), exist_ok=True)
-        
-        with open(ARCHIVO_PROCESADOS, "w", encoding="utf-8") as f:
-            json.dump(archivos_procesados, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Error guardando archivos procesados: {e}")
 
 def borrar_archivo_procesados():
     """Elimina físicamente el archivo JSON de archivos procesados"""
@@ -133,6 +120,8 @@ def borrar_archivo_procesados():
 def actualizar_lista_archivos(lst_archivos):
     """Actualiza la lista visual con los archivos procesados"""
     lst_archivos.delete(0, tk.END)
+    cargar_archivos_procesados()  # Asegurarse de tener datos actualizados
+    
     for archivo in archivos_procesados:
         # Si el archivo es un string (solo nombre), mostrarlo tal cual
         if isinstance(archivo, str):
@@ -161,95 +150,134 @@ def limpiar_lista(lst_archivos):
     actualizar_lista_archivos(lst_archivos)
 
 def leer_datos():
+    """Lee los datos del archivo JSON y calcula estadísticas"""
     total_codigos = 0
     codigos_cumple = 0
-    codigos_revisados = 0
+    codigos_no_cumple = 0
+    
     try:
+        print(f"Leyendo archivo JSON desde: {ARCHIVO_JSON}")
+        
+        if not os.path.exists(ARCHIVO_JSON):
+            print("❌ El archivo JSON no existe. Creando uno vacío...")
+            # Crear archivo JSON vacío si no existe
+            with open(ARCHIVO_JSON, "w", encoding="utf-8") as f:
+                json.dump([], f, indent=4, ensure_ascii=False)
+            return 0, 0, 0
+        
         with open(ARCHIVO_JSON, "r", encoding="utf-8") as f:
             codigos_data = json.load(f)
+            print(f"Datos leídos: {len(codigos_data)} registros")
+            
+            # Verificar estructura de los datos
+            if codigos_data and isinstance(codigos_data, list):
+                print(f"Primer registro: {codigos_data[0]}")
+            
         for d in codigos_data:
-            if not isinstance(d, dict) or "ITEM" not in d:
+            if not isinstance(d, dict):
                 continue
+                
             total_codigos += 1
-            obs = str(d.get("OBSERVACIONES", "")).upper()
+            obs = str(d.get("OBSERVACIONES", "")).upper().strip()
+            
+            print(f"Item: {d.get('ITEM', 'N/A')}, Observación: '{obs}'")
+            
             if obs == "CUMPLE":
                 codigos_cumple += 1
             else:
-                codigos_revisados += 1
+                codigos_no_cumple += 1
+                
+        print(f"Estadísticas: Total={total_codigos}, Cumple={codigos_cumple}, No Cumple={codigos_no_cumple}")
+        
+    except json.JSONDecodeError as e:
+        print(f"❌ Error: El archivo JSON está corrupto o vacío: {e}")
+        return 0, 0, 0
     except Exception as e:
-        print(f"Error leyendo JSON: {e}")
-    return total_codigos, codigos_cumple, codigos_revisados
+        print(f"❌ Error leyendo JSON: {e}")
+        return 0, 0, 0
+        
+    return total_codigos, codigos_cumple, codigos_no_cumple
 
 def dibujar_grafica(canvas, lbl_totales, lst_archivos):
-    canvas.delete("all")
-    total_codigos, codigos_cumple, codigos_revisados = leer_datos()
-    
-    # --- Actualizar labels ---
-    lbl_total_valor.config(text=f"{total_codigos}")
-    lbl_cumple_valor.config(text=f"{codigos_cumple}")
-    lbl_no_cumple_valor.config(text=f"{codigos_revisados}")
-    
-    porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
-    porcentaje_no_cumple = (codigos_revisados / total_codigos * 100) if total_codigos > 0 else 0
-    
-    lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
-    lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
-    
-    lbl_totales["text"] = f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_revisados}"
-
-    # --- Datos para las barras ---
-    datos = [
-        ("Total de Códigos", total_codigos),
-        ("Códigos Cumple", codigos_cumple),
-        ("Códigos No cumple", codigos_revisados)
-    ]
-
-    # --- Ajustes de espacio dinámicos ---
-    ancho, alto = int(canvas["width"]), int(canvas["height"])
-    margen_sup = 30
-    margen_inf = 60
-    margen_lat = 20
-    ancho_barra = 80
-    espacio = 60
-
-    altura_max = alto - (margen_sup + margen_inf)
-    max_valor = max([v for _, v in datos], default=1)
-    if max_valor == 0:
-        max_valor = 1
-
-    # --- Dibujar ejes ---
-    eje_x_y = alto - margen_inf
-    canvas.create_line(margen_lat, eje_x_y, ancho - margen_lat, eje_x_y, fill=COL_TEXT, width=2)
-    canvas.create_line(margen_lat, margen_sup, margen_lat, eje_x_y, fill=COL_TEXT, width=2)
-
-    # --- Dibujar barras ---
-    x_inicio = margen_lat + espacio
-    for i, (nombre, valor) in enumerate(datos):
-        altura_barra = (valor / max_valor) * altura_max if valor > 0 else 0
-        x1 = x_inicio + i * (ancho_barra + espacio)
-        y1 = eje_x_y - altura_barra
-        x2 = x1 + ancho_barra
-        y2 = eje_x_y
+    """Dibuja la gráfica y actualiza las estadísticas"""
+    try:
+        canvas.delete("all")
+        total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
         
-        # Color por categoría
-        if nombre == "Códigos Cumple":
-            color = COL_SUCCESS
-        elif nombre == "Códigos No cumple":
-            color = COL_DANGER
+        # --- Actualizar labels ---
+        lbl_total_valor.config(text=f"{total_codigos}")
+        lbl_cumple_valor.config(text=f"{codigos_cumple}")
+        lbl_no_cumple_valor.config(text=f"{codigos_no_cumple}")
+        
+        porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
+        porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
+        
+        lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
+        lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
+        
+        lbl_totales["text"] = f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}"
+
+        # Solo dibujar gráfica si hay datos
+        if total_codigos > 0:
+            # --- Datos para las barras ---
+            datos = [
+                ("Total de Códigos", total_codigos),
+                ("Códigos Cumple", codigos_cumple),
+                ("Códigos No cumple", codigos_no_cumple)
+            ]
+
+            # --- Ajustes de espacio dinámicos ---
+            ancho, alto = int(canvas["width"]), int(canvas["height"])
+            margen_sup = 30
+            margen_inf = 60
+            margen_lat = 20
+            ancho_barra = 80
+            espacio = 60
+
+            altura_max = alto - (margen_sup + margen_inf)
+            max_valor = max([v for _, v in datos], default=1)
+
+            # --- Dibujar ejes ---
+            eje_x_y = alto - margen_inf
+            canvas.create_line(margen_lat, eje_x_y, ancho - margen_lat, eje_x_y, fill=COL_TEXT, width=2)
+            canvas.create_line(margen_lat, margen_sup, margen_lat, eje_x_y, fill=COL_TEXT, width=2)
+
+            # --- Dibujar barras ---
+            x_inicio = margen_lat + espacio
+            for i, (nombre, valor) in enumerate(datos):
+                altura_barra = (valor / max_valor) * altura_max if valor > 0 else 0
+                x1 = x_inicio + i * (ancho_barra + espacio)
+                y1 = eje_x_y - altura_barra
+                x2 = x1 + ancho_barra
+                y2 = eje_x_y
+                
+                # Color por categoría
+                if nombre == "Códigos Cumple":
+                    color = COL_SUCCESS
+                elif nombre == "Códigos No cumple":
+                    color = COL_DANGER
+                else:
+                    color = COL_BAR
+                    
+                # Barra
+                canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=COL_TEXT, width=1.5)
+                # Valor encima
+                canvas.create_text((x1 + x2) / 2, y1 - 10, text=str(valor), font=("INTER", 9, "bold"), fill=COL_TEXT)
+                # Etiqueta abajo
+                canvas.create_text((x1 + x2) / 2, eje_x_y + 20, text=nombre, font=("INTER", 8, "bold"), 
+                                  fill=COL_TEXT, width=100, justify='center')
         else:
-            color = COL_BAR
-            
-        # Barra
-        canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=COL_TEXT, width=1.5)
-        # Valor encima
-        canvas.create_text((x1 + x2) / 2, y1 - 10, text=str(valor), font=("INTER", 9, "bold"), fill=COL_TEXT)
-        # Etiqueta abajo
-        canvas.create_text((x1 + x2) / 2, eje_x_y + 20, text=nombre, font=("INTER", 8, "bold"), 
-                          fill=COL_TEXT, width=100, justify='center')
+            # Mostrar mensaje si no hay datos
+            ancho, alto = int(canvas["width"]), int(canvas["height"])
+            canvas.create_text(ancho/2, alto/2, text="No hay datos disponibles\nVerifique el archivo JSON", 
+                              font=("INTER", 10), fill=COL_TEXT_LIGHT, justify='center')
 
-    # --- Actualizar lista de archivos ---
-    actualizar_lista_archivos(lst_archivos)
+        # --- Actualizar lista de archivos ---
+        actualizar_lista_archivos(lst_archivos)
 
+    except Exception as e:
+        print(f"Error en dibujar_grafica: {e}")
+    
     # --- Auto-refresh cada 2 segundos ---
     canvas.after(2000, lambda: dibujar_grafica(canvas, lbl_totales, lst_archivos))
 
@@ -277,7 +305,8 @@ def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     return frame, lbl_valor, lbl_porcentaje if porcentaje else (frame, lbl_valor, None)
 
 
-# --- Función para generar el PDF con plantilla ---
+
+# ---------------- Exportar PDF ---------------- #
 def exportar_pdf_simple():
     """Genera un PDF simple con estadísticas"""
     try:
@@ -301,7 +330,7 @@ def exportar_pdf_simple():
         stats_archivos = {
             'total_archivos': len(archivos_procesados),
             'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
-            'archivos_recientes': archivos_procesados[-3:] if archivos_procesados else []
+            'archivos_recientes': archivos_procesados if archivos_procesados else []
         }
         
         ruta = filedialog.asksaveasfilename(
@@ -322,12 +351,11 @@ def exportar_pdf_simple():
 
         # Agregar logo empresarial en la parte derecha del encabezado
         try:
-            logo_path = "img/logo_empresarial.png"
-            if os.path.exists(logo_path):
-                logo = ImageReader(logo_path)
+            if os.path.exists(LOGO_PATH):
+                logo = ImageReader(LOGO_PATH)
                 c.drawImage(logo, ancho - 100, alto - 70, width=50, height=50, preserveAspectRatio=True)
             else:
-                print(f"Logo no encontrado en: {logo_path}")
+                print(f"Logo no encontrado en: {LOGO_PATH}")
         except Exception as e:
             print(f"Error al cargar el logo: {e}")
 
@@ -363,6 +391,14 @@ def exportar_pdf_simple():
         y -= 20
 
         # Archivos recientes
+        # Preparar información de archivos
+        stats_archivos = {
+            'total_archivos': len(archivos_procesados),
+            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
+            'archivos_recientes': archivos_procesados if archivos_procesados else []  # <-- todos los archivos
+        }
+
+        # Archivos recientes
         if stats_archivos['archivos_recientes']:
             c.drawString(70, y, "Archivos recientes:")
             y -= 15
@@ -373,39 +409,40 @@ def exportar_pdf_simple():
             y -= 10
 
         # --- Crear gráfica de pastel ---
-        etiquetas = ["Códigos Cumple", "Códigos No Cumple"]
-        valores = [codigos_cumple, codigos_no_cumple]
-        colores = ["#ECD925", "#282828"]
-        porcentajes = [porcentaje_cumple, porcentaje_no_cumple]
+        if total_codigos > 0:
+            etiquetas = ["Códigos Cumple", "Códigos No Cumple"]
+            valores = [codigos_cumple, codigos_no_cumple]
+            colores = ["#ECD925", "#282828"]
+            porcentajes = [porcentaje_cumple, porcentaje_no_cumple]
 
-        plt.figure(figsize=(8, 6))
-        wedges, texts, autotexts = plt.pie(valores, labels=etiquetas, colors=colores, autopct='%1.1f%%',
-                                          startangle=90, textprops={'fontsize': 12, 'color': '#282828'})
+            plt.figure(figsize=(8, 6))
+            wedges, texts, autotexts = plt.pie(valores, labels=etiquetas, colors=colores, autopct='%1.1f%%',
+                                              startangle=90, textprops={'fontsize': 12, 'color': '#282828'})
 
-        for autotext in autotexts:
-            autotext.set_color('white')
-            autotext.set_fontweight('bold')
-            autotext.set_fontsize(12)
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(12)
 
-        for text in texts:
-            text.set_fontsize(12)
-            text.set_fontweight('bold')
+            for text in texts:
+                text.set_fontsize(12)
+                text.set_fontweight('bold')
 
-        plt.title("Distribución de Códigos", fontsize=16, fontweight='bold', color="#282828", pad=20)
-        plt.axis('equal')
+            plt.title("Distribución de Códigos", fontsize=16, fontweight='bold', color="#282828", pad=20)
+            plt.axis('equal')
 
-        leyenda_labels = [f'{etiqueta}: {valor} ({porcentaje:.1f}%)' 
-                         for etiqueta, valor, porcentaje in zip(etiquetas, valores, porcentajes)]
-        plt.legend(wedges, leyenda_labels, title="Estadísticas", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-        plt.tight_layout()
+            leyenda_labels = [f'{etiqueta}: {valor} ({porcentaje:.1f}%)' 
+                             for etiqueta, valor, porcentaje in zip(etiquetas, valores, porcentajes)]
+            plt.legend(wedges, leyenda_labels, title="Estadísticas", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+            plt.tight_layout()
 
-        buf = BytesIO()
-        plt.savefig(buf, format="PNG", dpi=150, bbox_inches='tight')
-        plt.close()
-        buf.seek(0)
+            buf = BytesIO()
+            plt.savefig(buf, format="PNG", dpi=150, bbox_inches='tight')
+            plt.close()
+            buf.seek(0)
 
-        imagen_grafica = ImageReader(buf)
-        c.drawImage(imagen_grafica, 50, y - 280, width=500, height=280)
+            imagen_grafica = ImageReader(buf)
+            c.drawImage(imagen_grafica, 50, y - 280, width=500, height=280)
 
         # --- Pie de página con fondo #282828 ---
         c.setFillColor("#282828")
@@ -440,7 +477,7 @@ def main():
     root.configure(bg=COL_BG)
 
     # Cargar archivos procesados al iniciar
-    archivos_procesados = cargar_archivos_procesados()
+    cargar_archivos_procesados()
 
     # Frame principal
     main_container = tk.Frame(root, bg=COL_BG)
@@ -549,7 +586,6 @@ def main():
     # Centrar ventana
     root.eval('tk::PlaceWindow . center')
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()

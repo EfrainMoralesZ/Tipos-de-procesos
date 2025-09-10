@@ -631,13 +631,11 @@ class AgregarItem:
         # TAMAÑO ESPECÍFICO PARA VENTANA DE AGREGAR
         self.ventana.geometry("500x400")
         self.ventana.resizable(False, False)
-        
         self.ventana.configure(bg="#FFFFFF")
         
         # Centrar ventana
         self.ventana.transient(editor.ventana)
         self.ventana.grab_set()
-        
         self.centrar_ventana()
 
         # Frame principal
@@ -664,8 +662,10 @@ class AgregarItem:
             entry = tk.Entry(frame, font=("Segoe UI", 10), bg="#FFFFFF", 
                             fg="#282828", relief="solid", bd=1)
             entry.pack(fill="x", pady=5)
-            
             setattr(self, attr_name, entry)
+
+        # 🔹 Vinculamos el evento para desactivar criterio si es "CUMPLE"
+        self.obs_entry.bind("<KeyRelease>", self.verificar_observacion)
 
         # Botón guardar
         btn_frame = tk.Frame(main_frame, bg="#FFFFFF")
@@ -678,7 +678,6 @@ class AgregarItem:
         tk.Button(btn_frame, text="❌ Cancelar", bg="#E0E0E0", fg="#282828",
                   font=("Segoe UI", 10), command=self.ventana.destroy,
                   relief="flat", padx=20, pady=8).pack(side="left", padx=10)
-        # Aquí se crea el botón dentro de esta función de inicialización de la ventana
         
     def centrar_ventana(self):
         """Centra la ventana en la pantalla"""
@@ -689,10 +688,23 @@ class AgregarItem:
         y = (self.ventana.winfo_screenheight() // 2) - (alto // 2)
         self.ventana.geometry(f'+{x}+{y}')
 
+    def verificar_observacion(self, event=None):
+        """Desactiva la entrada de criterio si la observación es 'CUMPLE'"""
+        if self.obs_entry.get().strip().upper() == "CUMPLE":
+            self.crit_entry.delete(0, tk.END)
+            self.crit_entry.config(state="disabled")
+        else:
+            self.crit_entry.config(state="normal")
+
     def agregar_item(self):
         item = self.item_entry.get().strip()
         observaciones = self.obs_entry.get().strip()
-        criterio = self.crit_entry.get().strip()
+        
+        # Si la entrada está deshabilitada, criterio queda vacío
+        if self.crit_entry.cget("state") == "disabled":
+            criterio = ""
+        else:
+            criterio = self.crit_entry.get().strip()
         
         if not item:
             messagebox.showwarning("Advertencia", "El campo ITEM no puede estar vacío")
@@ -703,7 +715,7 @@ class AgregarItem:
             messagebox.showwarning("Advertencia", f"El ITEM {item} ya existe")
             return
             
-        # Si la observación es "CUMPLE", asegurar que el criterio esté vacío
+        # Seguridad extra: si la observación es "CUMPLE", limpiar criterio
         if observaciones.upper() == "CUMPLE":
             criterio = ""
             

@@ -2,7 +2,7 @@
     {
         "ITEM":38681,
         "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":""
+        "CRITERIO":null
     },
     {
         "ITEM":38690,
@@ -27,7 +27,7 @@
     {
         "ITEM":188279,
         "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":""
+        "CRITERIO":null
     },
     {
         "ITEM":338286,
@@ -12066,7 +12066,7 @@
     },
     {
         "ITEM":4327545,
-        "OBSERVACIONES":"CUMPLE",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":null
     },
     {
@@ -35941,7 +35941,7 @@
     },
     {
         "ITEM":5412528,
-        "OBSERVACIONES":"IMPORTADOR FALTA PAIS DE ORIGEN EN ESPAÑOL",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {

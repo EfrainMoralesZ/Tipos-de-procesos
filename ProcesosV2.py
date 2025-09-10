@@ -499,54 +499,6 @@ def seleccionar_reporte():
     if ruta:
         procesar_reporte(ruta)
 
-#  CATALOGO DE DECATHLON 
-def actualizar_catalogo(frame_principal):
-    barra = None
-    try:
-        # Seleccionar archivo Excel
-        file_path = filedialog.askopenfilename(
-            title="Seleccionar archivo de catálogo",
-            filetypes=[("Archivos Excel", "*.xlsx *.xls")]
-        )
-        
-        if not file_path:
-            return  # Usuario canceló
-
-        barra = BarraProgreso(frame_principal, "Cargando catálogo...")
-
-        # Paso 1: leer Excel
-        barra.actualizar(20)
-        df = pd.read_excel(file_path)
-
-        # Paso 2: preparar rutas
-        barra.actualizar(50)
-        if getattr(sys, "frozen", False):
-            base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
-        else:
-            base_path = os.path.dirname(__file__)
-
-        resources_path = os.path.join(base_path, "resources")
-        if not os.path.exists(resources_path):
-            os.makedirs(resources_path)
-
-        json_path = os.path.join(resources_path, "base_general.json")
-
-        # Paso 3: guardar JSON
-        barra.actualizar(80)
-        df.to_json(json_path, orient="records", force_ascii=False, indent=4)
-
-        # Paso 4: finalizar
-        barra.actualizar(100)
-        time.sleep(0.5)
-        barra.finalizar()
-
-        messagebox.showinfo("Catálogo actualizado", "El catálogo fue cargado correctamente.")
-
-    except Exception as e:
-        if barra:
-            barra.finalizar()
-        messagebox.showerror("Error", f"No se pudo actualizar el catálogo:\n{e}")
-
 #  FUNCION PARA EXPORTAR EL CATALOGO DE DECATHLON 
 def exportar_concentrado_catalogo(frame_principal):
     try:
@@ -693,20 +645,24 @@ if __name__ == "__main__":
     
     # Frame principal con fondo blanco
     frame = tk.Frame(root, bg="#FFFFFF")
-    frame.pack(expand=True, fill="both", padx=20, pady=20)
+    frame.pack(expand=True, fill="both", padx=30, pady=30)
 
-    # --- Header con logo a la izquierda y título ---
+    # --- Header con logo y título mejorado ---
     header_frame = tk.Frame(frame, bg="#FFFFFF")
-    header_frame.pack(fill="x", pady=(0, 15))
+    header_frame.pack(fill="x", pady=(0, 25))
 
-    # Logo en la parte superior izquierda
-    logo_frame = tk.Frame(header_frame, bg="#FFFFFF")
-    logo_frame.pack(side="left", anchor="nw", padx=(0, 20))
+    # Contenedor para logo y título
+    header_content = tk.Frame(header_frame, bg="#FFFFFF")
+    header_content.pack(fill="x", pady=(0, 15))
+
+    # Logo en la parte izquierda
+    logo_frame = tk.Frame(header_content, bg="#FFFFFF")
+    logo_frame.pack(side="left", padx=(0, 20))
 
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((100, 60), Image.Resampling.LANCZOS)
+            logo_img_raw = Image.open(logo_path).resize((80, 50), Image.Resampling.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
             logo_label = tk.Label(logo_frame, image=logo_img, bg="#FFFFFF")
             logo_label.image = logo_img
@@ -715,105 +671,120 @@ if __name__ == "__main__":
         print(f"Error cargando el logo: {e}")
 
     # Título a la derecha del logo
-    title_frame = tk.Frame(header_frame, bg="#FFFFFF")
+    title_frame = tk.Frame(header_content, bg="#FFFFFF")
     title_frame.pack(side="left", fill="both", expand=True)
 
     label_titulo = tk.Label(
         title_frame, 
         text="INSPECCIÓN DE CUMPLIMIENTO\nNORMATIVO AL ARRIBO",
-        font=("Inter", 16, "bold"),
+        font=("Inter", 18, "bold"),
         fg="#282828", 
         bg="#FFFFFF", 
         justify="left"
     )
-    label_titulo.pack(anchor="w", pady=(0, 5))
+    label_titulo.pack(anchor="w", pady=(0, 8))
 
     label_sub = tk.Label(
         title_frame, 
         text="Sistema integral para la gestión de procesos normativos",
-        font=("Inter", 9),
+        font=("Inter", 10),
         fg="#4B4B4B", 
         bg="#FFFFFF",
         justify="left"
     )
     label_sub.pack(anchor="w")
 
-    # Separador
-    separator = tk.Frame(header_frame, height=1, bg="#ECD925")
-    separator.pack(fill="x", pady=(15, 0))
+    # Separador decorativo
+    separator = tk.Frame(header_frame, height=3, bg="#ECD925")
+    separator.pack(fill="x")
 
-    # --- Contenido principal: Botones ---
+    # --- Contenido principal: Botones en disposición moderna ---
     content_frame = tk.Frame(frame, bg="#FFFFFF")
-    content_frame.pack(fill="both", expand=True, pady=(15, 10))
+    content_frame.pack(fill="both", expand=True, pady=(30, 20))
 
-    # Panel de botones - Distribución 2x3
-    buttons_frame = tk.Frame(content_frame, bg="#FFFFFF")
-    buttons_frame.pack(fill="both", expand=True)
-
-    # Configurar estilos de botones RECTANGULARES MÁS PEQUEÑOS
-    style.configure('YellowRect.TButton', 
+    # Configurar estilos de botones mejorados
+    style.configure('Primary.TButton', 
                    background='#ECD925', 
                    foreground='#282828', 
-                   font=('Inter', 9, 'bold'),  # Fuente más pequeña
+                   font=('Inter', 11, 'bold'),
                    borderwidth=0,
-                   padding=(6, 4),  # Padding reducido
-                   focuscolor='none',
-                   width=12)  # Ancho reducido
-    style.map('YellowRect.TButton',
+                   padding=(15, 12),
+                   focuscolor='none')
+    style.map('Primary.TButton',
              background=[('active', '#D6BC00')],
              foreground=[('active', '#282828')])
     
-    style.configure('DarkRect.TButton', 
+    style.configure('Secondary.TButton', 
                    background='#282828', 
                    foreground='#FFFFFF', 
-                   font=('Inter', 9, 'bold'),  # Fuente más pequeña
+                   font=('Inter', 11, 'bold'),
                    borderwidth=0,
-                   padding=(6, 4),  # Padding reducido
-                   focuscolor='none',
-                   width=12)  # Ancho reducido
-    style.map('DarkRect.TButton',
+                   padding=(15, 12),
+                   focuscolor='none')
+    style.map('Secondary.TButton',
              background=[('active', '#1A1A1A')],
              foreground=[('active', '#FFFFFF')])
 
-    # Botones en grid 2x3 - Más compactos
-    botones = [
-        ("⚙️ CONFIGURAR", configurar_rutas, "YellowRect.TButton"),
-        ("📊 REPORTE", seleccionar_reporte, "YellowRect.TButton"),
-        ("📋 EDITOR", lambda: abrir_editor_codigos(buttons_frame), "YellowRect.TButton"),
-        ("📈 DASHBOARD", mostrar_estadisticas, "YellowRect.TButton"),
-        ("🔄 ACTUALIZAR", lambda: actualizar_catalogo(buttons_frame), "YellowRect.TButton"),
-        ("🚪 CERRAR", lambda: root.destroy() if messagebox.askokcancel("Salir", "¿Está seguro que desea cerrar la aplicación?") else None, "DarkRect.TButton")
+    # Contenedor principal de botones
+    main_buttons_container = tk.Frame(content_frame, bg="#FFFFFF")
+    main_buttons_container.pack(expand=True)
+
+    # Primera fila: 3 botones principales
+    top_row = tk.Frame(main_buttons_container, bg="#FFFFFF")
+    top_row.pack(pady=(0, 15))
+
+    top_buttons = [
+        ("⚙️ CONFIGURAR", configurar_rutas),
+        ("📊 REPORTE", seleccionar_reporte),
+        ("📋 EDITOR", lambda: abrir_editor_codigos(main_buttons_container))
     ]
 
-    for i, (texto, comando, estilo) in enumerate(botones):
-        row = i // 3  # 0, 0, 0, 1, 1, 1
-        col = i % 3   # 0, 1, 2, 0, 1, 2
+    for texto, comando in top_buttons:
+        btn_container = tk.Frame(top_row, bg="#FFFFFF", padx=8)
+        btn_container.pack(side="left", expand=True)
         
-        btn_frame = tk.Frame(buttons_frame, bg="#FFFFFF")
-        btn_frame.grid(row=row, column=col, padx=6, pady=6, sticky="nsew")  # Espaciado reducido
+        btn = ttk.Button(btn_container, text=texto, command=comando, 
+                        style='Primary.TButton', width=20)
+        btn.pack(fill="x", ipady=6)
+
+    # Segunda fila: 2 botones
+    bottom_row = tk.Frame(main_buttons_container, bg="#FFFFFF")
+    bottom_row.pack(pady=(15, 0))
+
+    # Centrar los dos botones de la segunda fila
+    center_frame = tk.Frame(bottom_row, bg="#FFFFFF")
+    center_frame.pack()
+
+    bottom_buttons = [
+        ("📈 DASHBOARD", mostrar_estadisticas, 'Primary.TButton'),
+        ("🚪 CERRAR", lambda: root.destroy() if messagebox.askokcancel(
+            "Salir", "¿Está seguro que desea cerrar la aplicación?") else None, 'Secondary.TButton')
+    ]
+
+    for texto, comando, estilo in bottom_buttons:
+        btn_container = tk.Frame(center_frame, bg="#FFFFFF", padx=12)
+        btn_container.pack(side="left", expand=True)
         
-        btn = ttk.Button(btn_frame, text=texto, command=comando, 
-                        style=estilo)
-        btn.pack(fill="both", expand=True, ipady=2)  # Altura interna reducida
+        btn = ttk.Button(btn_container, text=texto, command=comando, 
+                        style=estilo, width=20)
+        btn.pack(fill="x", ipady=6)
 
-    # Configurar peso de filas y columnas
-    for i in range(2):
-        buttons_frame.grid_rowconfigure(i, weight=1)
-    for i in range(3):
-        buttons_frame.grid_columnconfigure(i, weight=1)
-
-    # Footer
+    # --- Footer mejorado ---
     footer_frame = tk.Frame(frame, bg="#FFFFFF")
-    footer_frame.pack(fill="x", pady=(15, 0))
+    footer_frame.pack(fill="x", pady=(25, 0))
 
-    # Separador antes del footer
+    # Separador del footer
     footer_separator = tk.Frame(footer_frame, height=1, bg="#E0E0E0")
-    footer_separator.pack(fill="x", pady=(0, 8))
+    footer_separator.pack(fill="x", pady=(0, 12))
 
-    tk.Label(footer_frame, 
+    # Información del footer
+    footer_content = tk.Frame(footer_frame, bg="#FFFFFF")
+    footer_content.pack(fill="x")
+
+    tk.Label(footer_content, 
              text="Sistema V&C v2.0 • © 2025",
-             font=("Inter", 8),
+             font=("Inter", 9),
              fg="#4B4B4B", 
              bg="#FFFFFF").pack()
 
-    root.mainloop()
+root.mainloop()
