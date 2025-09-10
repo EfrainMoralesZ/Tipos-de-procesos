@@ -8,17 +8,12 @@ import sys
 import json
 from Editor_Codigos import EditorCodigos
 from Formato import exportar_excel
-import re
-import time
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas as pdf_canvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
-import subprocess
-import Editor_Codigos
-import Dashboard
 
 # Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):

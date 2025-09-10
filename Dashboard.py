@@ -9,6 +9,9 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
+import threading
+import time
+import pandas as pd
 
 # ---------------- Configuración ---------------- #
 COL_BG = "#FFFFFF"  # Fondo blanco
@@ -36,6 +39,7 @@ def recurso_path(ruta_relativa):
 
 # Rutas de archivos
 ARCHIVO_JSON = recurso_path("resources/codigos_cumple.json")
+ARCHIVO_EXCEL = recurso_path("codigos_cumple.xlsx")  # Añadido para monitoreo
 CONFIG_DIR = recurso_path("Guardar Archivos Generados")
 ARCHIVOS_PROCESADOS_FILE = recurso_path("Guardar Archivos Generados/archivos_procesados.json")
 LOGO_PATH = recurso_path("img/logo_empresarial.png")
@@ -46,7 +50,106 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 # Lista global
 archivos_procesados = []
 
+# Variables globales para las etiquetas
+lbl_total_valor = None
+lbl_cumple_valor = None
+lbl_cumple_porcentaje = None
+lbl_no_cumple_valor = None
+lbl_no_cumple_porcentaje = None
+canvas_grafica = None
+lst_archivos = None
+lbl_totales = None
+
+# ---------------- Sistema de Monitoreo ---------------- #
+
+class MonitorCambios:
+    def __init__(self, intervalo=2):  # 2 segundos entre verificaciones
+        self.intervalo = intervalo
+        self.ultima_modificacion_json = 0
+        self.ultima_modificacion_excel = 0
+        self.ejecutando = False
+        self.thread = None
+    
+    def iniciar_monitoreo(self):
+        """Inicia el monitoreo en segundo plano"""
+        self.ejecutando = True
+        self.thread = threading.Thread(target=self._monitorear, daemon=True)
+        self.thread.start()
+    
+    def detener_monitoreo(self):
+        """Detiene el monitoreo"""
+        self.ejecutando = False
+    
+    def _monitorear(self):
+        """Monitorea cambios en los archivos"""
+        while self.ejecutando:
+            try:
+                # Verificar cambios en JSON
+                if os.path.exists(ARCHIVO_JSON):
+                    mod_time = os.path.getmtime(ARCHIVO_JSON)
+                    if mod_time > self.ultima_modificacion_json:
+                        self.ultima_modificacion_json = mod_time
+                        print("📁 Cambio detectado en JSON - Actualizando dashboard...")
+                        # Actualizar interfaz desde el hilo principal
+                        root.after(0, actualizar_interfaz_completa)
+                
+                # Verificar cambios en Excel
+                if os.path.exists(ARCHIVO_EXCEL):
+                    mod_time = os.path.getmtime(ARCHIVO_EXCEL)
+                    if mod_time > self.ultima_modificacion_excel:
+                        self.ultima_modificacion_excel = mod_time
+                        print("📁 Cambio detectado en Excel - Actualizando dashboard...")
+                        root.after(0, actualizar_interfaz_completa)
+                
+                time.sleep(self.intervalo)
+                
+            except Exception as e:
+                print(f"Error en monitoreo: {e}")
+                time.sleep(self.intervalo)
+
+# Instancia global del monitor
+monitor = MonitorCambios()
+
 # ---------------- Funciones ---------------- #
+
+def actualizar_interfaz_completa():
+    """Actualiza toda la interfaz con los datos más recientes"""
+    global lbl_total_valor, lbl_cumple_valor, lbl_cumple_porcentaje
+    global lbl_no_cumple_valor, lbl_no_cumple_porcentaje, canvas_grafica, lst_archivos, lbl_totales
+    
+    try:
+        total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
+        
+        # Actualizar tarjetas
+        if lbl_total_valor:
+            lbl_total_valor.config(text=f"{total_codigos}")
+        if lbl_cumple_valor:
+            lbl_cumple_valor.config(text=f"{codigos_cumple}")
+        if lbl_no_cumple_valor:
+            lbl_no_cumple_valor.config(text=f"{codigos_no_cumple}")
+        
+        # Calcular porcentajes
+        porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
+        porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
+        
+        if lbl_cumple_porcentaje:
+            lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
+        if lbl_no_cumple_porcentaje:
+            lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
+        
+        if lbl_totales:
+            lbl_totales.config(text=f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}")
+        
+        # Redibujar gráfica
+        if canvas_grafica:
+            dibujar_grafica_estatica(canvas_grafica, total_codigos, codigos_cumple, codigos_no_cumple)
+        
+        # Actualizar lista de archivos
+        if lst_archivos:
+            actualizar_lista_archivos(lst_archivos)
+            
+    except Exception as e:
+        print(f"Error actualizando interfaz: {e}")
 
 def cargar_archivos_procesados():
     """Carga la lista de archivos procesados desde el JSON, crea el archivo si no existe"""
@@ -165,13 +268,10 @@ def leer_datos():
                 json.dump([], f, indent=4, ensure_ascii=False)
             return 0, 0, 0
         
+        # Intentar leer desde JSON primero
         with open(ARCHIVO_JSON, "r", encoding="utf-8") as f:
             codigos_data = json.load(f)
-            print(f"Datos leídos: {len(codigos_data)} registros")
-            
-            # Verificar estructura de los datos
-            if codigos_data and isinstance(codigos_data, list):
-                print(f"Primer registro: {codigos_data[0]}")
+            print(f"Datos leídos desde JSON: {len(codigos_data)} registros")
             
         for d in codigos_data:
             if not isinstance(d, dict):
@@ -179,8 +279,6 @@ def leer_datos():
                 
             total_codigos += 1
             obs = str(d.get("OBSERVACIONES", "")).upper().strip()
-            
-            print(f"Item: {d.get('ITEM', 'N/A')}, Observación: '{obs}'")
             
             if obs == "CUMPLE":
                 codigos_cumple += 1
@@ -191,32 +289,38 @@ def leer_datos():
         
     except json.JSONDecodeError as e:
         print(f"❌ Error: El archivo JSON está corrupto o vacío: {e}")
-        return 0, 0, 0
+        # Intentar leer desde Excel como respaldo
+        return leer_datos_desde_excel()
     except Exception as e:
         print(f"❌ Error leyendo JSON: {e}")
-        return 0, 0, 0
+        return leer_datos_desde_excel()
         
     return total_codigos, codigos_cumple, codigos_no_cumple
 
-def dibujar_grafica(canvas, lbl_totales, lst_archivos):
-    """Dibuja la gráfica y actualiza las estadísticas"""
+def leer_datos_desde_excel():
+    """Lee datos desde Excel como respaldo"""
+    try:
+        if not os.path.exists(ARCHIVO_EXCEL):
+            print("❌ El archivo Excel tampoco existe")
+            return 0, 0, 0
+            
+        df = pd.read_excel(ARCHIVO_EXCEL)
+        total_codigos = len(df)
+        codigos_cumple = len(df[df["OBSERVACIONES"].astype(str).str.upper() == "CUMPLE"])
+        codigos_no_cumple = total_codigos - codigos_cumple
+        
+        print(f"Datos leídos desde Excel: {total_codigos} registros")
+        return total_codigos, codigos_cumple, codigos_no_cumple
+        
+    except Exception as e:
+        print(f"❌ Error leyendo Excel: {e}")
+        return 0, 0, 0
+
+def dibujar_grafica_estatica(canvas, total_codigos, codigos_cumple, codigos_no_cumple):
+    """Dibuja la gráfica con datos específicos (versión estática)"""
     try:
         canvas.delete("all")
-        total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
         
-        # --- Actualizar labels ---
-        lbl_total_valor.config(text=f"{total_codigos}")
-        lbl_cumple_valor.config(text=f"{codigos_cumple}")
-        lbl_no_cumple_valor.config(text=f"{codigos_no_cumple}")
-        
-        porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
-        porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
-        
-        lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
-        lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
-        
-        lbl_totales["text"] = f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}"
-
         # Solo dibujar gráfica si hay datos
         if total_codigos > 0:
             # --- Datos para las barras ---
@@ -272,14 +376,40 @@ def dibujar_grafica(canvas, lbl_totales, lst_archivos):
             canvas.create_text(ancho/2, alto/2, text="No hay datos disponibles\nVerifique el archivo JSON", 
                               font=("INTER", 10), fill=COL_TEXT_LIGHT, justify='center')
 
-        # --- Actualizar lista de archivos ---
-        actualizar_lista_archivos(lst_archivos)
-
     except Exception as e:
-        print(f"Error en dibujar_grafica: {e}")
+        print(f"Error en dibujar_grafica_estatica: {e}")
+
+def dibujar_grafica(canvas, lbl_totales_ref, lst_archivos_ref):
+    """Función original para compatibilidad (ahora usa la versión estática)"""
+    total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
     
-    # --- Auto-refresh cada 2 segundos ---
-    canvas.after(2000, lambda: dibujar_grafica(canvas, lbl_totales, lst_archivos))
+    # Actualizar labels
+    if lbl_total_valor:
+        lbl_total_valor.config(text=f"{total_codigos}")
+    if lbl_cumple_valor:
+        lbl_cumple_valor.config(text=f"{codigos_cumple}")
+    if lbl_no_cumple_valor:
+        lbl_no_cumple_valor.config(text=f"{codigos_no_cumple}")
+    
+    porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
+    porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
+    
+    if lbl_cumple_porcentaje:
+        lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
+    if lbl_no_cumple_porcentaje:
+        lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
+    
+    if lbl_totales_ref:
+        lbl_totales_ref.config(text=f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}")
+
+    # Dibujar gráfica
+    dibujar_grafica_estatica(canvas, total_codigos, codigos_cumple, codigos_no_cumple)
+    
+    # Actualizar lista de archivos
+    actualizar_lista_archivos(lst_archivos_ref)
+    
+    # Programar próxima actualización
+    canvas.after(2000, lambda: dibujar_grafica(canvas, lbl_totales_ref, lst_archivos_ref))
 
 def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     """Crea una tarjeta de estadística moderna"""
@@ -303,8 +433,6 @@ def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
         lbl_porcentaje.pack(pady=(0, 8))
     
     return frame, lbl_valor, lbl_porcentaje if porcentaje else (frame, lbl_valor, None)
-
-
 
 # ---------------- Exportar PDF ---------------- #
 def exportar_pdf_simple():
@@ -470,6 +598,7 @@ def exportar_pdf_simple():
 
 def main():
     global lbl_total_valor, lbl_cumple_valor, lbl_cumple_porcentaje, lbl_no_cumple_valor, lbl_no_cumple_porcentaje
+    global canvas_grafica, lst_archivos, lbl_totales, root
 
     root = tk.Tk()
     root.title("Dashboard de Códigos - V&C")
@@ -575,13 +704,16 @@ def main():
     btn_exportar.pack(side="left", padx=(0, 5))
 
     btn_cerrar = tk.Button(footer_frame, text="❌ Cerrar",
-                           command=root.destroy,
+                           command=lambda: [monitor.detener_monitoreo(), root.destroy()],
                            bg=COL_BTN_CERRAR, fg="white", font=("INTER", 9, "bold"),
                            relief="flat", padx=15, pady=6, cursor="hand2")
     btn_cerrar.pack(side="right")
 
     # Dibujar gráfica inicial
     dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
+
+    # Iniciar monitoreo de cambios
+    monitor.iniciar_monitoreo()
 
     # Centrar ventana
     root.eval('tk::PlaceWindow . center')

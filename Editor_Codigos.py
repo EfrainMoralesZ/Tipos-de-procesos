@@ -720,11 +720,18 @@ class AgregarItem:
             criterio = ""
             
         nuevo = {"ITEM": item, "OBSERVACIONES": observaciones, "CRITERIO": criterio}
-        self.editor.df_codigos_cumple = pd.concat([self.editor.df_codigos_cumple, pd.DataFrame([nuevo])],
-                                                  ignore_index=True)
+        self.editor.df_codigos_cumple = pd.concat(
+            [self.editor.df_codigos_cumple, pd.DataFrame([nuevo])],
+            ignore_index=True
+        )
+
+        # 🔹 Guardar de inmediato en Excel y JSON
+        self.editor.guardar_datos()
+
+        # Refrescar tabla y cerrar
         self.editor.actualizar_tabla()
         self.ventana.destroy()
-        messagebox.showinfo("Éxito", "Item agregado correctamente")
+        messagebox.showinfo("Éxito", "Item agregado y guardado correctamente")
 
 class EditorItem:
     def __init__(self, editor: EditorCodigos, index):

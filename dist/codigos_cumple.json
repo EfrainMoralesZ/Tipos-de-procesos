@@ -9197,7 +9197,7 @@
     {
         "ITEM":4135366,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4135876,
@@ -12066,7 +12066,7 @@
     },
     {
         "ITEM":4327545,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"CUMPLE",
         "CRITERIO":""
     },
     {
@@ -16862,7 +16862,7 @@
     {
         "ITEM":4581618,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4582011,
@@ -19082,7 +19082,7 @@
     {
         "ITEM":4794789,
         "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":null
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4794790,
@@ -32307,7 +32307,7 @@
     {
         "ITEM":5416011,
         "OBSERVACIONES":"IMPORTADOR, EDAD",
-        "CRITERIO":null
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":5416012,
@@ -36187,7 +36187,7 @@
     {
         "ITEM":4773151,
         "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":null
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4781436,
@@ -36492,7 +36492,7 @@
     {
         "ITEM":4820037,
         "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":null
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4820038,
