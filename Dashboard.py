@@ -111,6 +111,66 @@ monitor = MonitorCambios()
 
 # ---------------- Funciones ---------------- #
 
+class Dashboard:
+    def __init__(self):
+        self.archivo_json = "resources/codigos_cumple.json"
+        self.ultima_modificacion = 0
+        self.cargar_datos()
+        self.iniciar_verificacion()
+    
+    def iniciar_verificacion(self):
+        """Verifica periódicamente si el archivo ha cambiado"""
+        self.verificar_cambios()
+        # Verificar cada 2 segundos
+        self.root.after(2000, self.iniciar_verificacion)
+    
+    def verificar_cambios(self):
+        """Verifica si el archivo JSON ha sido modificado"""
+        try:
+            if os.path.exists(self.archivo_json):
+                mod_time = os.path.getmtime(self.archivo_json)
+                if mod_time > self.ultima_modificacion:
+                    self.ultima_modificacion = mod_time
+                    self.cargar_datos()
+                    print("Dashboard actualizado automáticamente")
+        except Exception as e:
+            print(f"Error al verificar cambios: {e}")
+    
+    def cargar_datos(self):
+        """Carga los datos desde el archivo JSON"""
+        try:
+            if os.path.exists(self.archivo_json):
+                with open(self.archivo_json, 'r', encoding='utf-8') as f:
+                    datos = json.load(f)
+                
+                # Convertir a DataFrame
+                self.df_codigos = pd.DataFrame(datos)
+                
+                # Actualizar estadísticas
+                self.actualizar_estadisticas()
+                
+                # Actualizar la interfaz
+                self.actualizar_interfaz()
+        except Exception as e:
+            print(f"Error al cargar datos: {e}")
+    
+    def actualizar_estadisticas(self):
+        """Actualiza las estadísticas del dashboard"""
+        total_codigos = len(self.df_codigos)
+        codigos_cumple = len(self.df_codigos[self.df_codigos['OBSERVACIONES'].str.upper() == 'CUMPLE'])
+        otros_codigos = total_codigos - codigos_cumple
+        
+        print(f"Total: {total_codigos}, Cumple: {codigos_cumple}, Otros: {otros_codigos}")
+        
+        # Aquí actualizas tus labels o gráficos
+        if hasattr(self, 'label_total'):
+            self.label_total.config(text=f"Total: {total_codigos}")
+        if hasattr(self, 'label_cumple'):
+            self.label_cumple.config(text=f"Cumple: {codigos_cumple}")
+        if hasattr(self, 'label_otros'):
+            self.label_otros.config(text=f"Otros: {otros_codigos}")
+
+
 def actualizar_interfaz_completa():
     """Actualiza toda la interfaz con los datos más recientes"""
     global lbl_total_valor, lbl_cumple_valor, lbl_cumple_porcentaje
@@ -225,15 +285,58 @@ def actualizar_lista_archivos(lst_archivos):
     cargar_archivos_procesados()  # Asegurarse de tener datos actualizados
     
     for archivo in archivos_procesados:
-        # Si el archivo es un string (solo nombre), mostrarlo tal cual
-        if isinstance(archivo, str):
+        # Si el archivo es un diccionario, mostrar nombre y fecha
+        if isinstance(archivo, dict) and 'nombre' in archivo:
+            nombre = archivo['nombre']
+            fecha = archivo.get('fecha_proceso', archivo.get('fecha_archivo', 'Fecha desconocida'))
+            # Formatear la fecha si es necesario
+            if isinstance(fecha, str) and len(fecha) > 10:
+                try:
+                    fecha_dt = datetime.strptime(fecha, "%Y-%m-%d %H:%M:%S")
+                    fecha = fecha_dt.strftime("%d/%m/%Y %H:%M")
+                except:
+                    pass
+            lst_archivos.insert(tk.END, f"{nombre} - {fecha}")
+        # Si es un string (solo nombre), mostrarlo tal cual
+        elif isinstance(archivo, str):
             lst_archivos.insert(tk.END, archivo)
-        # Si es un diccionario, mostrar el nombre o información relevante
-        elif isinstance(archivo, dict) and 'nombre' in archivo:
-            lst_archivos.insert(tk.END, archivo['nombre'])
         else:
             # Mostrar representación string para otros tipos
             lst_archivos.insert(tk.END, str(archivo))
+
+def eliminar_archivo_seleccionado(lst_archivos):
+    """Elimina el archivo seleccionado de la lista"""
+    global archivos_procesados
+    
+    seleccion = lst_archivos.curselection()
+    if not seleccion:
+        messagebox.showwarning("Selección requerida", "Por favor seleccione un archivo de la lista para eliminar")
+        return
+    
+    indice = seleccion[0]
+    
+    # Confirmar eliminación
+    archivo_info = archivos_procesados[indice]
+    nombre_archivo = archivo_info['nombre'] if isinstance(archivo_info, dict) and 'nombre' in archivo_info else str(archivo_info)
+    
+    respuesta = messagebox.askyesno(
+        "Confirmar eliminación",
+        f"¿Está seguro de que desea eliminar el archivo:\n\n{nombre_archivo}\n\nEsta acción no se puede deshacer."
+    )
+    
+    if not respuesta:
+        return
+    
+    # Eliminar el archivo de la lista
+    archivos_procesados.pop(indice)
+    
+    # Guardar cambios
+    guardar_archivos_procesados()
+    
+    # Actualizar la lista visual
+    actualizar_lista_archivos(lst_archivos)
+    
+    messagebox.showinfo("Eliminado", f"Archivo eliminado correctamente: {nombre_archivo}")
 
 def limpiar_lista(lst_archivos):
     """Limpia la lista de archivos procesados y elimina el archivo JSON"""
@@ -252,7 +355,7 @@ def limpiar_lista(lst_archivos):
     actualizar_lista_archivos(lst_archivos)
 
 def leer_datos():
-    """Lee los datos del archivo JSON y calcula estadísticas"""
+    """Lee los datos del archivo JSON and calcula estadísticas"""
     total_codigos = 0
     codigos_cumple = 0
     codigos_no_cumple = 0
@@ -435,6 +538,163 @@ def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
 
 # ---------------- Exportar PDF ---------------- #
 def exportar_pdf_simple():
+    """Genera un PDF simple con estadísticas"""
+    try:
+        # Obtener estadísticas actuales
+        total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
+        porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
+        porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
+        
+        # Preparar datos para el PDF
+        stats = {
+            'total_codigos': total_codigos,
+            'codigos_cumple': codigos_cumple,
+            'porcentaje_cumple': porcentaje_cumple,
+            'codigos_no_cumple': codigos_no_cumple,
+            'porcentaje_no_cumple': porcentaje_no_cumple,
+            'total_procesos': len(archivos_procesados),
+            'total_items': total_codigos
+        }
+        
+        # Preparar información de archivos
+        stats_archivos = {
+            'total_archivos': len(archivos_procesados),
+            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
+            'archivos_recientes': archivos_procesados if archivos_procesados else []
+        }
+        
+        ruta = filedialog.asksaveasfilename(
+            defaultextension=".pdf",
+            filetypes=[("Archivos PDF", "*.pdf")],
+            title="Guardar Reporte de Estadísticas"
+        )
+        if not ruta:
+            return
+
+        # Crear PDF simple
+        c = pdf_canvas.Canvas(ruta, pagesize=letter)
+        ancho, alto = letter
+
+        # Encabezado con logo en la parte derecha
+        c.setFillColor("#ecd925")
+        c.rect(0, alto - 20, ancho, 20, fill=1, stroke=0)
+
+        # Agregar logo empresarial en la parte derecha del encabezado
+        try:
+            if os.path.exists(LOGO_PATH):
+                logo = ImageReader(LOGO_PATH)
+                c.drawImage(logo, ancho - 100, alto - 70, width=50, height=50, preserveAspectRatio=True)
+            else:
+                print(f"Logo no encontrado en: {LOGO_PATH}")
+        except Exception as e:
+            print(f"Error al cargar el logo: {e}")
+
+        c.setFillColor("#282828")
+        c.setFont("Helvetica-Bold", 20)
+        c.drawString(50, alto - 50, "REPORTE DE ESTADÍSTICAS")
+
+        c.setFont("Helvetica", 10)
+        c.drawString(50, alto - 70, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+
+        y = alto - 120
+
+        # Estadísticas principales
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(50, y, "ESTADÍSTICAS PRINCIPALES")
+        y -= 30
+
+        c.setFont("Helvetica", 10)
+        c.drawString(70, y, f"• Total de códigos: {stats['total_codigos']}")
+        y -= 20
+        c.drawString(70, y, f"• Códigos que cumplen: {stats['codigos_cumple']} ({stats['porcentaje_cumple']:.1f}%)")
+        y -= 20
+        c.drawString(70, y, f"• Códigos que no cumplen: {stats['codigos_no_cumple']} ({stats['porcentaje_no_cumple']:.1f}%)")
+        y -= 20
+
+        # Archivos procesados
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(50, y, "ARCHIVOS PROCESADOS")
+        y -= 30
+
+        c.setFont("Helvetica", 10)
+        c.drawString(70, y, f"• Total de archivos: {stats_archivos['total_archivos']}")
+        y -= 20
+
+        # Archivos recientes
+        # Preparar información de archivos
+        stats_archivos = {
+            'total_archivos': len(archivos_procesados),
+            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
+            'archivos_recientes': archivos_procesados if archivos_procesados else []  # <-- todos los archivos
+        }
+
+        # Archivos recientes
+        if stats_archivos['archivos_recientes']:
+            c.drawString(70, y, "Archivos recientes:")
+            y -= 15
+            for archivo in stats_archivos['archivos_recientes']:
+                nombre_archivo = archivo if isinstance(archivo, str) else archivo.get('nombre', str(archivo))
+                c.drawString(90, y, f"• {nombre_archivo}")
+                y -= 15
+            y -= 10
+
+        # --- Crear gráfica de pastel ---
+        if total_codigos > 0:
+            etiquetas = ["Códigos Cumple", "Códigos No Cumple"]
+            valores = [codigos_cumple, codigos_no_cumple]
+            colores = ["#ECD925", "#282828"]
+            porcentajes = [porcentaje_cumple, porcentaje_no_cumple]
+
+            plt.figure(figsize=(8, 6))
+            wedges, texts, autotexts = plt.pie(valores, labels=etiquetas, colors=colores, autopct='%1.1f%%',
+                                              startangle=90, textprops={'fontsize': 12, 'color': '#282828'})
+
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(12)
+
+            for text in texts:
+                text.set_fontsize(12)
+                text.set_fontweight('bold')
+
+            plt.title("Distribución de Códigos", fontsize=16, fontweight='bold', color="#282828", pad=20)
+            plt.axis('equal')
+
+            leyenda_labels = [f'{etiqueta}: {valor} ({porcentaje:.1f}%)' 
+                             for etiqueta, valor, porcentaje in zip(etiquetas, valores, porcentajes)]
+            plt.legend(wedges, leyenda_labels, title="Estadísticas", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+            plt.tight_layout()
+
+            buf = BytesIO()
+            plt.savefig(buf, format="PNG", dpi=150, bbox_inches='tight')
+            plt.close()
+            buf.seek(0)
+
+            imagen_grafica = ImageReader(buf)
+            c.drawImage(imagen_grafica, 50, y - 280, width=500, height=280)
+
+        # --- Pie de página con fondo #282828 ---
+        c.setFillColor("#282828")
+        c.rect(0, 0, ancho, 30, fill=1, stroke=0)
+        c.setFillColor("#FFFFFF")
+        c.setFont("Helvetica", 8)
+        c.drawString(50, 15, "Sistema de Tipos de Procesos V&C")
+        
+        texto_centro = "www.vandc.com"
+        ancho_texto_centro = c.stringWidth(texto_centro, "Helvetica", 8)
+        c.drawString((ancho - ancho_texto_centro) / 2, 15, texto_centro)
+        
+        texto_derecho = f"Página 1"
+        ancho_texto_derecho = c.stringWidth(texto_derecho, "Helvetica", 8)
+        c.drawString(ancho - ancho_texto_derecho - 50, 15, texto_derecho)
+
+        c.save()
+        messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}")
+
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
+        print(f"Error detallado: {e}")
     """Genera un PDF simple con estadísticas"""
     try:
         # Obtener estadísticas actuales

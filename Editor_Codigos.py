@@ -282,11 +282,20 @@ class EditorCodigos:
             # Guardar en Excel (archivo original)
             self.df_codigos_cumple.to_excel(self.ARCHIVO_CODIGOS, index=False)
             
+            # Crear el directorio 'resources' si no existe
+            resources_dir = os.path.dirname(self.ARCHIVO_JSON_DASHBOARD)
+            if resources_dir and not os.path.exists(resources_dir):
+                os.makedirs(resources_dir)
+            
             # Guardar en JSON en la ruta que el dashboard lee
             self.df_codigos_cumple.to_json(self.ARCHIVO_JSON_DASHBOARD, orient="records", force_ascii=False, indent=4)
             
             # También guardar en el JSON original si es diferente
             if self.ARCHIVO_JSON != self.ARCHIVO_JSON_DASHBOARD:
+                # Crear directorio para el archivo JSON original si no existe
+                original_dir = os.path.dirname(self.ARCHIVO_JSON)
+                if original_dir and not os.path.exists(original_dir):
+                    os.makedirs(original_dir)
                 self.df_codigos_cumple.to_json(self.ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
             
             messagebox.showinfo("Guardar", "Datos guardados correctamente. El dashboard se actualizará automáticamente.")
