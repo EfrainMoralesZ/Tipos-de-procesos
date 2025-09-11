@@ -9,7 +9,9 @@ class EditorCodigos:
     def __init__(self, parent, archivo_excel, archivo_json):
         self.parent = parent
         self.ARCHIVO_CODIGOS = archivo_excel
-        self.ARCHIVO_JSON = archivo_json
+        # Asegurar que siempre se guarde en la ruta que el dashboard lee
+        self.ARCHIVO_JSON_DASHBOARD = "resources/codigos_cumple.json"
+        self.ARCHIVO_JSON = archivo_json  # Puede ser diferente, pero el dashboard siempre leerá de ARCHIVO_JSON_DASHBOARD
         self.df_codigos_cumple = pd.DataFrame()
 
         self.cargar_datos()
@@ -27,7 +29,7 @@ class EditorCodigos:
             else:
                 self.df_codigos_cumple = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
 
-            # Cargar JSON (opcional)
+            # Cargar JSON (opcional) - pero el dashboard siempre leerá de ARCHIVO_JSON_DASHBOARD
             if os.path.exists(self.ARCHIVO_JSON):
                 with open(self.ARCHIVO_JSON, "r", encoding="utf-8") as f:
                     data_json = json.load(f)
@@ -250,7 +252,7 @@ class EditorCodigos:
     def abrir_editar_item(self):
         selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Editar Item", "Seleccione un item de la tabla")
+            messagebox.showwarning("Editar Item", "Seleccione an item de la tabla")
             return
         
         # Obtener el valor del ITEM seleccionado
@@ -272,14 +274,22 @@ class EditorCodigos:
             messagebox.showerror("Error", f"Error al editar item: {str(e)}")
 
     def guardar_datos(self):
-        """Guarda los datos a Excel y JSON"""
+        """Guarda los datos a Excel y JSON (en la ruta que el dashboard lee)"""
         try:
             # Asegurarse de que los valores NaN se guarden como vacíos
             self.df_codigos_cumple["CRITERIO"] = self.df_codigos_cumple["CRITERIO"].replace({np.nan: "", "nan": ""})
             
+            # Guardar en Excel (archivo original)
             self.df_codigos_cumple.to_excel(self.ARCHIVO_CODIGOS, index=False)
-            self.df_codigos_cumple.to_json(self.ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
-            messagebox.showinfo("Guardar", "Datos guardados correctamente")
+            
+            # Guardar en JSON en la ruta que el dashboard lee
+            self.df_codigos_cumple.to_json(self.ARCHIVO_JSON_DASHBOARD, orient="records", force_ascii=False, indent=4)
+            
+            # También guardar en el JSON original si es diferente
+            if self.ARCHIVO_JSON != self.ARCHIVO_JSON_DASHBOARD:
+                self.df_codigos_cumple.to_json(self.ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
+            
+            messagebox.showinfo("Guardar", "Datos guardados correctamente. El dashboard se actualizará automáticamente.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudieron guardar los datos: {str(e)}")
 
@@ -311,6 +321,10 @@ class EditorCodigos:
             if self.df_codigos_cumple is None or self.df_codigos_cumple.empty:
                 self.df_codigos_cumple = df_nuevo.copy()
                 self.actualizar_tabla()
+                
+                # Guardar datos (esto guardará en la ruta del dashboard)
+                self.guardar_datos()
+                
                 messagebox.showinfo("Importar Excel", "Todos los datos han sido importados correctamente.")
                 return
 
@@ -363,7 +377,7 @@ class EditorCodigos:
             # Crear ventana de revisión más compacta
             win = tk.Toplevel(self.parent if hasattr(self, "parent") else None)
             win.title("Revisión de cambios - Importar Excel")
-            win.geometry("1200x550")  # Ventana más compacta
+            win.geometry("1200x550")
             win.configure(bg="#f5f5f5")
             win.minsize(900, 450)
             
@@ -409,9 +423,10 @@ class EditorCodigos:
                 "ACTUALIZAR": "Actualizar"
             }
             
+            # Definir tree como variable local dentro de esta función
             tree = ttk.Treeview(table_frame, columns=cols, show="headings", 
                             yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set,
-                            height=12, selectmode="extended")  # Altura reducida
+                            height=12, selectmode="extended")
             
             # Configurar columnas con autoajuste y nombres cortos
             column_configs = {
@@ -421,7 +436,7 @@ class EditorCodigos:
                 "CRIT_ACT": {"width": 180, "minwidth": 120, "stretch": True},
                 "OBS_NEW": {"width": 180, "minwidth": 120, "stretch": True},
                 "CRIT_NEW": {"width": 180, "minwidth": 120, "stretch": True},
-                "ACTUALIZAR": {"width": 100, "minwidth": 80, "stretch": False}  # Ancho aumentado para mostrar "Actualizar" completo
+                "ACTUALIZAR": {"width": 100, "minwidth": 80, "stretch": False}
             }
             
             for col in cols:
@@ -432,7 +447,6 @@ class EditorCodigos:
             # Insertar datos en el treeview
             for cambio in cambios:
                 tipo_texto = "NUEVO" if cambio["tipo"] == "nuevo" else "ACTUAL"
-                tipo_color = "green" if cambio["tipo"] == "nuevo" else "blue"
                 
                 item_id = tree.insert("", "end", values=(
                     cambio["item"],
@@ -564,34 +578,15 @@ class EditorCodigos:
                 self.df_codigos_cumple = pd.DataFrame.from_dict(dict_existente, orient="index").reset_index()
                 self.df_codigos_cumple = self.df_codigos_cumple.rename(columns={"index": "ITEM"})
                 
-                # Guardar en JSON - Método alternativo si no existe guardar_cambios
-                try:
-                    # Si existe el método guardar_cambios, usarlo
-                    if hasattr(self, 'guardar_cambios'):
-                        self.guardar_cambios()
-                    else:
-                        # Guardar directamente en el archivo JSON
-                        if hasattr(self, 'json_file_path') and self.json_file_path:
-                            self.df_codigos_cumple.to_json(self.json_file_path, orient='records', indent=4)
-                        else:
-                            # Si no hay ruta de archivo, guardar en el directorio actual
-                            default_path = "codigos_cumple.json"
-                            self.df_codigos_cumple.to_json(default_path, orient='records', indent=4)
-                    guardado_exitoso = True
-                except Exception as e:
-                    guardado_exitoso = False
-                    error_guardado = str(e)
+                # Guardar los cambios (esto guardará en la ruta del dashboard)
+                self.guardar_datos()
                 
                 # Actualizar la tabla principal
                 self.actualizar_tabla()
                 
                 # Mostrar resumen
-                if guardado_exitoso:
-                    resumen = f"Cambios aplicados y guardados exitosamente:\n\n• Nuevos items: {aplicados_nuevos}\n• Actualizaciones: {aplicados_actualizaciones}"
-                    messagebox.showinfo("Importar Excel", resumen)
-                else:
-                    resumen = f"Cambios aplicados pero error al guardar:\n\n{error_guardado}"
-                    messagebox.showwarning("Advertencia", resumen)
+                resumen = f"Cambios aplicados y guardados exitosamente:\n\n• Nuevos items: {aplicados_nuevos}\n• Actualizaciones: {aplicados_actualizaciones}"
+                messagebox.showinfo("Importar Excel", resumen)
                 
                 win.destroy()
             
@@ -603,11 +598,7 @@ class EditorCodigos:
             ttk.Button(action_frame, text="Cancelar", 
                     command=win.destroy).pack(side="right", padx=(5, 0))
             ttk.Button(action_frame, text="Aplicar Cambios", 
-                    command=aplicar_cambios, style="Accent.TButton").pack(side="right", padx=(5, 0))
-            
-            # Configurar estilo para botón principal
-            style = ttk.Style()
-            style.configure("Accent.TButton", background="#4CAF50", foreground="white", font=("Arial", 9, "bold"))
+                    command=aplicar_cambios).pack(side="right", padx=(5, 0))
             
             # Centrar ventana
             win.transient(self.parent if hasattr(self, "parent") else None)
@@ -725,7 +716,7 @@ class AgregarItem:
             ignore_index=True
         )
 
-        # 🔹 Guardar de inmediato en Excel y JSON
+        # 🔹 Guardar de inmediato en Excel y JSON (incluyendo la ruta del dashboard)
         self.editor.guardar_datos()
 
         # Refrescar tabla y cerrar
@@ -819,14 +810,16 @@ class EditorItem:
         self.editor.df_codigos_cumple.at[self.index, "OBSERVACIONES"] = observaciones
         self.editor.df_codigos_cumple.at[self.index, "CRITERIO"] = criterio
         
-        self.editor.actualizar_tabla()
+        # Guardar cambios (esto guardará en la ruta del dashboard)
+        self.editor.guardar_datos()
+        
         self.ventana.destroy()
         messagebox.showinfo("Éxito", "Cambios guardados correctamente")
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.withdraw()  # Oculta la ventana principal
+    root.withdraw()
     archivo_excel = "codigos_cumple.xlsx"
-    archivo_json = "resources/codigos_cumple.json"
+    archivo_json = "resources/codigos_cumple.json"  # Ahora ambos apuntan al mismo archivo
     app = EditorCodigos(root, archivo_excel, archivo_json)
     root.mainloop()

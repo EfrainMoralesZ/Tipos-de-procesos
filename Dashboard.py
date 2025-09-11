@@ -61,7 +61,6 @@ lst_archivos = None
 lbl_totales = None
 
 # ---------------- Sistema de Monitoreo ---------------- #
-
 class MonitorCambios:
     def __init__(self, intervalo=2):  # 2 segundos entre verificaciones
         self.intervalo = intervalo
