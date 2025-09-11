@@ -305,7 +305,7 @@ def actualizar_lista_archivos(lst_archivos):
             lst_archivos.insert(tk.END, str(archivo))
 
 def eliminar_archivo_seleccionado(lst_archivos):
-    """Elimina el archivo seleccionado de la lista"""
+    """Elimina el archivo seleccionado de la lista y del disco"""
     global archivos_procesados
     
     seleccion = lst_archivos.curselection()
@@ -315,22 +315,35 @@ def eliminar_archivo_seleccionado(lst_archivos):
     
     indice = seleccion[0]
     
-    # Confirmar eliminación
+    # Obtener información del archivo
     archivo_info = archivos_procesados[indice]
-    nombre_archivo = archivo_info['nombre'] if isinstance(archivo_info, dict) and 'nombre' in archivo_info else str(archivo_info)
+    if isinstance(archivo_info, dict) and 'nombre' in archivo_info and 'ruta' in archivo_info:
+        nombre_archivo = archivo_info['nombre']
+        ruta_archivo = archivo_info['ruta']
+    else:
+        nombre_archivo = str(archivo_info)
+        ruta_archivo = str(archivo_info)
     
+    # Confirmar eliminación
     respuesta = messagebox.askyesno(
         "Confirmar eliminación",
         f"¿Está seguro de que desea eliminar el archivo:\n\n{nombre_archivo}\n\nEsta acción no se puede deshacer."
     )
-    
     if not respuesta:
         return
+    
+    # Eliminar archivo físico si existe
+    if os.path.exists(ruta_archivo):
+        try:
+            os.remove(ruta_archivo)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo eliminar el archivo del disco:\n{str(e)}")
+            return
     
     # Eliminar el archivo de la lista
     archivos_procesados.pop(indice)
     
-    # Guardar cambios
+    # Guardar cambios en JSON
     guardar_archivos_procesados()
     
     # Actualizar la lista visual
@@ -949,6 +962,21 @@ def main():
     # Footer con botones
     footer_frame = tk.Frame(main_container, bg=COL_BG)
     footer_frame.pack(fill="x", pady=(10, 0))
+
+    # Botón para eliminar archivo seleccionado
+    btn_eliminar = tk.Button(
+        footer_frame,
+        text="🗑️ Eliminar Archivo",
+        command=lambda: eliminar_archivo_seleccionado(lst_archivos),
+        bg="#D9534F",  # color rojo corporativo
+        fg="white",
+        font=("INTER", 9, "bold"),
+        relief="flat",
+        padx=15,
+        pady=6,
+        cursor="hand2"
+    )
+    btn_eliminar.pack(side="left", padx=(0, 5))
 
     btn_limpiar = tk.Button(footer_frame, text="🗑️ Limpiar Lista",
                             command=lambda: limpiar_lista(lst_archivos),

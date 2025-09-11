@@ -5116,7 +5116,7 @@
     },
     {
         "ITEM":2756835,
-        "OBSERVACIONES":"INSTRUCCIOINES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -7366,7 +7366,7 @@
     },
     {
         "ITEM":4001660,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9916,7 +9916,7 @@
     },
     {
         "ITEM":4214874,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"IMPORTADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -11881,7 +11881,7 @@
     },
     {
         "ITEM":4322938,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12066,8 +12066,8 @@
     },
     {
         "ITEM":4327545,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":""
     },
     {
         "ITEM":4327962,
@@ -13161,17 +13161,17 @@
     },
     {
         "ITEM":4377756,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4377757,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4377758,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -15131,7 +15131,7 @@
     },
     {
         "ITEM":4521250,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"INSTRUCCIONES",
         "CRITERIO":"REVISADO"
     },
     {
@@ -25686,7 +25686,7 @@
     },
     {
         "ITEM":5103221,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -26681,7 +26681,7 @@
     },
     {
         "ITEM":5185123,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -31871,8 +31871,8 @@
     },
     {
         "ITEM":5413375,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":""
     },
     {
         "ITEM":5413380,
@@ -32361,7 +32361,7 @@
     },
     {
         "ITEM":5416414,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -34711,7 +34711,7 @@
     },
     {
         "ITEM":5513953,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35941,13 +35941,13 @@
     },
     {
         "ITEM":5412528,
-        "OBSERVACIONES":"IMPORTADOR EDAR RECOMENDADA",
+        "OBSERVACIONES":"IMPORTADOR FALTA PAIS DE ORIGEN EN ESPAÑOL",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4004220,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":""
     },
     {
         "ITEM":4934723,
