@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "tiposdeproceso",
+  "private_key_id": "d429ca0a3040d98a1ef683cbb4df0d18c6fd730a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCz2j0+x46/PNZ3\n0AIpuJLjExZtJYmsmWJZlbu0lyqlPjvtN+nZVSKR/lI3QQ5RLIweTIOEH35g3wMg\n66mXrBrEl7e3dPrtGTcQ/kOuId9tsywis9ATarC03/I611AgkmRjaFA3pd03U7Yp\nwDIgSXOiBZ7QvmeWiyd5VV+CHghl/DrZpAF2rpNP2T3Gkl8v/bLuD+4ih1+CHqlb\nKpy0ALNK873I5hLkNe31wohE1n8OLJRR9QGk6pJkaQYXXqv2FaEBvRytPlMy+QJW\nVPqsLjTXjTc5Ojrp3PqOtAKUMqGha78MtMIFcU3WEn/4FLSwJgMnS9qHyXfF731a\nfMDuIyI3AgMBAAECggEAEVN5afZcjJTGTnWF99H1qJV6qBohKLUAEgRIOG4FqDSW\nHlSwHQVEFs9qyTLlt7E0cGjLlKtaB+gEC6RYSqnETGMXSj+lOrkeom70Qy61MQK9\nQjyTU4OIMWyPj9aVPAYOULtIWwwKAx334w7GZXDeCGJFOfPV091k+J3eXREamwRn\nqTUAXmOj4cd/5wRCEFJUmJpggYOEz2hrV6Zf0UotsOAcGo4fQ/rRUfUrBwQoaIBZ\nQLOudGieMjtaryTkVqT557XrF9lZAkr8Fta2rnTAVB8lb7L6q6N5048OPjd6kTx2\njr1I/Q0CpeZHif2GsFxNFY1MnZ1xcfjEAqitj3zwVQKBgQDXIDr4XADY6bCZOm13\nJ1rhDzM5/b73p5ojvtutDP7U1Poj9cL4AueRR6Y+CqgY0cRPPgAl37yq50vVnmx2\n93VuV2d2gDA489xvo755UFq86yfYvgYEI32iEwlSxtJ4qp2WaiprWyr4MsmXNiQw\nEaeIpfC5HDZi/LY9dn5+Xq1PnQKBgQDWBk2U24EictW29KFDkVPlemz9S/i0nS3x\nFJClQqatYBEenOUdRK+atRsDZxSniDjB7F0upZG1f8STNPwKZb83E9kDLq3tqIQ3\n9VFUXSBWApjXqlL+xfYGBvlrNEcMnL80cktrRSsUA7YBlRILQ3Gghmiv46KHDcgk\nPWoMTOaS4wKBgD90R1CouqtAyxF3dYB3AExwUljhqumb61Bt5Jg3xBb9N0dSH49O\nNAXbT4LvW8PuY+xHyn1hcGIs1WaOU0oIFgBVEbSXfSHfdH8NmopoFEuzRU6eRmIE\nIfOjj9V1xfFHyjHq4NZHzvXk7SeIFcaD/pnE8Kt5UeWCyzJ3+DnILXDVAoGBAILW\nV5comUj16rBt3CfyL9eZgAdY6jF/5RX7/HEKzdovYEfWojnCQ5fQHzN1UKsaG5hx\nZoWdsfXCpelX+rxgdwS0nXXUk382BZ4v2gg45guuisFM3m/hlQUaPl/LFaQgLsNh\nG7n4Dt2tZxaQivdXw57ejCD6h+EIC9IbuTjLyikBAoGBAJdees3QiflyEp9YuSuE\ni8XsNgQHP1di9O7E7F59mJ1W8DA3OPzDKGCFGH1Bm7wai4QrnJ0lXZsmSdOJxg58\nhS2SvrTz8PBnx6ccBCrMxjdasgtmDosmL/51Je2N0UvzxK4C9rbV8Y7OBqv855sx\nT1w+dIqTr4879jSMPyGLDG1Q\n-----END PRIVATE KEY-----\n",
+  "client_email": "app-tipos-proceso@tiposdeproceso.iam.gserviceaccount.com",
+  "client_id": "109507877484578532946",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/app-tipos-proceso%40tiposdeproceso.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

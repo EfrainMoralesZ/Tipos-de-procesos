@@ -10,7 +10,7 @@ class EditorCodigos:
         self.parent = parent
         self.ARCHIVO_CODIGOS = archivo_excel
         # Asegurar que siempre se guarde en la ruta que el dashboard lee
-        self.ARCHIVO_JSON_DASHBOARD = "resources/codigos_cumple.json"
+        self.ARCHIVO_JSON_DASHBOARD = "datos/codigos_cumple.json"
         self.ARCHIVO_JSON = archivo_json  # Puede ser diferente, pero el dashboard siempre leerá de ARCHIVO_JSON_DASHBOARD
         self.df_codigos_cumple = pd.DataFrame()
 
@@ -829,6 +829,6 @@ if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()
     archivo_excel = "codigos_cumple.xlsx"
-    archivo_json = "resources/codigos_cumple.json"  # Ahora ambos apuntan al mismo archivo
+    archivo_json = "Datos/codigos_cumple.json"  # Ahora ambos apuntan al mismo archivo
     app = EditorCodigos(root, archivo_excel, archivo_json)
     root.mainloop()

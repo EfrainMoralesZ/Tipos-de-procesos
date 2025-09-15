@@ -38,10 +38,10 @@ def recurso_path(ruta_relativa):
     return os.path.join(base_path, ruta_relativa)
 
 # Rutas de archivos
-ARCHIVO_JSON = recurso_path("resources/codigos_cumple.json")
-ARCHIVO_EXCEL = recurso_path("codigos_cumple.xlsx")  # Añadido para monitoreo
-CONFIG_DIR = recurso_path("Guardar Archivos Generados")
-ARCHIVOS_PROCESADOS_FILE = recurso_path("Guardar Archivos Generados/archivos_procesados.json")
+ARCHIVO_JSON = recurso_path("Datos/codigos_cumple.json")
+ARCHIVO_EXCEL = recurso_path("Datos/codigos_cumple.xlsx")  # Añadido para monitoreo
+CONFIG_DIR = recurso_path("Datos")
+ARCHIVOS_PROCESADOS_FILE = recurso_path("Datos/archivos_procesados.json")
 LOGO_PATH = recurso_path("img/logo_empresarial.png")
 
 # Crear directorios si no existen
@@ -113,7 +113,7 @@ monitor = MonitorCambios()
 
 class Dashboard:
     def __init__(self):
-        self.archivo_json = "resources/codigos_cumple.json"
+        self.archivo_json = ARCHIVO_JSON
         self.ultima_modificacion = 0
         self.cargar_datos()
         self.iniciar_verificacion()

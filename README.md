@@ -52,3 +52,7 @@ pip install pandas openpyxl Pillow
 - La aplicación usa JSON/Pickle para mejor rendimiento
 - Compatible con PyInstaller sin problemas
 - Manejo automático de ítems nuevos con interfaz gráfica
+
+
+
+la carpeta Datos es la encargada de que la comunicacion entre en Editor_Codigos y Dashboard se puedan comunicar cuando esten en .exe y python 

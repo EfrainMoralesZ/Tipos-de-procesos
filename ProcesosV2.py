@@ -14,6 +14,8 @@ from reportlab.pdfgen import canvas as pdf_canvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
+import Rutas  # Debe estar en la misma carpeta que ProcesosV2.py
+
 
 # Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):
@@ -24,49 +26,44 @@ else:
     BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Archivos de configuración
-CONFIG_FILE = os.path.join(BASE_PATH, "config.json")
-ARCHIVOS_PROCESADOS_FILE = os.path.join(BASE_PATH, "archivos_procesados.json")
-CODIGOS_CUMPLE = os.path.join(BASE_PATH, "codigos_cumple.xlsx")
-CODIGOS_JSON = os.path.join(BASE_PATH, "codigos_cumple.json")
+# Archivos de configuración centralizados
+CONFIG_FILE = Rutas.archivo_datos("config.json")
+ARCHIVOS_PROCESADOS_FILE = Rutas.archivo_datos("archivos_procesados.json")
+CODIGOS_CUMPLE_FILE = Rutas.archivo_datos("codigos_cumple.xlsx")
+CODIGOS_JSON_FILE = Rutas.archivo_datos("codigos_cumple.json")
+BASE_GENERAL_JSON = Rutas.archivo_datos("base_general.json")
+
+
+def asegurar_excel_vacio(ruta, columnas):
+    """Crea un archivo Excel vacío con las columnas especificadas si no existe"""
+    if not os.path.exists(ruta):
+        import pandas as pd
+        df = pd.DataFrame(columns=columnas)
+        df.to_excel(ruta, index=False)
+        print(f"✅ Archivo Excel creado vacío: {ruta}")
+
 
 # Configuración de Rutas integrada
 def configurar_rutas():
     try:
-        import Rutas  # El módulo debe estar en la misma carpeta que ProcesosV2.py
-        Rutas.configurar_rutas()  # Llamada sin argumentos
+        import Configurar  # El módulo debe estar en la misma carpeta que ProcesosV2.py
+        Configurar.configurar_rutas()  # Llamada sin argumentos
     except Exception as e:
         messagebox.showerror("❌ Error", f"No se pudo abrir la configuración:\n{e}")
-
-# REGISTRAR LOS ARCHIVOS PROCESADOS
-# Carpeta donde se guardarán las configuraciones y JSONs
-# Carpeta de configuración
-CONFIG_DIR = "Guardar Archivos Generados"
-os.makedirs(CONFIG_DIR, exist_ok=True)
-
-# Ruta del archivo de procesados
-ARCHIVOS_PROCESADOS_FILE = os.path.join(CONFIG_DIR, "archivos_procesados.json")
 
 # Lista global de archivos procesados
 archivos_procesados = []
 
 def cargar_archivos_procesados():
     """Carga la lista de archivos procesados, crea el JSON si no existe"""
-    global archivos_procesados
+    asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
     try:
-        if os.path.exists(ARCHIVOS_PROCESADOS_FILE):
-            with open(ARCHIVOS_PROCESADOS_FILE, 'r', encoding='utf-8') as f:
-                datos = json.load(f)
-                archivos_procesados = datos if isinstance(datos, list) else []
-        else:
-            archivos_procesados = []
-            # Crear archivo vacío
-            with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
-                json.dump([], f, indent=4, ensure_ascii=False)
-            print(f"📁 Archivo {ARCHIVOS_PROCESADOS_FILE} no encontrado. Se creó uno nuevo.")
+        with open(ARCHIVOS_PROCESADOS_FILE, 'r', encoding='utf-8') as f:
+            datos = json.load(f)
+            return datos if isinstance(datos, list) else []
     except Exception as e:
-        archivos_procesados = []
         print(f"❌ Error cargando archivos procesados: {e}")
-    return archivos_procesados
+        return []
 
 def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
     """Registra un archivo procesado en el sistema de estadísticas"""
@@ -121,21 +118,39 @@ def obtener_estadisticas_archivos():
             "ultimo_proceso": "Error"
         }
 
+
+def asegurar_json(ruta, contenido_inicial):
+    """Crea un archivo JSON vacío si no existe."""
+    if not os.path.exists(ruta):
+        with open(ruta, 'w', encoding='utf-8') as f:
+            json.dump(contenido_inicial, f, indent=4, ensure_ascii=False)
+
 # CARGAR CONFIGURACION DE RUTAS
 def cargar_configuracion():
-    """Carga la configuración desde el archivo JSON"""
-    CONFIG_DIR = "Guardar Configuracion"
-    CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
-    
+    """Carga la configuración desde config.json"""
+    # Crear archivos si no existen
+    asegurar_json(CONFIG_FILE, {"rutas": {"base_general": "", "codigos_cumple": ""}})
+    asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
+    asegurar_json(CODIGOS_JSON_FILE, [])
+    asegurar_json(BASE_GENERAL_JSON, [])
+
+    # Crear XLSX vacío si no existe
+    asegurar_excel_vacio(CODIGOS_CUMPLE_FILE, columnas=["ITEM", "CRITERIO", "OBSERVACIONES"])
+
     try:
-        if os.path.exists(CONFIG_FILE):
-            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        else:
-            return {"rutas": {"base_general": "", "codigos_cumple": ""}}
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
     except Exception as e:
-        print(f"Error al cargar configuración: {str(e)}")
+        print(f"Error al cargar configuración: {e}")
         return {"rutas": {"base_general": "", "codigos_cumple": ""}}
+
+def guardar_configuracion(config):
+    """Guarda la configuración en config.json"""
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error al guardar configuración: {e}")
 
 # FUNCION PARA ACTUALIZAR CODIGOS 
 def abrir_editor_codigos(parent):
@@ -152,7 +167,7 @@ def abrir_editor_codigos(parent):
         archivo_json = ""
         
         if archivo_codigos:
-            archivo_json = archivo_codigos.replace(".xlsx", ".json").replace(".xls", ".json")
+            archivo_json = Rutas.archivo_datos("codigos_cumple.json")
 
         # Validar que existan los archivos
         if os.path.exists(archivo_codigos) and os.path.exists(archivo_json):
@@ -183,15 +198,9 @@ def procesar_reporte(reporte_path):
 
     # SE CREA LA BARRA DE PROGRESO EN EL FRAME PRINCIPAL (LADO DERECHO)
     try:
-        global progress_label, progress_var, progress_bar, percent_label
-        # Inicializar variables globales si no existen
-        if 'progress_label' not in globals():
-            progress_label = None
-        if 'progress_bar' not in globals():
-            progress_bar = None
-        if 'percent_label' not in globals():
-            percent_label = None
-            
+        # Crear barra de progreso
+        barra = BarraProgreso(frame, texto="Procesando...", ancho=220, posicion="derecha")
+
         try:
             # Limpiar widgets existentes si existen
             for widget_name in ['progress_label', 'progress_bar', 'percent_label']:
@@ -205,43 +214,16 @@ def procesar_reporte(reporte_path):
         except Exception:
             pass
 
-        # Etiqueta de texto
-        progress_label = tk.Label(frame, text="Procesando...", font=("Segoe UI", 9, "bold"), bg="#FFFFFF")
-        progress_label.place(relx=1.0, rely=1.0, x=-20, y=-80, anchor="se")  # Separación superior
-
-        # Barra de progreso
-        progress_var = tk.DoubleVar()
-        progress_bar = ttk.Progressbar(frame, variable=progress_var, maximum=100, length=220)  # Más pequeña
-        progress_bar.place(relx=1.0, rely=1.0, x=-20, y=-50, anchor="se")  # Debajo de la etiqueta
-
-        # Porcentaje
-        percent_label = tk.Label(frame, text="0%", font=("Segoe UI", 10, "bold"), bg="#FFFFFF")
-        percent_label.place(relx=1.0, rely=1.0, x=-20, y=-25, anchor="se")  # Debajo de la barra
-
-        frame.update()
-
         # LECTURA DE DATOS DE LOS ARCHIVOS DE EXCEL CONVERTIDOS EN JSON
         def cargar_json(nombre_json):
-            """
-            Carga un archivo JSON como DataFrame de pandas.
-            Funciona tanto en Python normal como en .exe creado con PyInstaller.
-            """
-            if getattr(sys, "frozen", False):
-                # Cuando se ejecuta como .exe
-                base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
-            else:
-                # Cuando se ejecuta como script normal
-                base_path = os.path.dirname(__file__)
-            
-            ruta = os.path.join(base_path, "resources", nombre_json)
-            
+            """Carga un JSON como DataFrame, compatible .py y .exe"""
+            ruta = Rutas.archivo_datos(nombre_json)
             if not os.path.exists(ruta):
                 raise FileNotFoundError(f"No se encontró el archivo JSON: {ruta}")
-            
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            
             return pd.DataFrame(data)
+
 
         # LEER ARCHIVOS BASE EN FORMATO JSON
         df_base = cargar_json("base_general.json")
@@ -310,9 +292,7 @@ def procesar_reporte(reporte_path):
             tipo = match.iloc[0]['CODIGO FORMATO'] if not match.empty and 'CODIGO FORMATO' in match.columns else ''
             tipo_proceso.append(tipo)
             progress = ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            frame.update()
+            barra.actualizar(progress)
 
         # --- 3. NORMA ---
         norma = []
@@ -321,9 +301,7 @@ def procesar_reporte(reporte_path):
             n = match.iloc[0][norma_col] if not match.empty and norma_col in match.columns else ''
             norma.append(n)
             progress = 20 + ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            frame.update()
+            barra.actualizar(progress)
 
         # --- 4. DESCRIPCION ---
         descripcion = []
@@ -332,9 +310,7 @@ def procesar_reporte(reporte_path):
             desc = match.iloc[0][desc_col] if not match.empty and desc_col in match.columns else ''
             descripcion.append(desc)
             progress = 40 + ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            frame.update()
+            barra.actualizar(progress)
 
         # --- 5. CRITERIO ---
         criterio = []
@@ -353,9 +329,7 @@ def procesar_reporte(reporte_path):
                 crit = ''
             criterio.append(crit)
             progress = 60 + ((idx + 1) / total) * 20
-            progress_var.set(progress)
-            percent_label.config(text=f"{int(progress)}%")
-            frame.update()
+            barra.actualizar(progress)
 
         # Crear DataFrame final
         df_result = pd.DataFrame({
@@ -365,9 +339,7 @@ def procesar_reporte(reporte_path):
             'CRITERIO': criterio,
             'DESCRIPCION': descripcion,
         })
-        progress_var.set(80)
-        percent_label.config(text="80%")
-        frame.update()
+        barra.actualizar(progress)
 
         # REGLAS PARA MODIFICAR TIPO DE PROCESO, NORMA Y CRITERIO
         normas_adherible = [
@@ -453,22 +425,7 @@ def procesar_reporte(reporte_path):
             if norma_val in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'] and 'CUMPLE' not in criterio_val:
                 df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
-        progress_var.set(100)
-        percent_label.config(text="100%")
-        progress_label.config(text="¡Completado!")
-        frame.update()
-
-        def remove_progress_widgets():
-            try:
-                if 'progress_label' in globals() and progress_label is not None:
-                    progress_label.destroy()
-                if 'progress_bar' in globals() and progress_bar is not None:
-                    progress_bar.destroy()
-                if 'percent_label' in globals() and percent_label is not None:
-                    percent_label.destroy()
-            except:
-                pass
-        frame.after(500, remove_progress_widgets)
+        barra.finalizar("¡Completado!")
 
         # Guardar archivo final
         save_path = filedialog.asksaveasfilename(
@@ -493,55 +450,6 @@ def seleccionar_reporte():
     )
     if ruta:
         procesar_reporte(ruta)
-
-#  FUNCION PARA EXPORTAR EL CATALOGO DE DECATHLON 
-def exportar_concentrado_catalogo(frame_principal):
-    try:
-        # Detectar ruta base (para .exe y script)
-        if getattr(sys, "frozen", False):
-            base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
-        else:
-            base_path = os.path.dirname(__file__)
-
-        resources_path = os.path.join(base_path, "resources")
-        json_path = os.path.join(resources_path, "base_general.json")
-
-        if not os.path.exists(json_path):
-            messagebox.showerror("Error", "No se encontró el archivo base_general.json")
-            return
-
-        df = pd.read_json(json_path)
-
-        # Crear barra de progreso
-        barra = BarraProgreso(frame_principal, "Descargando catalogo...")
-
-        total_filas = len(df)
-        for i in range(total_filas):
-            barra.actualizar((i + 1) / total_filas * 100)
-
-        # Seleccionar ruta de guardado
-        ruta_guardado = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Archivos Excel", "*.xlsx")],
-            title="Guardar concentrado del catálogo"
-        )
-        if not ruta_guardado:
-            barra.finalizar()
-            return
-
-        # Exportar a Excel
-        with pd.ExcelWriter(ruta_guardado, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False)
-
-        barra.finalizar()
-        messagebox.showinfo("Exportar Catálogo", f"[OK] Se exportó correctamente el concentrado a:\n{ruta_guardado}")
-
-    except Exception as e:
-        try:
-            barra.finalizar()
-        except:
-            pass
-        messagebox.showerror("Error", f"No se pudo exportar el catálogo:\n{e}")
 
 #  VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
@@ -628,13 +536,14 @@ class BarraProgreso:
 #  VENTANA PRINCIPAL 
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("900x500")
+root.geometry("700x450")
 root.configure(bg="#FFFFFF")
 
 
 # --- Estilo global ---
 if __name__ == "__main__":
     # Configurar estilo global
+    archivos_procesados = cargar_archivos_procesados()
     style = ttk.Style()
     style.theme_use('clam')
     
