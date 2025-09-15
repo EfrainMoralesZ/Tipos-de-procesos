@@ -3,13 +3,9 @@ import json
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import pandas as pd
-import subprocess
+from Rutas import archivo_datos
 
-CONFIG_DIR = "Guardar Configuracion"  # Cambiado el nombre de la carpeta
-CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
-
-# Asegurar que exista la carpeta para guardar configuración
-os.makedirs(CONFIG_DIR, exist_ok=True)
+CONFIG_FILE = archivo_datos("config.json")
 
 def cargar_configuracion():
     """Carga la configuración desde el archivo JSON"""
@@ -67,7 +63,8 @@ def configurar_rutas():
             config["rutas"][tipo] = archivo
             try:
                 df = pd.read_excel(archivo)
-                json_path = archivo.replace(".xlsx", ".json").replace(".xls", ".json")
+                nombre_json = os.path.splitext(os.path.basename(archivo))[0] + ".json"
+                json_path = archivo_datos(nombre_json)
                 df.to_json(json_path, orient="records", force_ascii=False, indent=4)
                 messagebox.showinfo("✅ Conversión exitosa", f"Archivo convertido a JSON:\n{os.path.basename(json_path)}")
             except Exception as e:
@@ -189,10 +186,7 @@ def configurar_rutas():
     lbl_estado = tk.Label(estado_frame, text="", font=("Inter", 10, "bold"), bg="#FFFFFF")
     lbl_estado.pack()
 
-    # Botones de acción
-    action_frame = tk.Frame(main_frame, bg="#FFFFFF")
-    action_frame.pack(fill="x")
-    
+      
     # Frame contenedor para los botones (parte inferior)
     action_frame = tk.Frame(ventana, bg="#FFFFFF")
     action_frame.pack(side="bottom", pady=20)

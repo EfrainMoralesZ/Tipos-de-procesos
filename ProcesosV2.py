@@ -15,24 +15,48 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import Rutas  # Debe estar en la misma carpeta que ProcesosV2.py
+from Rutas import recurso_path 
+
 
 
 # Configuración de rutas para .py y .exe
+# Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):
-    # Cuando está compilado en .exe
     BASE_PATH = sys._MEIPASS
 else:
-    # Cuando se ejecuta desde Python
     BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+
+# === FUNCION UNIVERSAL DE RUTA ===
+# Recursos estáticos que no se modifican (logos, iconos)
+def recurso_path(ruta_relativa):
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, ruta_relativa)
+
+
+def ruta_datos(nombre_archivo):
+    """Ruta de guardado permanente para archivos modificables"""
+    if getattr(sys, 'frozen', False):
+        base_path = os.path.join(os.path.dirname(sys.executable), "datos")
+    else:
+        base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datos")
+
+    os.makedirs(base_path, exist_ok=True)  # Crear carpeta si no existe
+    return os.path.join(base_path, nombre_archivo)
+
+ARCHIVOS_PROCESADOS_FILE = ruta_datos("archivos_procesados.json")
+CODIGOS_JSON_FILE = ruta_datos("codigos_cumple.json")
+BASE_GENERAL_JSON = ruta_datos("base_general.json")
+
 
 # Archivos de configuración
 # Archivos de configuración centralizados
 CONFIG_FILE = Rutas.archivo_datos("config.json")
-ARCHIVOS_PROCESADOS_FILE = Rutas.archivo_datos("archivos_procesados.json")
 CODIGOS_CUMPLE_FILE = Rutas.archivo_datos("codigos_cumple.xlsx")
 CODIGOS_JSON_FILE = Rutas.archivo_datos("codigos_cumple.json")
 BASE_GENERAL_JSON = Rutas.archivo_datos("base_general.json")
-
 
 def asegurar_excel_vacio(ruta, columnas):
     """Crea un archivo Excel vacío con las columnas especificadas si no existe"""
@@ -42,6 +66,21 @@ def asegurar_excel_vacio(ruta, columnas):
         df.to_excel(ruta, index=False)
         print(f"✅ Archivo Excel creado vacío: {ruta}")
 
+def inicializar_archivos():
+    """
+    Crea todos los JSON y Excel iniciales si no existen.
+    Evita errores cuando se ejecuta por primera vez.
+    """
+    # Archivos JSON vacíos
+    asegurar_json(CONFIG_FILE, {"rutas": {"base_general": "", "codigos_cumple": ""}})
+    asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
+    asegurar_json(CODIGOS_JSON_FILE, [])
+    asegurar_json(BASE_GENERAL_JSON, [])
+
+    # Excel vacío con columnas definidas
+    asegurar_excel_vacio(CODIGOS_CUMPLE_FILE, columnas=["ITEM", "CRITERIO", "OBSERVACIONES"])
+
+    print("✅ Archivos iniciales asegurados")
 
 # Configuración de Rutas integrada
 def configurar_rutas():
@@ -55,7 +94,7 @@ def configurar_rutas():
 archivos_procesados = []
 
 def cargar_archivos_procesados():
-    """Carga la lista de archivos procesados, crea el JSON si no existe"""
+    """Carga la lista de archivos procesados desde JSON externo"""
     asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
     try:
         with open(ARCHIVOS_PROCESADOS_FILE, 'r', encoding='utf-8') as f:
@@ -66,31 +105,26 @@ def cargar_archivos_procesados():
         return []
 
 def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
-    """Registra un archivo procesado en el sistema de estadísticas"""
-    try:
-        cargar_archivos_procesados()
-        
-        # Evitar duplicados
-        if any(a["nombre"] == nombre_archivo for a in archivos_procesados):
-            print(f"ℹ️ Archivo ya registrado: {nombre_archivo}")
-            return
-        
-        # Agregar nuevo archivo
-        archivo_info = {
-            "nombre": nombre_archivo,
-            "fecha_proceso": fecha_proceso,
-            "fecha_archivo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        archivos_procesados.append(archivo_info)
-        
-        # Guardar cambios en JSON
-        with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
-        
-        print(f"✅ Archivo registrado correctamente: {nombre_archivo}")
+    global archivos_procesados
+    archivos_procesados = cargar_archivos_procesados()  # Actualiza la lista global
     
-    except Exception as e:
-        print(f"❌ Error registrando archivo: {e}")
+    # Evitar duplicados
+    if any(a["nombre"] == nombre_archivo for a in archivos_procesados):
+        print(f"ℹ️ Archivo ya registrado: {nombre_archivo}")
+        return
+    
+    archivo_info = {
+        "nombre": nombre_archivo,
+        "fecha_proceso": fecha_proceso,
+        "fecha_archivo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    archivos_procesados.append(archivo_info)
+    
+    # Guardar cambios permanentemente en ruta externa
+    with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
+    
+    print(f"✅ Archivo registrado correctamente: {nombre_archivo}")
 
 # OBTENER ESTADISTICAS DE ARCHIVOS
 def obtener_estadisticas_archivos():
@@ -456,7 +490,8 @@ def mostrar_estadisticas():
     """Llama al archivo Dashboard.py para mostrar el dashboard externo"""
     try:
         import Dashboard
-        Dashboard.main()
+        archivos = cargar_archivos_procesados()
+        Dashboard.main(archivos_procesados=archivos)
     except Exception as e:
         print(f"Error al abrir el dashboard: {e}")
 
@@ -521,7 +556,6 @@ class BarraProgreso:
                 self.frame.after(800, self._ocultar)
         except Exception as e:
             print(f"Error finalizando barra de progreso: {e}")
-
     def _ocultar(self):
         try:
             if hasattr(self, 'bar') and self.bar.winfo_exists():
@@ -533,17 +567,26 @@ class BarraProgreso:
         except Exception as e:
             print(f"Error ocultando widgets: {e}")
 
+
+def main(archivos_procesados=None):
+    if archivos_procesados is None:
+        archivos_procesados = cargar_archivos_procesados()
+    # Mostrar la lista en tu Listbox o Treeview
+
 #  VENTANA PRINCIPAL 
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
 root.geometry("700x450")
 root.configure(bg="#FFFFFF")
 
-
 # --- Estilo global ---
 if __name__ == "__main__":
+    # Inicializar archivos iniciales
+    inicializar_archivos()
+
     # Configurar estilo global
     archivos_procesados = cargar_archivos_procesados()
+    
     style = ttk.Style()
     style.theme_use('clam')
     
@@ -564,7 +607,7 @@ if __name__ == "__main__":
     logo_frame.pack(side="left", padx=(0, 20))
 
     try:
-        logo_path = os.path.join(BASE_PATH, "img", "logo.png")
+        logo_path = recurso_path("img/logo.png")
         if os.path.exists(logo_path):
             logo_img_raw = Image.open(logo_path).resize((80, 50), Image.Resampling.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)

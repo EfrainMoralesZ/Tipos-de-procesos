@@ -12,6 +12,8 @@ from reportlab.lib.utils import ImageReader
 import threading
 import time
 import pandas as pd
+from Rutas import recurso_path, archivo_datos
+
 
 # ---------------- Configuración ---------------- #
 COL_BG = "#FFFFFF"  # Fondo blanco
@@ -49,6 +51,10 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 
 # Lista global
 archivos_procesados = []
+ARCHIVOS_PROCESADOS_FILE = "archivos_procesados.json"
+ARCHIVO_JSON = "codigos_procesados.json"   # JSON principal con los datos
+ARCHIVO_EXCEL = "codigos_procesados.xlsx"  # Respaldo Excel si JSON falla
+
 
 # Variables globales para las etiquetas
 lbl_total_valor = None
@@ -209,6 +215,10 @@ def actualizar_interfaz_completa():
             
     except Exception as e:
         print(f"Error actualizando interfaz: {e}")
+
+
+# ---------------- Gestión de Archivos Procesados ---------------- #
+ARCHIVOS_PROCESADOS_FILE = archivo_datos("archivos_procesados.json")
 
 def cargar_archivos_procesados():
     """Carga la lista de archivos procesados desde el JSON, crea el archivo si no existe"""
@@ -866,6 +876,20 @@ def exportar_pdf_simple():
         messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
         print(f"Error detallado: {e}")
 
+def on_closing():
+    # Detener monitoreo
+    monitor.detener_monitoreo()
+    
+    # Guardar archivos procesados antes de salir
+    try:
+        with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error guardando archivos al cerrar: {e}")
+    root.destroy()
+
+
+
 # ---------------- Ventana principal ---------------- #
 
 def main():
@@ -876,6 +900,9 @@ def main():
     root.title("Dashboard de Códigos - V&C")
     root.geometry("1000x600")
     root.configure(bg=COL_BG)
+
+    # Iniciar monitoreo de cambios
+    monitor.iniciar_monitoreo()
 
     # Cargar archivos procesados al iniciar
     cargar_archivos_procesados()
@@ -999,8 +1026,6 @@ def main():
     # Dibujar gráfica inicial
     dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
 
-    # Iniciar monitoreo de cambios
-    monitor.iniciar_monitoreo()
 
     # Centrar ventana
     root.eval('tk::PlaceWindow . center')
