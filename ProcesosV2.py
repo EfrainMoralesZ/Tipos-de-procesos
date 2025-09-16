@@ -1,3 +1,87 @@
+def inicializar_datos_externos():
+    """Copia los archivos de datos desde el paquete interno a la carpeta externa si no existen."""
+    import shutil
+    if getattr(sys, 'frozen', False):
+        # Carpeta junto al .exe
+        datos_externos = os.path.join(os.path.dirname(sys.executable), 'datos')
+        os.makedirs(datos_externos, exist_ok=True)
+        # Carpeta interna del paquete
+        datos_internos = os.path.join(sys._MEIPASS, 'datos')
+        archivos = [
+            'codigos_cumple.xlsx',
+            'base_general.json',
+            'codigos_cumple.json',
+            'config.json'
+        ]
+        for archivo in archivos:
+            externo = os.path.join(datos_externos, archivo)
+            interno = os.path.join(datos_internos, archivo)
+            if not os.path.exists(externo) and os.path.exists(interno):
+                try:
+                    shutil.copy2(interno, externo)
+                    print(f"Archivo copiado a datos externos: {archivo}")
+                except Exception as e:
+                    print(f"Error copiando {archivo}: {e}")
+
+# --- Funciones utilitarias centralizadas ---
+def cargar_excel(path, columnas_requeridas=None):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No se encontró el archivo: {path}")
+    df = pd.read_excel(path)
+    if columnas_requeridas and not set(columnas_requeridas).issubset(df.columns):
+        raise ValueError(f"Faltan columnas requeridas en {path}")
+    return df
+
+def cargar_json(path, columnas_requeridas=None):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No se encontró el archivo: {path}")
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    df = pd.DataFrame(data)
+    if columnas_requeridas and not set(columnas_requeridas).issubset(df.columns):
+        raise ValueError(f"Faltan columnas requeridas en {path}")
+    return df
+
+def limpiar_items(df, columna):
+    items = pd.to_numeric(df[columna], errors='coerce')
+    items = items.dropna().astype(int)
+    return list(set(items))
+
+def modificar_tipo_proceso(row, normas_adherible, normas_costura):
+    norma_val = str(row['NORMA'])
+    tipo = str(row['TIPO DE PROCESO'])
+    if 'NOM004TEXX' in tipo or 'TEXX' in norma_val:
+        return 'ADHERIBLE'
+    if 'NOM004' in tipo or '004' in tipo or 'NOM-004-SE-2021' in norma_val:
+        return 'COSTURA'
+    if 'NOM020INS' in norma_val:
+        return 'ADHERIBLE'
+    if any(n in norma_val for n in normas_adherible):
+        return 'ADHERIBLE'
+    if any(n in norma_val for n in normas_costura):
+        return 'COSTURA'
+    if norma_val == '0':
+        return 'SIN NORMA'
+    if norma_val == 'N/D':
+        return ''
+    return tipo
+
+def modificar_norma(norma_val):
+    if str(norma_val) == '0':
+        return 'SIN NORMA'
+    elif str(norma_val) == 'N/D':
+        return ''
+    return norma_val
+
+def modificar_criterio(crit_val):
+    crit = str(crit_val).strip().upper()
+    if 'NO CUMPLE' in crit:
+        return crit_val
+    if any(palabra in crit for palabra in ['CUMPLE', 'C']):
+        return 'CUMPLE'
+    return crit_val
+
+
 import os
 import pandas as pd
 from pathlib import Path
@@ -15,48 +99,24 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import Rutas  # Debe estar en la misma carpeta que ProcesosV2.py
-from Rutas import recurso_path 
 
 
-
-# Configuración de rutas para .py y .exe
 # Configuración de rutas para .py y .exe
 if getattr(sys, 'frozen', False):
+    # Cuando está compilado en .exe
     BASE_PATH = sys._MEIPASS
 else:
+    # Cuando se ejecuta desde Python
     BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-
-# === FUNCION UNIVERSAL DE RUTA ===
-# Recursos estáticos que no se modifican (logos, iconos)
-def recurso_path(ruta_relativa):
-    if getattr(sys, 'frozen', False):
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_path, ruta_relativa)
-
-
-def ruta_datos(nombre_archivo):
-    """Ruta de guardado permanente para archivos modificables"""
-    if getattr(sys, 'frozen', False):
-        base_path = os.path.join(os.path.dirname(sys.executable), "datos")
-    else:
-        base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datos")
-
-    os.makedirs(base_path, exist_ok=True)  # Crear carpeta si no existe
-    return os.path.join(base_path, nombre_archivo)
-
-ARCHIVOS_PROCESADOS_FILE = ruta_datos("archivos_procesados.json")
-CODIGOS_JSON_FILE = ruta_datos("codigos_cumple.json")
-BASE_GENERAL_JSON = ruta_datos("base_general.json")
-
 
 # Archivos de configuración
 # Archivos de configuración centralizados
 CONFIG_FILE = Rutas.archivo_datos("config.json")
+ARCHIVOS_PROCESADOS_FILE = Rutas.archivo_datos("archivos_procesados.json")
 CODIGOS_CUMPLE_FILE = Rutas.archivo_datos("codigos_cumple.xlsx")
 CODIGOS_JSON_FILE = Rutas.archivo_datos("codigos_cumple.json")
 BASE_GENERAL_JSON = Rutas.archivo_datos("base_general.json")
+
 
 def asegurar_excel_vacio(ruta, columnas):
     """Crea un archivo Excel vacío con las columnas especificadas si no existe"""
@@ -66,35 +126,31 @@ def asegurar_excel_vacio(ruta, columnas):
         df.to_excel(ruta, index=False)
         print(f"✅ Archivo Excel creado vacío: {ruta}")
 
-def inicializar_archivos():
-    """
-    Crea todos los JSON y Excel iniciales si no existen.
-    Evita errores cuando se ejecuta por primera vez.
-    """
-    # Archivos JSON vacíos
-    asegurar_json(CONFIG_FILE, {"rutas": {"base_general": "", "codigos_cumple": ""}})
-    asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
-    asegurar_json(CODIGOS_JSON_FILE, [])
-    asegurar_json(BASE_GENERAL_JSON, [])
-
-    # Excel vacío con columnas definidas
-    asegurar_excel_vacio(CODIGOS_CUMPLE_FILE, columnas=["ITEM", "CRITERIO", "OBSERVACIONES"])
-
-    print("✅ Archivos iniciales asegurados")
 
 # Configuración de Rutas integrada
-def configurar_rutas():
+def configurar_rutas(parent=None):
     try:
         import Configurar  # El módulo debe estar en la misma carpeta que ProcesosV2.py
-        Configurar.configurar_rutas()  # Llamada sin argumentos
+        # Pasar el parent principal si existe
+        if parent is not None:
+            Configurar.configurar_rutas(parent)
+        else:
+            Configurar.configurar_rutas()
     except Exception as e:
         messagebox.showerror("❌ Error", f"No se pudo abrir la configuración:\n{e}")
 
-# Lista global de archivos procesados
-archivos_procesados = []
+def obtener_archivos_procesados():
+    asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
+    try:
+        with open(ARCHIVOS_PROCESADOS_FILE, 'r', encoding='utf-8') as f:
+            datos = json.load(f)
+            return datos if isinstance(datos, list) else []
+    except Exception as e:
+        print(f"❌ Error cargando archivos procesados: {e}")
+        return []
 
 def cargar_archivos_procesados():
-    """Carga la lista de archivos procesados desde JSON externo"""
+    """Carga la lista de archivos procesados, crea el JSON si no existe"""
     asegurar_json(ARCHIVOS_PROCESADOS_FILE, [])
     try:
         with open(ARCHIVOS_PROCESADOS_FILE, 'r', encoding='utf-8') as f:
@@ -105,26 +161,24 @@ def cargar_archivos_procesados():
         return []
 
 def registrar_archivo_procesado(nombre_archivo, fecha_proceso):
-    global archivos_procesados
-    archivos_procesados = cargar_archivos_procesados()  # Actualiza la lista global
-    
-    # Evitar duplicados
-    if any(a["nombre"] == nombre_archivo for a in archivos_procesados):
-        print(f"ℹ️ Archivo ya registrado: {nombre_archivo}")
-        return
-    
-    archivo_info = {
-        "nombre": nombre_archivo,
-        "fecha_proceso": fecha_proceso,
-        "fecha_archivo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    archivos_procesados.append(archivo_info)
-    
-    # Guardar cambios permanentemente en ruta externa
-    with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
-    
-    print(f"✅ Archivo registrado correctamente: {nombre_archivo}")
+    """Registra un archivo procesado en el sistema de estadísticas"""
+    try:
+        archivos_procesados = obtener_archivos_procesados()
+        # Evitar duplicados
+        if any(a["nombre"] == nombre_archivo for a in archivos_procesados):
+            print(f"ℹ️ Archivo ya registrado: {nombre_archivo}")
+            return
+        archivo_info = {
+            "nombre": nombre_archivo,
+            "fecha_proceso": fecha_proceso,
+            "fecha_archivo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        archivos_procesados.append(archivo_info)
+        with open(ARCHIVOS_PROCESADOS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(archivos_procesados, f, indent=4, ensure_ascii=False)
+        print(f"✅ Archivo registrado correctamente: {nombre_archivo}")
+    except Exception as e:
+        print(f"❌ Error registrando archivo: {e}")
 
 # OBTENER ESTADISTICAS DE ARCHIVOS
 def obtener_estadisticas_archivos():
@@ -154,8 +208,8 @@ def obtener_estadisticas_archivos():
 
 
 def asegurar_json(ruta, contenido_inicial):
-    """Crea un archivo JSON vacío si no existe."""
-    if not os.path.exists(ruta):
+    """Crea un archivo JSON solo si no existe o está completamente vacío (0 bytes). Nunca sobrescribe si ya tiene datos."""
+    if not os.path.exists(ruta) or os.path.getsize(ruta) == 0:
         with open(ruta, 'w', encoding='utf-8') as f:
             json.dump(contenido_inicial, f, indent=4, ensure_ascii=False)
 
@@ -221,13 +275,12 @@ def abrir_editor_codigos(parent):
 
 #  FUNCION PARA GENERAR EL TIPO DE REPORTE 
 def procesar_reporte(reporte_path):
-    global frame
+    # Usar frame como argumento, no global
 
     # REGISTRAR ARCHIVO PROCESADO
     nombre_archivo = os.path.basename(reporte_path)
     fecha_proceso = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # Agregar a estadísticas de archivos procesados
     registrar_archivo_procesado(nombre_archivo, fecha_proceso)
 
     # SE CREA LA BARRA DE PROGRESO EN EL FRAME PRINCIPAL (LADO DERECHO)
@@ -248,31 +301,19 @@ def procesar_reporte(reporte_path):
         except Exception:
             pass
 
-        # LECTURA DE DATOS DE LOS ARCHIVOS DE EXCEL CONVERTIDOS EN JSON
-        def cargar_json(nombre_json):
-            """Carga un JSON como DataFrame, compatible .py y .exe"""
-            ruta = Rutas.archivo_datos(nombre_json)
-            if not os.path.exists(ruta):
-                raise FileNotFoundError(f"No se encontró el archivo JSON: {ruta}")
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return pd.DataFrame(data)
 
+        # Cargar archivos usando funciones centralizadas
+        df_base = cargar_json(Rutas.archivo_datos("base_general.json"), columnas_requeridas=["EAN", "CODIGO FORMATO"])
+        df_codigos_cumple = cargar_json(Rutas.archivo_datos("codigos_cumple.json"), columnas_requeridas=["ITEM", "OBSERVACIONES", "CRITERIO"])
+        df_reporte = cargar_excel(reporte_path)
 
-        # LEER ARCHIVOS BASE EN FORMATO JSON
-        df_base = cargar_json("base_general.json")
-        df_codigos_cumple = cargar_json("codigos_cumple.json")
-        df_reporte = pd.read_excel(reporte_path)  # El reporte sigue siendo cargado por el usuario
-
-        # --- Detectar tipo de reporte y columnas ---
+        # Detectar columnas clave
         if 'Número de Parte' in df_reporte.columns:
-            # Reporte FH
             num_parte_col = 'Número de Parte'
             desc_col = 'Desc. Pedimento'
             norma_col = 'Normas'
-            criterio_col = 'CRITERIO'   # FH usa CRITERIO
+            criterio_col = 'CRITERIO'
         elif any(col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte'] for col in df_reporte.columns):
-            # Reporte MIMPO
             for col in df_reporte.columns:
                 if col.strip().lower() in ['num. parte', 'num.parte', 'numero de parte']:
                     num_parte_col = col
@@ -285,97 +326,32 @@ def procesar_reporte(reporte_path):
             criterio_col = 'CRITERIO'
         else:
             raise ValueError("No se encontró ninguna columna de NUM. PARTE válida en el reporte")
-        
-        # --- Armado de columnas del archivo TIPO DE PROCESO ---
-        items_series = pd.to_numeric(df_reporte[num_parte_col], errors='coerce')
-        # Filtrar valores no nulos manualmente
-        items_list = []
-        # Simplificar el procesamiento de items
-        try:
-            # Usar método más simple y directo
-            items_list = []
-            # Simplificar completamente el procesamiento
-            try:
-                # Usar método más simple - verificar si es iterable
-                if hasattr(items_series, '__iter__') and not isinstance(items_series, (str, bytes)):
-                    items_series_list = list(items_series)
-                else:
-                    items_series_list = []
-            except:
-                items_series_list = []
-            # Verificar que sea iterable
-            if not isinstance(items_series_list, (list, tuple)):
-                items_series_list = []
-            for val in items_series_list:
-                try:
-                    if val is not None and str(val).strip() != '' and str(val).lower() != 'nan':
-                        items_list.append(int(val))
-                except (ValueError, TypeError):
-                    continue
-        except:
-            items_list = []
-        # Convertir a set para eliminar duplicados y luego a lista
-        items = list(set(items_list))
+
+        # Limpiar y obtener lista de items únicos
+        items = limpiar_items(df_reporte, num_parte_col)
         total = len(items)
 
-        # --- 2. TIPO DE PROCESO ---
+        # Filtrar DataFrames por los items
+        df_items = pd.DataFrame({num_parte_col: items})
+        df_items[num_parte_col] = df_items[num_parte_col].astype(str)
         df_base['EAN'] = df_base['EAN'].astype(str)
-        tipo_proceso = []
-        for idx, item in enumerate(items):
-            match = df_base[df_base['EAN'] == str(item)]
-            tipo = match.iloc[0]['CODIGO FORMATO'] if not match.empty and 'CODIGO FORMATO' in match.columns else ''
-            tipo_proceso.append(tipo)
-            progress = ((idx + 1) / total) * 20
-            barra.actualizar(progress)
+        df_codigos_cumple['ITEM'] = df_codigos_cumple['ITEM'].astype(str)
+        df_reporte[num_parte_col] = df_reporte[num_parte_col].astype(str)
 
-        # --- 3. NORMA ---
-        norma = []
-        for idx, item in enumerate(items):
-            match = df_reporte[df_reporte[num_parte_col].astype(str) == str(item)]
-            n = match.iloc[0][norma_col] if not match.empty and norma_col in match.columns else ''
-            norma.append(n)
-            progress = 20 + ((idx + 1) / total) * 20
-            barra.actualizar(progress)
+        # Merge para obtener toda la información en un solo DataFrame
+        df_result = df_items.merge(df_base, left_on=num_parte_col, right_on='EAN', how='left')
+        df_result = df_result.merge(df_reporte[[num_parte_col, desc_col, norma_col]], on=num_parte_col, how='left')
+        df_result = df_result.merge(df_codigos_cumple[["ITEM", "OBSERVACIONES", "CRITERIO"]], left_on=num_parte_col, right_on="ITEM", how="left")
 
-        # --- 4. DESCRIPCION ---
-        descripcion = []
-        for idx, item in enumerate(items):
-            match = df_reporte[df_reporte[num_parte_col].astype(str) == str(item)]
-            desc = match.iloc[0][desc_col] if not match.empty and desc_col in match.columns else ''
-            descripcion.append(desc)
-            progress = 40 + ((idx + 1) / total) * 20
-            barra.actualizar(progress)
+        # Renombrar y construir columnas finales
+        df_result['ITEM'] = df_result[num_parte_col]
+        df_result['TIPO DE PROCESO'] = df_result['CODIGO FORMATO'].fillna('')
+        df_result['NORMA'] = df_result[norma_col].fillna('')
+        df_result['DESCRIPCION'] = df_result[desc_col].fillna('')
+        # Criterio: si OBSERVACIONES contiene 'CUMPLE', poner 'CUMPLE', si no, usar CRITERIO
+        df_result['CRITERIO'] = df_result.apply(lambda row: 'CUMPLE' if str(row['OBSERVACIONES']).upper().strip() == 'CUMPLE' else (row['CRITERIO'] if pd.notna(row['CRITERIO']) else ''), axis=1)
 
-        # --- 5. CRITERIO ---
-        criterio = []
-        for idx, item in enumerate(items):
-            match = df_codigos_cumple[df_codigos_cumple['ITEM'].astype(str) == str(item)]
-            if not match.empty:
-                if 'OBSERVACIONES' in match.columns:
-                    obs = str(match.iloc[0]['OBSERVACIONES']).upper().strip()
-                    if 'CUMPLE' in obs:
-                        crit = 'CUMPLE'
-                    else:
-                        crit = str(match.iloc[0]['CRITERIO']).strip() if 'CRITERIO' in match.columns else ''
-                else:
-                    crit = ''
-            else:
-                crit = ''
-            criterio.append(crit)
-            progress = 60 + ((idx + 1) / total) * 20
-            barra.actualizar(progress)
-
-        # Crear DataFrame final
-        df_result = pd.DataFrame({
-            'ITEM': items,
-            'TIPO DE PROCESO': tipo_proceso,
-            'NORMA': norma,
-            'CRITERIO': criterio,
-            'DESCRIPCION': descripcion,
-        })
-        barra.actualizar(progress)
-
-        # REGLAS PARA MODIFICAR TIPO DE PROCESO, NORMA Y CRITERIO
+        # Reglas de negocio
         normas_adherible = [
             'NOM-050-SCFI-2004', 'NOM-121-SCFI-2004',
             'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004',
@@ -383,81 +359,28 @@ def procesar_reporte(reporte_path):
             'NOM004TEXX', 'NOM020INS', 'NOM-115-STPS-2009','NOM-189-SSA1/SCFI-2018'
         ]
         normas_costura = ['NOM-004-SE-2021', 'NOM-020-SCFI-1997', 'NOM004', 'NOM020']
-
-        def contiene_numero(texto, lista_numeros):
-            texto = str(texto)
-            return any(n in texto for n in lista_numeros)
-
-        def modificar_tipo_proceso(row):
-            norma_val = str(row['NORMA'])
-            tipo = str(row['TIPO DE PROCESO'])
-            if 'NOM004TEXX' in tipo or 'TEXX' in norma_val:
-                return 'ADHERIBLE'
-            if 'NOM004' in tipo or '004' or 'NOM-004-SE-2021' in norma_val:
-                return 'COSTURA'
-            if 'NOM020INS' in norma_val:
-                return 'ADHERIBLE'
-            if contiene_numero(norma_val, normas_adherible):
-                return 'ADHERIBLE'
-            if contiene_numero(norma_val, normas_costura):
-                return 'COSTURA'
-            if norma_val == '0':
-                return 'SIN NORMA'
-            if norma_val == 'N/D':
-                return ''
-            return tipo
-
-        df_result['TIPO DE PROCESO'] = df_result.apply(modificar_tipo_proceso, axis=1)
-
-        def modificar_norma(norma_val):
-            if str(norma_val) == '0':
-                return 'SIN NORMA'
-            elif str(norma_val) == 'N/D':
-                return ''
-            return norma_val
-        df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
-
-        def modificar_criterio(crit_val):
-            crit = str(crit_val).strip().upper()
-            if 'NO CUMPLE' in crit:
-                return crit_val
-            if any(palabra in crit for palabra in ['CUMPLE', 'C']):
-                return 'CUMPLE'
-            return crit_val
-        df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
-
-        # LISTADO DE NORMAS VALIDAS
         normas_validas = ['003','NOM-004-SE-2021','008','NOM-015-SCFI-2007','020','NOM-020-SCFI-1997',
                           'NOM-024-SCFI-2013','035','NOM-050-SCFI-2004','051','116','NOM-141-SSA1/SCFI-2012','142','173','185','186','NOM-189-SSA1/SCFI-2018','192','199','235','NOM-115-STPS-2009','NOM-121-SCFI-2004']
 
-        # REGLAS ADICIONALES
-        for idx, row in df_result.iterrows():
-            tipo_val = row['TIPO DE PROCESO']
-            norma_val_raw = row['NORMA']
-            criterio_val_raw = row['CRITERIO']
-            
-            # Simplificar verificaciones de valores nulos
-            tipo = str(tipo_val).strip() if tipo_val is not None and str(tipo_val).strip() != '' and str(tipo_val).lower() != 'nan' else ''
-            norma_val = str(norma_val_raw).strip() if norma_val_raw is not None and str(norma_val_raw).strip() != '' and str(norma_val_raw).lower() != 'nan' else ''
-            criterio_val = str(criterio_val_raw).strip().upper() if criterio_val_raw is not None and str(criterio_val_raw).strip() != '' and str(criterio_val_raw).lower() != 'nan' else ''
+        # Aplicar reglas
+        df_result['TIPO DE PROCESO'] = df_result.apply(lambda row: modificar_tipo_proceso(row, normas_adherible, normas_costura), axis=1)
+        df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
+        df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
-            if norma_val not in normas_validas:
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
-                if norma_val in ['', '0']:
-                    df_result.at[idx, 'NORMA'] = 'SIN NORMA'
+        # Vectorizar reglas adicionales sobre el DataFrame
+        df_result['TIPO DE PROCESO'] = df_result['TIPO DE PROCESO'].astype(str).str.strip()
+        df_result['NORMA'] = df_result['NORMA'].astype(str).str.strip()
+        df_result['CRITERIO'] = df_result['CRITERIO'].astype(str).str.strip().str.upper()
 
-            if tipo == '' or (tipo == '0' and norma_val == '0') or (tipo == '' and norma_val == ''):
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'SIN NORMA'
-                df_result.at[idx, 'NORMA'] = 'SIN NORMA'
-
-            if 'CUMPLE' in criterio_val:
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'CUMPLE'
-                df_result.at[idx, 'CRITERIO'] = ''
-            elif criterio_val not in ['', 'N/D']:
-                df_result.at[idx, 'CRITERIO'] = 'REVISADO'
-
-            if norma_val in ['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'] and 'CUMPLE' not in criterio_val:
-                df_result.at[idx, 'TIPO DE PROCESO'] = 'ADHERIBLE'
+        df_result.loc[~df_result['NORMA'].isin(normas_validas), 'TIPO DE PROCESO'] = 'SIN NORMA'
+        df_result.loc[df_result['NORMA'].isin(['', '0']), 'NORMA'] = 'SIN NORMA'
+        df_result.loc[(df_result['TIPO DE PROCESO'] == '') | \
+                     ((df_result['TIPO DE PROCESO'] == '0') & (df_result['NORMA'] == '0')) | \
+                     ((df_result['TIPO DE PROCESO'] == '') & (df_result['NORMA'] == '')), ['TIPO DE PROCESO', 'NORMA']] = ['SIN NORMA', 'SIN NORMA']
+        df_result.loc[df_result['CRITERIO'].str.contains('CUMPLE', na=False), ['TIPO DE PROCESO', 'CRITERIO']] = ['CUMPLE', '']
+        df_result.loc[~df_result['CRITERIO'].isin(['', 'N/D']), 'CRITERIO'] = 'REVISADO'
+        df_result.loc[(df_result['NORMA'].isin(['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'])) & \
+                     ~df_result['CRITERIO'].str.contains('CUMPLE', na=False), 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
         barra.finalizar("¡Completado!")
 
@@ -490,8 +413,7 @@ def mostrar_estadisticas():
     """Llama al archivo Dashboard.py para mostrar el dashboard externo"""
     try:
         import Dashboard
-        archivos = cargar_archivos_procesados()
-        Dashboard.main(archivos_procesados=archivos)
+        Dashboard.main()
     except Exception as e:
         print(f"Error al abrir el dashboard: {e}")
 
@@ -556,6 +478,7 @@ class BarraProgreso:
                 self.frame.after(800, self._ocultar)
         except Exception as e:
             print(f"Error finalizando barra de progreso: {e}")
+
     def _ocultar(self):
         try:
             if hasattr(self, 'bar') and self.bar.winfo_exists():
@@ -567,26 +490,20 @@ class BarraProgreso:
         except Exception as e:
             print(f"Error ocultando widgets: {e}")
 
-
-def main(archivos_procesados=None):
-    if archivos_procesados is None:
-        archivos_procesados = cargar_archivos_procesados()
-    # Mostrar la lista en tu Listbox o Treeview
-
 #  VENTANA PRINCIPAL 
 root = tk.Tk()
 root.title("GENERADOR DE TIPO DE PROCESO")
 root.geometry("700x450")
 root.configure(bg="#FFFFFF")
 
+
 # --- Estilo global ---
 if __name__ == "__main__":
-    # Inicializar archivos iniciales
-    inicializar_archivos()
-
+    # Inicializar datos externos si es .exe
+    inicializar_datos_externos()
+    
     # Configurar estilo global
     archivos_procesados = cargar_archivos_procesados()
-    
     style = ttk.Style()
     style.theme_use('clam')
     
@@ -607,7 +524,7 @@ if __name__ == "__main__":
     logo_frame.pack(side="left", padx=(0, 20))
 
     try:
-        logo_path = recurso_path("img/logo.png")
+        logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
             logo_img_raw = Image.open(logo_path).resize((80, 50), Image.Resampling.LANCZOS)
             logo_img = ImageTk.PhotoImage(logo_img_raw)
@@ -681,7 +598,7 @@ if __name__ == "__main__":
     top_row.pack(pady=(0, 15))
 
     top_buttons = [
-        ("⚙️ CONFIGURAR", configurar_rutas),
+        ("⚙️ CONFIGURAR", lambda: configurar_rutas(main_buttons_container)),
         ("📊 REPORTE", seleccionar_reporte),
         ("📋 EDITOR", lambda: abrir_editor_codigos(main_buttons_container))
     ]
@@ -734,4 +651,4 @@ if __name__ == "__main__":
              fg="#4B4B4B", 
              bg="#FFFFFF").pack()
 
-root.mainloop()
+    root.mainloop()

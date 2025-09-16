@@ -1,3 +1,38 @@
+import os
+import sys
+import json
+
+# Detectar el directorio base compatible con .py y .exe
+BASE_DIR = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'datos')
+CODIGOS_PATH = os.path.join(DATA_DIR, 'codigos_editados.json')
+ARCHIVOS_PROCESADOS_PATH = os.path.join(DATA_DIR, 'archivos_procesados.json')
+
+def guardar_codigos(codigos):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(CODIGOS_PATH, 'w', encoding='utf-8') as f:
+        json.dump(codigos, f, ensure_ascii=False, indent=2)
+
+def cargar_codigos():
+    if os.path.exists(CODIGOS_PATH):
+        with open(CODIGOS_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+def guardar_archivos_procesados(lista):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(ARCHIVOS_PROCESADOS_PATH, 'w', encoding='utf-8') as f:
+        json.dump(lista, f, ensure_ascii=False, indent=2)
+
+def cargar_archivos_procesados():
+    if os.path.exists(ARCHIVOS_PROCESADOS_PATH):
+        with open(ARCHIVOS_PROCESADOS_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
+
+def borrar_archivos_procesados():
+    if os.path.exists(ARCHIVOS_PROCESADOS_PATH):
+        os.remove(ARCHIVOS_PROCESADOS_PATH)
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import json
@@ -12,8 +47,6 @@ from reportlab.lib.utils import ImageReader
 import threading
 import time
 import pandas as pd
-from Rutas import recurso_path, archivo_datos
-
 
 # ---------------- Configuración ---------------- #
 COL_BG = "#FFFFFF"  # Fondo blanco
@@ -40,10 +73,10 @@ def recurso_path(ruta_relativa):
     return os.path.join(base_path, ruta_relativa)
 
 # Rutas de archivos
-ARCHIVO_JSON = recurso_path("Datos/codigos_cumple.json")
-ARCHIVO_EXCEL = recurso_path("Datos/codigos_cumple.xlsx")  # Añadido para monitoreo
-CONFIG_DIR = recurso_path("Datos")
-ARCHIVOS_PROCESADOS_FILE = recurso_path("Datos/archivos_procesados.json")
+ARCHIVO_JSON = recurso_path("datos/codigos_cumple.json")
+ARCHIVO_EXCEL = recurso_path("datos/codigos_cumple.xlsx")  # Añadido para monitoreo
+CONFIG_DIR = recurso_path("datos")
+ARCHIVOS_PROCESADOS_FILE = recurso_path("datos/archivos_procesados.json")
 LOGO_PATH = recurso_path("img/logo_empresarial.png")
 
 # Crear directorios si no existen
@@ -51,10 +84,6 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 
 # Lista global
 archivos_procesados = []
-ARCHIVOS_PROCESADOS_FILE = "archivos_procesados.json"
-ARCHIVO_JSON = "codigos_procesados.json"   # JSON principal con los datos
-ARCHIVO_EXCEL = "codigos_procesados.xlsx"  # Respaldo Excel si JSON falla
-
 
 # Variables globales para las etiquetas
 lbl_total_valor = None
@@ -215,10 +244,6 @@ def actualizar_interfaz_completa():
             
     except Exception as e:
         print(f"Error actualizando interfaz: {e}")
-
-
-# ---------------- Gestión de Archivos Procesados ---------------- #
-ARCHIVOS_PROCESADOS_FILE = archivo_datos("archivos_procesados.json")
 
 def cargar_archivos_procesados():
     """Carga la lista de archivos procesados desde el JSON, crea el archivo si no existe"""

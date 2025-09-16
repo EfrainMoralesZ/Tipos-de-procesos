@@ -4,13 +4,28 @@ import pandas as pd
 import json
 import os
 import numpy as np
+import Rutas
+import sys
+
+def recurso_path(ruta_relativa):
+    """
+    Devuelve la ruta correcta del recurso, ya sea en desarrollo o en .exe.
+    """
+    try:
+        # Ruta temporal dentro del ejecutable
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # Ruta normal durante desarrollo
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, ruta_relativa)
+
 
 class EditorCodigos:
     def __init__(self, parent, archivo_excel, archivo_json):
         self.parent = parent
         self.ARCHIVO_CODIGOS = archivo_excel
         # Asegurar que siempre se guarde en la ruta que el dashboard lee
-        self.ARCHIVO_JSON_DASHBOARD = "datos/codigos_cumple.json"
+        self.ARCHIVO_JSON_DASHBOARD = recurso_path("datos/codigos_cumple.json")
         self.ARCHIVO_JSON = archivo_json  # Puede ser diferente, pero el dashboard siempre leerá de ARCHIVO_JSON_DASHBOARD
         self.df_codigos_cumple = pd.DataFrame()
 
@@ -274,24 +289,32 @@ class EditorCodigos:
             messagebox.showerror("Error", f"Error al editar item: {str(e)}")
 
     def guardar_datos(self):
-        """Guarda los datos a Excel y JSON (siempre sincronizado con el dashboard)"""
+        """Guarda los datos a Excel y JSON (en la ruta que el dashboard lee)"""
         try:
+            # Asegurarse de que los valores NaN se guarden como vacíos
             self.df_codigos_cumple["CRITERIO"] = self.df_codigos_cumple["CRITERIO"].replace({np.nan: "", "nan": ""})
-
-            # Guardar en Excel original
+            
+            # Guardar en Excel (archivo original)
             self.df_codigos_cumple.to_excel(self.ARCHIVO_CODIGOS, index=False)
+            
+            # Crear el directorio de la ruta del dashboard si no existe
+            dashboard_dir = os.path.dirname(self.ARCHIVO_JSON_DASHBOARD)
+            if dashboard_dir and not os.path.exists(dashboard_dir):
+                os.makedirs(dashboard_dir)
 
-            # Crear directorio si no existe
-            os.makedirs(os.path.dirname(self.ARCHIVO_JSON_DASHBOARD), exist_ok=True)
-
-            # Guardar JSON que el dashboard lee
+            # Guardar en JSON en la ruta que el dashboard lee (siempre absoluta)
             self.df_codigos_cumple.to_json(self.ARCHIVO_JSON_DASHBOARD, orient="records", force_ascii=False, indent=4)
 
-            messagebox.showinfo("Guardar", "Datos guardados correctamente. El dashboard se actualizará automáticamente.")
+            # También guardar en el JSON original si es diferente
+            if self.ARCHIVO_JSON != self.ARCHIVO_JSON_DASHBOARD:
+                json_dir = os.path.dirname(self.ARCHIVO_JSON)
+                if json_dir and not os.path.exists(json_dir):
+                    os.makedirs(json_dir)
+                self.df_codigos_cumple.to_json(self.ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
 
+            messagebox.showinfo("Guardar", "Datos guardados correctamente. El dashboard se actualizará automáticamente.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudieron guardar los datos: {str(e)}")
-
 
     def importar_excel(self):
         file_path = filedialog.askopenfilename(
@@ -819,7 +842,8 @@ class EditorItem:
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()
-    archivo_excel = "codigos_cumple.xlsx"
-    archivo_json = "Datos/codigos_cumple.json"  # Ahora ambos apuntan al mismo archivo
+    archivo_excel = recurso_path("datos/codigos_cumple.xlsx")
+    archivo_json = recurso_path("datos/codigos_cumple.json")
+  # Ahora ambos apuntan al mismo archivo
     app = EditorCodigos(root, archivo_excel, archivo_json)
     root.mainloop()
