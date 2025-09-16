@@ -3,9 +3,13 @@ import sys
 import json
 
 # Detectar el directorio base compatible con .py y .exe
-BASE_DIR = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+if getattr(sys, 'frozen', False):
+    # Ejecutable: carpeta junto al .exe
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'datos')
-CODIGOS_PATH = os.path.join(DATA_DIR, 'codigos_editados.json')
+CODIGOS_PATH = os.path.join(DATA_DIR, 'codigos_cumple.json')
 ARCHIVOS_PROCESADOS_PATH = os.path.join(DATA_DIR, 'archivos_procesados.json')
 
 def guardar_codigos(codigos):
@@ -73,10 +77,10 @@ def recurso_path(ruta_relativa):
     return os.path.join(base_path, ruta_relativa)
 
 # Rutas de archivos
-ARCHIVO_JSON = recurso_path("datos/codigos_cumple.json")
-ARCHIVO_EXCEL = recurso_path("datos/codigos_cumple.xlsx")  # Añadido para monitoreo
-CONFIG_DIR = recurso_path("datos")
-ARCHIVOS_PROCESADOS_FILE = recurso_path("datos/archivos_procesados.json")
+ARCHIVO_JSON = CODIGOS_PATH
+ARCHIVO_EXCEL = os.path.join(DATA_DIR, "codigos_cumple.xlsx")
+CONFIG_DIR = DATA_DIR
+ARCHIVOS_PROCESADOS_FILE = ARCHIVOS_PROCESADOS_PATH
 LOGO_PATH = recurso_path("img/logo_empresarial.png")
 
 # Crear directorios si no existen
