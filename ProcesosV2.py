@@ -382,8 +382,11 @@ def procesar_reporte(reporte_path):
         df_result.loc[(df_result['NORMA'].isin(['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'])) & \
                      ~df_result['CRITERIO'].str.contains('CUMPLE', na=False), 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
-        barra.finalizar("¡Completado!")
+        df_result = df_result[['ITEM', 'TIPO DE PROCESO', 'NORMA','CRITERIO', 'DESCRIPCION']]
 
+
+        barra.finalizar("¡Completado!")
+   
         # Guardar archivo final
         save_path = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
