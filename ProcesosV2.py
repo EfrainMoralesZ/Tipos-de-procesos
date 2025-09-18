@@ -344,7 +344,7 @@ def procesar_reporte(reporte_path):
         df_result = df_result.merge(df_codigos_cumple[["ITEM", "OBSERVACIONES", "CRITERIO"]], left_on=num_parte_col, right_on="ITEM", how="left")
 
         # Renombrar y construir columnas finales
-        df_result['ITEM'] = df_result[num_parte_col]
+        df_result['ITEM'] = pd.to_numeric(df_result[num_parte_col], errors="coerce").astype("Int64")
         df_result['TIPO DE PROCESO'] = df_result['CODIGO FORMATO'].fillna('')
         df_result['NORMA'] = df_result[norma_col].fillna('')
         df_result['DESCRIPCION'] = df_result[desc_col].fillna('')
