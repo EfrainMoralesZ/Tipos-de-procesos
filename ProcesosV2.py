@@ -273,7 +273,38 @@ def abrir_editor_codigos(parent):
         messagebox.showerror("Error", f"Ocurrió un error al abrir el editor de códigos:\n{e}")
         return None
 
-#  FUNCION PARA GENERAR EL TIPO DE REPORTE 
+
+# FUNCIONES AUXILIARES
+def modificar_tipo_proceso(row, normas_adherible, normas_costura):
+    norma = str(row['NORMA']).upper().strip()
+    descripcion = str(row['DESCRIPCION']).upper().strip()
+    tipo = str(row.get('TIPO DE PROCESO', '')).upper().strip()
+
+    # Excepción NOM-004: calcetines, medias, ropa interior
+    excepciones_nom004 = ['CALCETIN', 'CALCETINES', 'MEDIA', 'MEDIAS', 'SOCKS', 'ROPA INTERIOR', 
+                          'PANTIMEDIAS', 'BANDA PARA LA CABEZA','MUÑEQUERAS', 'CALCETAS']
+    if norma in ['NOM-004-SE-2021', 'NOM004']:
+        for palabra in excepciones_nom004:
+            if palabra in descripcion:
+                return 'ADHERIBLE'
+
+    # Normas adheribles
+    if norma in normas_adherible:
+        return 'ADHERIBLE'
+
+    # Normas de costura
+    if norma in normas_costura:
+        return 'COSTURA'
+
+    # Si ya tiene tipo asignado
+    if tipo:
+        return tipo
+
+    # Default
+    return 'SIN NORMA'
+
+
+#  FUNCION PARA GENERAR EL TIPO DE PROCESO
 def procesar_reporte(reporte_path):
     # Usar frame como argumento, no global
 
@@ -384,6 +415,8 @@ def procesar_reporte(reporte_path):
 
         df_result = df_result[['ITEM', 'TIPO DE PROCESO', 'NORMA','CRITERIO', 'DESCRIPCION']]
 
+        # --- 🔹 Eliminar duplicados asegurando que ITEM sea único ---
+        df_result = df_result.drop_duplicates(subset=["ITEM"], keep="first").reset_index(drop=True)
 
         barra.finalizar("¡Completado!")
    
@@ -404,6 +437,7 @@ def procesar_reporte(reporte_path):
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
 
 def seleccionar_reporte():
+    
     ruta = filedialog.askopenfilename(
         title="Seleccionar REPORTE DE MERCANCIA",
         filetypes=[("Archivos Excel", "*.xlsx *.xls")]
