@@ -81,7 +81,6 @@ def modificar_criterio(crit_val):
         return 'CUMPLE'
     return crit_val
 
-
 import os
 import pandas as pd
 from pathlib import Path
@@ -302,7 +301,6 @@ def modificar_tipo_proceso(row, normas_adherible, normas_costura):
     # Default
     return 'SIN NORMA'
 
-
 #  FUNCION PARA GENERAR EL TIPO DE PROCESO
 def procesar_reporte(reporte_path):
     # Usar frame como argumento, no global
@@ -408,7 +406,12 @@ def procesar_reporte(reporte_path):
                      ((df_result['TIPO DE PROCESO'] == '0') & (df_result['NORMA'] == '0')) | \
                      ((df_result['TIPO DE PROCESO'] == '') & (df_result['NORMA'] == '')), ['TIPO DE PROCESO', 'NORMA']] = ['SIN NORMA', 'SIN NORMA']
         df_result.loc[df_result['CRITERIO'].str.contains('CUMPLE', na=False), ['TIPO DE PROCESO', 'CRITERIO']] = ['CUMPLE', '']
-        df_result.loc[~df_result['CRITERIO'].isin(['', 'N/D']), 'CRITERIO'] = 'REVISADO'
+
+        #Cambia la forma en la que se imprime el resultado en la columna "CRITERIO" poniendo todo en REVISADO
+        # Si CRITERIO dice "REVISADO", reemplázalo por el texto de OBSERVACIONES
+        df_result.loc[df_result['CRITERIO'].str.upper() == 'REVISADO', 'CRITERIO'] = df_result['OBSERVACIONES']
+
+
         df_result.loc[(df_result['NORMA'].isin(['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'])) & \
                      ~df_result['CRITERIO'].str.contains('CUMPLE', na=False), 'TIPO DE PROCESO'] = 'ADHERIBLE'
 

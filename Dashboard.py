@@ -2,6 +2,14 @@ import os
 import sys
 import json
 
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas as pdf_canvas
+from reportlab.lib.utils import ImageReader
+from datetime import datetime
+from tkinter import filedialog, messagebox
+from io import BytesIO
+import matplotlib.pyplot as plt
+
 # Detectar el directorio base compatible con .py y .exe
 if getattr(sys, 'frozen', False):
     # Ejecutable: carpeta junto al .exe
@@ -588,33 +596,14 @@ def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     
     return frame, lbl_valor, lbl_porcentaje if porcentaje else (frame, lbl_valor, None)
 
-# ---------------- Exportar PDF ---------------- #
+# ---------------- Exportar PDF ---------------- 
 def exportar_pdf_simple():
-    """Genera un PDF simple con estadísticas"""
+    """Genera un PDF simple con estadísticas, varias páginas, encabezado, footer y numeración"""
     try:
-        # Obtener estadísticas actuales
         total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
         porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
         porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
-        
-        # Preparar datos para el PDF
-        stats = {
-            'total_codigos': total_codigos,
-            'codigos_cumple': codigos_cumple,
-            'porcentaje_cumple': porcentaje_cumple,
-            'codigos_no_cumple': codigos_no_cumple,
-            'porcentaje_no_cumple': porcentaje_no_cumple,
-            'total_procesos': len(archivos_procesados),
-            'total_items': total_codigos
-        }
-        
-        # Preparar información de archivos
-        stats_archivos = {
-            'total_archivos': len(archivos_procesados),
-            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
-            'archivos_recientes': archivos_procesados if archivos_procesados else []
-        }
-        
+
         ruta = filedialog.asksaveasfilename(
             defaultextension=".pdf",
             filetypes=[("Archivos PDF", "*.pdf")],
@@ -623,98 +612,126 @@ def exportar_pdf_simple():
         if not ruta:
             return
 
-        # Crear PDF simple
         c = pdf_canvas.Canvas(ruta, pagesize=letter)
         ancho, alto = letter
+        pagina_actual = 1
 
-        # Encabezado con logo en la parte derecha
-        c.setFillColor("#ecd925")
-        c.rect(0, alto - 20, ancho, 20, fill=1, stroke=0)
+        # Función para dibujar encabezado
+        def dibujar_encabezado(titulo):
+            c.setFillColor("#ecd925")
+            c.rect(0, alto - 20, ancho, 20, fill=1, stroke=0)
+            c.setFillColor("#282828")
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(50, alto - 50, titulo)
+            # Logo
+            try:
+                if os.path.exists(LOGO_PATH):
+                    logo = ImageReader(LOGO_PATH)
+                    c.drawImage(logo, ancho - 100, alto - 70, width=50, height=50, preserveAspectRatio=True)
+            except:
+                pass
+            c.setFont("Helvetica", 10)
 
-        # Agregar logo empresarial en la parte derecha del encabezado
-        try:
-            if os.path.exists(LOGO_PATH):
-                logo = ImageReader(LOGO_PATH)
-                c.drawImage(logo, ancho - 100, alto - 70, width=50, height=50, preserveAspectRatio=True)
-            else:
-                print(f"Logo no encontrado en: {LOGO_PATH}")
-        except Exception as e:
-            print(f"Error al cargar el logo: {e}")
+        # Función para dibujar footer
+        def dibujar_footer(pagina):
+            c.setFillColor("#282828")
+            c.rect(0, 0, ancho, 30, fill=1, stroke=0)
+            c.setFillColor("#FFFFFF")
+            c.setFont("Helvetica", 8)
+            c.drawString(50, 15, "Sistema de Tipos de Procesos V&C")
+            texto_centro = "www.vandc.com"
+            ancho_texto_centro = c.stringWidth(texto_centro, "Helvetica", 8)
+            c.drawString((ancho - ancho_texto_centro) / 2, 15, texto_centro)
+            texto_derecho = f"Página {pagina}"
+            ancho_texto_derecho = c.stringWidth(texto_derecho, "Helvetica", 8)
+            c.drawString(ancho - ancho_texto_derecho - 50, 15, texto_derecho)
 
-        c.setFillColor("#282828")
-        c.setFont("Helvetica-Bold", 20)
-        c.drawString(50, alto - 50, "REPORTE DE ESTADÍSTICAS")
+        # Función para crear nueva página
+        def nueva_pagina(titulo):
+            nonlocal pagina_actual, y
+            dibujar_footer(pagina_actual)
+            c.showPage()
+            pagina_actual += 1
+            dibujar_encabezado(titulo)
+            y = alto - 100
+            return y
 
-        c.setFont("Helvetica", 10)
-        c.drawString(50, alto - 70, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-
+        # Iniciar primera página
         y = alto - 120
+        dibujar_encabezado("REPORTE DE ESTADÍSTICAS")
+        c.drawString(50, alto - 70, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
         # Estadísticas principales
         c.setFont("Helvetica-Bold", 12)
         c.drawString(50, y, "ESTADÍSTICAS PRINCIPALES")
         y -= 30
-
         c.setFont("Helvetica", 10)
-        c.drawString(70, y, f"• Total de códigos: {stats['total_codigos']}")
-        y -= 20
-        c.drawString(70, y, f"• Códigos que cumplen: {stats['codigos_cumple']} ({stats['porcentaje_cumple']:.1f}%)")
-        y -= 20
-        c.drawString(70, y, f"• Códigos que no cumplen: {stats['codigos_no_cumple']} ({stats['porcentaje_no_cumple']:.1f}%)")
-        y -= 20
+        lineas = [
+            f"• Total de códigos: {total_codigos}",
+            f"• Códigos que cumplen: {codigos_cumple} ({porcentaje_cumple:.1f}%)",
+            f"• Códigos que no cumplen: {codigos_no_cumple} ({porcentaje_no_cumple:.1f}%)"
+        ]
+        for linea in lineas:
+            if y < 100:
+                y = nueva_pagina("REPORTE DE ESTADÍSTICAS")
+            c.drawString(70, y, linea)
+            y -= 20
 
         # Archivos procesados
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, y, "ARCHIVOS PROCESADOS")
-        y -= 30
+        archivos = archivos_procesados
+        if archivos:
+            if y < 100:
+                y = nueva_pagina("REPORTE DE ESTADÍSTICAS")
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(50, y, "ARCHIVOS PROCESADOS")
+            y -= 25
 
-        c.setFont("Helvetica", 10)
-        c.drawString(70, y, f"• Total de archivos: {stats_archivos['total_archivos']}")
-        y -= 20
+            # <-- Aquí agregas el total de archivos procesados -->
+            total_archivos = len(archivos)
+            c.setFont("Helvetica", 10)
+            c.drawString(70, y, f"Total de archivos procesados: {total_archivos}")
+            y -= 20
 
-        # Archivos recientes
-        # Preparar información de archivos
-        stats_archivos = {
-            'total_archivos': len(archivos_procesados),
-            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
-            'archivos_recientes': archivos_procesados if archivos_procesados else []  # <-- todos los archivos
-        }
+            # Listado de archivos
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(50, y, "CARGA SEMANAL:")
+            y -=  25
 
-        # Archivos recientes
-        if stats_archivos['archivos_recientes']:
-            c.drawString(70, y, "Archivos recientes:")
-            y -= 15
-            for archivo in stats_archivos['archivos_recientes']:
-                nombre_archivo = archivo if isinstance(archivo, str) else archivo.get('nombre', str(archivo))
-                c.drawString(90, y, f"• {nombre_archivo}")
+            c.setFont("Helvetica",10)
+            for archivo in archivos:
+                if y < 100:
+                    y = nueva_pagina("REPORTE DE ESTADÍSTICAS")
+                nombre = archivo if isinstance(archivo, str) else archivo.get('nombre', str(archivo))
+                c.drawString(70, y, f"• {nombre}")
                 y -= 15
             y -= 10
 
-        # --- Crear gráfica de pastel ---
+
+        # Gráfica de pastel
         if total_codigos > 0:
+            if y < 350:
+                y = nueva_pagina("REPORTE DE ESTADÍSTICAS (gráfica)")
             etiquetas = ["Códigos Cumple", "Códigos No Cumple"]
             valores = [codigos_cumple, codigos_no_cumple]
             colores = ["#ECD925", "#282828"]
             porcentajes = [porcentaje_cumple, porcentaje_no_cumple]
 
             plt.figure(figsize=(8, 6))
-            wedges, texts, autotexts = plt.pie(valores, labels=etiquetas, colors=colores, autopct='%1.1f%%',
-                                              startangle=90, textprops={'fontsize': 12, 'color': '#282828'})
-
+            wedges, texts, autotexts = plt.pie(
+                valores, labels=etiquetas, colors=colores,
+                autopct='%1.1f%%', startangle=90, textprops={'fontsize': 12, 'color': '#282828'}
+            )
             for autotext in autotexts:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
                 autotext.set_fontsize(12)
-
             for text in texts:
                 text.set_fontsize(12)
                 text.set_fontweight('bold')
-
             plt.title("Distribución de Códigos", fontsize=16, fontweight='bold', color="#282828", pad=20)
             plt.axis('equal')
-
-            leyenda_labels = [f'{etiqueta}: {valor} ({porcentaje:.1f}%)' 
-                             for etiqueta, valor, porcentaje in zip(etiquetas, valores, porcentajes)]
+            leyenda_labels = [f'{etiqueta}: {valor} ({porcentaje:.1f}%)'
+                              for etiqueta, valor, porcentaje in zip(etiquetas, valores, porcentajes)]
             plt.legend(wedges, leyenda_labels, title="Estadísticas", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
             plt.tight_layout()
 
@@ -722,24 +739,11 @@ def exportar_pdf_simple():
             plt.savefig(buf, format="PNG", dpi=150, bbox_inches='tight')
             plt.close()
             buf.seek(0)
-
             imagen_grafica = ImageReader(buf)
             c.drawImage(imagen_grafica, 50, y - 280, width=500, height=280)
 
-        # --- Pie de página con fondo #282828 ---
-        c.setFillColor("#282828")
-        c.rect(0, 0, ancho, 30, fill=1, stroke=0)
-        c.setFillColor("#FFFFFF")
-        c.setFont("Helvetica", 8)
-        c.drawString(50, 15, "Sistema de Tipos de Procesos V&C")
-        
-        texto_centro = "www.vandc.com"
-        ancho_texto_centro = c.stringWidth(texto_centro, "Helvetica", 8)
-        c.drawString((ancho - ancho_texto_centro) / 2, 15, texto_centro)
-        
-        texto_derecho = f"Página 1"
-        ancho_texto_derecho = c.stringWidth(texto_derecho, "Helvetica", 8)
-        c.drawString(ancho - ancho_texto_derecho - 50, 15, texto_derecho)
+        # Footer de la última página
+        dibujar_footer(pagina_actual)
 
         c.save()
         messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}")
@@ -747,163 +751,8 @@ def exportar_pdf_simple():
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
         print(f"Error detallado: {e}")
-    """Genera un PDF simple con estadísticas"""
-    try:
-        # Obtener estadísticas actuales
-        total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
-        porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
-        porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
-        
-        # Preparar datos para el PDF
-        stats = {
-            'total_codigos': total_codigos,
-            'codigos_cumple': codigos_cumple,
-            'porcentaje_cumple': porcentaje_cumple,
-            'codigos_no_cumple': codigos_no_cumple,
-            'porcentaje_no_cumple': porcentaje_no_cumple,
-            'total_procesos': len(archivos_procesados),
-            'total_items': total_codigos
-        }
-        
-        # Preparar información de archivos
-        stats_archivos = {
-            'total_archivos': len(archivos_procesados),
-            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
-            'archivos_recientes': archivos_procesados if archivos_procesados else []
-        }
-        
-        ruta = filedialog.asksaveasfilename(
-            defaultextension=".pdf",
-            filetypes=[("Archivos PDF", "*.pdf")],
-            title="Guardar Reporte de Estadísticas"
-        )
-        if not ruta:
-            return
 
-        # Crear PDF simple
-        c = pdf_canvas.Canvas(ruta, pagesize=letter)
-        ancho, alto = letter
 
-        # Encabezado con logo en la parte derecha
-        c.setFillColor("#ecd925")
-        c.rect(0, alto - 20, ancho, 20, fill=1, stroke=0)
-
-        # Agregar logo empresarial en la parte derecha del encabezado
-        try:
-            if os.path.exists(LOGO_PATH):
-                logo = ImageReader(LOGO_PATH)
-                c.drawImage(logo, ancho - 100, alto - 70, width=50, height=50, preserveAspectRatio=True)
-            else:
-                print(f"Logo no encontrado en: {LOGO_PATH}")
-        except Exception as e:
-            print(f"Error al cargar el logo: {e}")
-
-        c.setFillColor("#282828")
-        c.setFont("Helvetica-Bold", 20)
-        c.drawString(50, alto - 50, "REPORTE DE ESTADÍSTICAS")
-
-        c.setFont("Helvetica", 10)
-        c.drawString(50, alto - 70, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-
-        y = alto - 120
-
-        # Estadísticas principales
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, y, "ESTADÍSTICAS PRINCIPALES")
-        y -= 30
-
-        c.setFont("Helvetica", 10)
-        c.drawString(70, y, f"• Total de códigos: {stats['total_codigos']}")
-        y -= 20
-        c.drawString(70, y, f"• Códigos que cumplen: {stats['codigos_cumple']} ({stats['porcentaje_cumple']:.1f}%)")
-        y -= 20
-        c.drawString(70, y, f"• Códigos que no cumplen: {stats['codigos_no_cumple']} ({stats['porcentaje_no_cumple']:.1f}%)")
-        y -= 20
-
-        # Archivos procesados
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, y, "ARCHIVOS PROCESADOS")
-        y -= 30
-
-        c.setFont("Helvetica", 10)
-        c.drawString(70, y, f"• Total de archivos: {stats_archivos['total_archivos']}")
-        y -= 20
-
-        # Archivos recientes
-        # Preparar información de archivos
-        stats_archivos = {
-            'total_archivos': len(archivos_procesados),
-            'ultimo_proceso': archivos_procesados[-1] if archivos_procesados else "Ninguno",
-            'archivos_recientes': archivos_procesados if archivos_procesados else []  # <-- todos los archivos
-        }
-
-        # Archivos recientes
-        if stats_archivos['archivos_recientes']:
-            c.drawString(70, y, "Archivos recientes:")
-            y -= 15
-            for archivo in stats_archivos['archivos_recientes']:
-                nombre_archivo = archivo if isinstance(archivo, str) else archivo.get('nombre', str(archivo))
-                c.drawString(90, y, f"• {nombre_archivo}")
-                y -= 15
-            y -= 10
-
-        # --- Crear gráfica de pastel ---
-        if total_codigos > 0:
-            etiquetas = ["Códigos Cumple", "Códigos No Cumple"]
-            valores = [codigos_cumple, codigos_no_cumple]
-            colores = ["#ECD925", "#282828"]
-            porcentajes = [porcentaje_cumple, porcentaje_no_cumple]
-
-            plt.figure(figsize=(8, 6))
-            wedges, texts, autotexts = plt.pie(valores, labels=etiquetas, colors=colores, autopct='%1.1f%%',
-                                              startangle=90, textprops={'fontsize': 12, 'color': '#282828'})
-
-            for autotext in autotexts:
-                autotext.set_color('white')
-                autotext.set_fontweight('bold')
-                autotext.set_fontsize(12)
-
-            for text in texts:
-                text.set_fontsize(12)
-                text.set_fontweight('bold')
-
-            plt.title("Distribución de Códigos", fontsize=16, fontweight='bold', color="#282828", pad=20)
-            plt.axis('equal')
-
-            leyenda_labels = [f'{etiqueta}: {valor} ({porcentaje:.1f}%)' 
-                             for etiqueta, valor, porcentaje in zip(etiquetas, valores, porcentajes)]
-            plt.legend(wedges, leyenda_labels, title="Estadísticas", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-            plt.tight_layout()
-
-            buf = BytesIO()
-            plt.savefig(buf, format="PNG", dpi=150, bbox_inches='tight')
-            plt.close()
-            buf.seek(0)
-
-            imagen_grafica = ImageReader(buf)
-            c.drawImage(imagen_grafica, 50, y - 280, width=500, height=280)
-
-        # --- Pie de página con fondo #282828 ---
-        c.setFillColor("#282828")
-        c.rect(0, 0, ancho, 30, fill=1, stroke=0)
-        c.setFillColor("#FFFFFF")
-        c.setFont("Helvetica", 8)
-        c.drawString(50, 15, "Sistema de Tipos de Procesos V&C")
-        
-        texto_centro = "www.vandc.com"
-        ancho_texto_centro = c.stringWidth(texto_centro, "Helvetica", 8)
-        c.drawString((ancho - ancho_texto_centro) / 2, 15, texto_centro)
-        
-        texto_derecho = f"Página 1"
-        ancho_texto_derecho = c.stringWidth(texto_derecho, "Helvetica", 8)
-        c.drawString(ancho - ancho_texto_derecho - 50, 15, texto_derecho)
-
-        c.save()
-        messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}")
-
-    except Exception as e:
-        messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
-        print(f"Error detallado: {e}")
 
 def on_closing():
     # Detener monitoreo
@@ -991,29 +840,67 @@ def main():
     lbl_totales.pack(pady=(0, 10))
 
     # Frame derecho para archivos
-    right_frame = tk.Frame(content_frame, bg=COL_BG, width=400)
+
+    right_frame = tk.Frame(content_frame, bg=COL_BG, width=480)
     right_frame.pack(side="right", fill="y")
     right_frame.pack_propagate(False)
 
     files_card = tk.Frame(right_frame, bg=COL_CARD_BG, relief="flat", bd=1,
-                          highlightbackground=COL_BORDER, highlightthickness=1)
+                        highlightbackground=COL_BORDER, highlightthickness=1)
     files_card.pack(fill="both", expand=True)
 
     lbl_archivos = tk.Label(files_card, text="📁 ARCHIVOS PROCESADOS",
                             bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
     lbl_archivos.pack(pady=(10, 5))
 
+    # Frame principal para la lista
     list_frame = tk.Frame(files_card, bg=COL_CARD_BG)
     list_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
-    scrollbar = tk.Scrollbar(list_frame)
+    # Frame para encabezados
+    header_frame = tk.Frame(list_frame, bg=COL_CARD_BG)
+    header_frame.pack(fill="x", pady=(0, 5))
+
+    # Encabezado para nombre de archivo (izquierda)
+    lbl_nombre = tk.Label(header_frame, text="ARCHIVO", 
+                        bg=COL_CARD_BG, fg=COL_TEXT, 
+                        font=("INTER", 9, "bold"), anchor="w")
+    lbl_nombre.pack(side="left", fill="x", expand=True)
+
+    # Encabezado para fecha (derecha)
+    lbl_fecha = tk.Label(header_frame, text="FECHA", 
+                        bg=COL_CARD_BG, fg=COL_TEXT, 
+                        font=("INTER", 9, "bold"), anchor="e", width=10)
+    lbl_fecha.pack(side="right")
+
+    # Frame para lista y scrollbar
+    list_content_frame = tk.Frame(list_frame, bg=COL_CARD_BG)
+    list_content_frame.pack(fill="both", expand=True)
+
+    scrollbar = tk.Scrollbar(list_content_frame)
     scrollbar.pack(side="right", fill="y")
 
-    lst_archivos = tk.Listbox(list_frame, bg=COL_LIST_BG, fg=COL_TEXT, font=("INTER", 9),
-                              yscrollcommand=scrollbar.set, relief="flat", bd=0,
-                              highlightthickness=0)
+    # Listbox con formato mejorado
+    lst_archivos = tk.Listbox(list_content_frame, 
+                            bg=COL_LIST_BG, 
+                            fg=COL_TEXT, 
+                            font=("INTER", 9),
+                            yscrollcommand=scrollbar.set, 
+                            relief="flat", 
+                            bd=0,
+                            highlightthickness=0,
+                            justify="left")
     lst_archivos.pack(side="left", fill="both", expand=True)
     scrollbar.config(command=lst_archivos.yview)
+
+    # Función para agregar archivos con formato de dos columnas
+    def agregar_archivo_con_fecha(nombre_archivo, fecha):
+        # Formatear la línea: nombre a la izquierda, fecha a la derecha
+        nombre_truncado = nombre_archivo[:35] + "..." if len(nombre_archivo) > 38 else nombre_archivo
+        espacio_disponible = 50 - len(nombre_truncado)  # Ajustar según el ancho del Listbox
+        espacios = " " * max(espacio_disponible, 5)  # Mínimo 5 espacios
+        linea = f"{nombre_truncado}{espacios}{fecha}"
+        lst_archivos.insert(tk.END, linea)
 
     # Footer con botones
     footer_frame = tk.Frame(main_container, bg=COL_BG)

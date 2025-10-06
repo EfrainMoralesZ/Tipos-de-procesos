@@ -27,7 +27,6 @@ def recurso_path(ruta_relativa):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, ruta_relativa)
 
-
 # -------------------------------
 # CONFIGURACIÓN
 # -------------------------------

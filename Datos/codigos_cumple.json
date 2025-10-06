@@ -6,8 +6,8 @@
     },
     {
         "ITEM":38690,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":83848,
@@ -111,7 +111,7 @@
     },
     {
         "ITEM":522209,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -121,17 +121,17 @@
     },
     {
         "ITEM":534494,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR EN LINEA A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":534496,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":534503,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"INSTRUCCIONES",
         "CRITERIO":"REVISADO"
     },
     {
@@ -162,7 +162,7 @@
     {
         "ITEM":569379,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":569414,
@@ -176,11 +176,6 @@
     },
     {
         "ITEM":585088,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":585739,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -226,7 +221,7 @@
     },
     {
         "ITEM":699402,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -461,12 +456,12 @@
     },
     {
         "ITEM":1339014,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":1347579,
-        "OBSERVACIONES":"INSUMOS",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -476,7 +471,7 @@
     },
     {
         "ITEM":1347582,
-        "OBSERVACIONES":"INSUMOS E IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -916,8 +911,8 @@
     },
     {
         "ITEM":2111280,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2121843,
@@ -947,7 +942,7 @@
     {
         "ITEM":2126328,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2126329,
@@ -1116,7 +1111,7 @@
     },
     {
         "ITEM":2173349,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -1256,7 +1251,7 @@
     },
     {
         "ITEM":2197072,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -1291,7 +1286,7 @@
     },
     {
         "ITEM":2225386,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -1322,7 +1317,7 @@
     {
         "ITEM":2234740,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2235828,
@@ -1401,8 +1396,8 @@
     },
     {
         "ITEM":2308197,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":2308217,
@@ -1571,7 +1566,7 @@
     },
     {
         "ITEM":2354662,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -1691,8 +1686,8 @@
     },
     {
         "ITEM":2387699,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2387700,
@@ -1901,7 +1896,7 @@
     },
     {
         "ITEM":2422730,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -1971,8 +1966,8 @@
     },
     {
         "ITEM":2453782,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2454972,
@@ -1996,7 +1991,7 @@
     },
     {
         "ITEM":2454976,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -2006,7 +2001,7 @@
     },
     {
         "ITEM":2454982,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -2091,7 +2086,7 @@
     },
     {
         "ITEM":2458611,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -2171,7 +2166,7 @@
     },
     {
         "ITEM":2468334,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -2506,8 +2501,8 @@
     },
     {
         "ITEM":2517542,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2518043,
@@ -2876,7 +2871,7 @@
     },
     {
         "ITEM":2558419,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -2931,7 +2926,7 @@
     },
     {
         "ITEM":2563929,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":null
     },
     {
@@ -2961,7 +2956,7 @@
     },
     {
         "ITEM":2574039,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -3036,8 +3031,8 @@
     },
     {
         "ITEM":2577407,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":2577408,
@@ -3046,7 +3041,7 @@
     },
     {
         "ITEM":2577409,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -3532,7 +3527,7 @@
     {
         "ITEM":2645271,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2645273,
@@ -3576,7 +3571,7 @@
     },
     {
         "ITEM":2648443,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -3716,8 +3711,8 @@
     },
     {
         "ITEM":2657110,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2657112,
@@ -3731,7 +3726,7 @@
     },
     {
         "ITEM":2657114,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -3816,7 +3811,7 @@
     },
     {
         "ITEM":2664589,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -3826,7 +3821,7 @@
     },
     {
         "ITEM":2665773,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -4097,7 +4092,7 @@
     {
         "ITEM":2696840,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2696841,
@@ -4146,12 +4141,12 @@
     },
     {
         "ITEM":2696876,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2696878,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -4296,7 +4291,7 @@
     },
     {
         "ITEM":2707972,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -4346,23 +4341,23 @@
     },
     {
         "ITEM":2708561,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":2708562,
+        "OBSERVACIONES":"CUMPLE CON NORMA 050",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2708563,
         "OBSERVACIONES":"INSTRUCCIONES",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":2708563,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":2708564,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2708752,
@@ -4446,13 +4441,13 @@
     },
     {
         "ITEM":2712532,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2712536,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2712537,
@@ -4491,7 +4486,7 @@
     },
     {
         "ITEM":2715239,
-        "OBSERVACIONES":"INTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -4886,8 +4881,8 @@
     },
     {
         "ITEM":2746024,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR COLGADO A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2746029,
@@ -4951,8 +4946,8 @@
     },
     {
         "ITEM":2747958,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2750038,
@@ -5151,8 +5146,8 @@
     },
     {
         "ITEM":2764318,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2764319,
@@ -5201,7 +5196,7 @@
     },
     {
         "ITEM":2765856,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -5406,7 +5401,7 @@
     },
     {
         "ITEM":2837833,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -5511,8 +5506,8 @@
     },
     {
         "ITEM":2881187,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2881188,
@@ -5581,7 +5576,7 @@
     },
     {
         "ITEM":2884482,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR EN LINEA A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -5641,8 +5636,8 @@
     },
     {
         "ITEM":2886232,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2886233,
@@ -5746,8 +5741,8 @@
     },
     {
         "ITEM":2897450,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2898294,
@@ -5861,7 +5856,7 @@
     },
     {
         "ITEM":2900590,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -5871,7 +5866,7 @@
     },
     {
         "ITEM":2900592,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -5936,7 +5931,7 @@
     },
     {
         "ITEM":2908940,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -5976,8 +5971,8 @@
     },
     {
         "ITEM":2910278,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2910279,
@@ -6112,12 +6107,12 @@
     {
         "ITEM":2920345,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2920346,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2920347,
@@ -6176,13 +6171,13 @@
     },
     {
         "ITEM":2922276,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"NO CONTIENE INFORMACIÓN",
         "CRITERIO":null
     },
     {
         "ITEM":2922314,
         "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2922328,
@@ -6316,7 +6311,7 @@
     },
     {
         "ITEM":2938693,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR EN LINEA A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6541,7 +6536,7 @@
     },
     {
         "ITEM":2953480,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6561,7 +6556,7 @@
     },
     {
         "ITEM":2954994,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6581,8 +6576,8 @@
     },
     {
         "ITEM":2955012,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2955289,
@@ -6671,7 +6666,7 @@
     },
     {
         "ITEM":2956717,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6681,7 +6676,7 @@
     },
     {
         "ITEM":2957210,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6746,7 +6741,7 @@
     },
     {
         "ITEM":2959084,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6886,7 +6881,7 @@
     },
     {
         "ITEM":2967813,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6901,7 +6896,7 @@
     },
     {
         "ITEM":2969254,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES E IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -6916,8 +6911,8 @@
     },
     {
         "ITEM":2971289,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2971495,
@@ -7036,8 +7031,8 @@
     },
     {
         "ITEM":2981225,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2981226,
@@ -7151,8 +7146,8 @@
     },
     {
         "ITEM":2987100,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2987104,
@@ -7211,8 +7206,8 @@
     },
     {
         "ITEM":2988240,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2988244,
@@ -7236,7 +7231,7 @@
     },
     {
         "ITEM":2989401,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -7346,18 +7341,18 @@
     },
     {
         "ITEM":4001654,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4001657,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4001658,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4001659,
@@ -7441,8 +7436,8 @@
     },
     {
         "ITEM":4002635,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4002638,
@@ -7511,7 +7506,7 @@
     },
     {
         "ITEM":4004301,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -7531,7 +7526,7 @@
     },
     {
         "ITEM":4004970,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -7651,7 +7646,7 @@
     },
     {
         "ITEM":4009814,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"INSUMOS MAYUSCULA KG MAYUSCAULA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -7816,7 +7811,7 @@
     },
     {
         "ITEM":4016598,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -7971,17 +7966,17 @@
     },
     {
         "ITEM":4023636,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4025153,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4025154,
-        "OBSERVACIONES":"INSUMOS",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -8031,8 +8026,8 @@
     },
     {
         "ITEM":4027246,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4027247,
@@ -8051,7 +8046,7 @@
     },
     {
         "ITEM":4030680,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -8226,7 +8221,7 @@
     },
     {
         "ITEM":4045308,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -8286,8 +8281,8 @@
     },
     {
         "ITEM":4047978,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4047979,
@@ -8487,7 +8482,7 @@
     {
         "ITEM":4065513,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4065514,
@@ -8496,7 +8491,7 @@
     },
     {
         "ITEM":4065515,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -8536,7 +8531,7 @@
     },
     {
         "ITEM":4067032,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -8616,7 +8611,7 @@
     },
     {
         "ITEM":4075184,
-        "OBSERVACIONES":"IMPORTADOR,UNIDAD DE MEDIDA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9026,13 +9021,13 @@
     },
     {
         "ITEM":4113547,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4113548,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4113549,
@@ -9066,8 +9061,8 @@
     },
     {
         "ITEM":4126914,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4126915,
@@ -9241,7 +9236,7 @@
     },
     {
         "ITEM":4146152,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9341,7 +9336,7 @@
     },
     {
         "ITEM":4156872,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9596,7 +9591,7 @@
     },
     {
         "ITEM":4181596,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9721,7 +9716,7 @@
     },
     {
         "ITEM":4192768,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9906,7 +9901,7 @@
     },
     {
         "ITEM":4214872,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -9991,7 +9986,7 @@
     },
     {
         "ITEM":4224993,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -10041,7 +10036,7 @@
     },
     {
         "ITEM":4227112,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":null
     },
     {
@@ -10061,7 +10056,7 @@
     },
     {
         "ITEM":4227421,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -10077,7 +10072,7 @@
     {
         "ITEM":4227715,
         "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4227716,
@@ -10091,7 +10086,7 @@
     },
     {
         "ITEM":4228775,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -10141,8 +10136,8 @@
     },
     {
         "ITEM":4229060,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4229062,
@@ -10226,8 +10221,8 @@
     },
     {
         "ITEM":4231204,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4231205,
@@ -10291,7 +10286,7 @@
     },
     {
         "ITEM":4233072,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -10396,8 +10391,8 @@
     },
     {
         "ITEM":4237775,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4237777,
@@ -10526,8 +10521,8 @@
     },
     {
         "ITEM":4246823,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4247942,
@@ -10596,8 +10591,8 @@
     },
     {
         "ITEM":4261781,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4261782,
@@ -10606,8 +10601,8 @@
     },
     {
         "ITEM":4263683,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4263689,
@@ -10636,7 +10631,7 @@
     },
     {
         "ITEM":4263872,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -10766,7 +10761,7 @@
     },
     {
         "ITEM":4270127,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEA A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -10911,7 +10906,7 @@
     },
     {
         "ITEM":4273479,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -11051,7 +11046,7 @@
     },
     {
         "ITEM":4279141,
-        "OBSERVACIONES":"IMPORTADOR, NO DECLARA CINTAS",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -11081,8 +11076,8 @@
     },
     {
         "ITEM":4282910,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4282912,
@@ -11316,13 +11311,13 @@
     },
     {
         "ITEM":4293985,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4293986,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4293988,
@@ -11416,7 +11411,7 @@
     },
     {
         "ITEM":4300151,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -11541,7 +11536,7 @@
     },
     {
         "ITEM":4308283,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -11696,8 +11691,8 @@
     },
     {
         "ITEM":4313279,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4313848,
@@ -11716,8 +11711,8 @@
     },
     {
         "ITEM":4313872,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4313873,
@@ -11731,7 +11726,7 @@
     },
     {
         "ITEM":4313875,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEA A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12011,7 +12006,7 @@
     },
     {
         "ITEM":4326473,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR COLGADO A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12226,7 +12221,7 @@
     },
     {
         "ITEM":4336764,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12271,12 +12266,12 @@
     },
     {
         "ITEM":4336819,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4336854,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12291,7 +12286,7 @@
     },
     {
         "ITEM":4339086,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12346,7 +12341,7 @@
     },
     {
         "ITEM":4340941,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12431,7 +12426,7 @@
     },
     {
         "ITEM":4342881,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12501,8 +12496,8 @@
     },
     {
         "ITEM":4348298,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4348300,
@@ -12541,7 +12536,7 @@
     },
     {
         "ITEM":4349481,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12571,7 +12566,7 @@
     },
     {
         "ITEM":4349762,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"INSTRUCCIONES",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12736,22 +12731,22 @@
     },
     {
         "ITEM":4357777,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4357778,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4357779,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4357780,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -12901,8 +12896,8 @@
     },
     {
         "ITEM":4361602,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4361603,
@@ -13031,7 +13026,7 @@
     },
     {
         "ITEM":4373930,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -13116,8 +13111,8 @@
     },
     {
         "ITEM":4375765,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4375766,
@@ -13162,12 +13157,12 @@
     {
         "ITEM":4377756,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4377757,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4377758,
@@ -13177,17 +13172,12 @@
     {
         "ITEM":4377759,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4377760,
         "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":4378832,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
     },
     {
         "ITEM":4378916,
@@ -13266,7 +13256,7 @@
     },
     {
         "ITEM":4388376,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -13316,7 +13306,7 @@
     },
     {
         "ITEM":4391767,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -13566,8 +13556,8 @@
     },
     {
         "ITEM":4408223,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4408713,
@@ -13636,7 +13626,7 @@
     },
     {
         "ITEM":4430581,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -13701,7 +13691,7 @@
     },
     {
         "ITEM":4434633,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -13811,17 +13801,17 @@
     },
     {
         "ITEM":4438964,
-        "OBSERVACIONES":"No exprimir, no centrifugar y secado en línea a la sombra.",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4438965,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4438966,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -13911,8 +13901,8 @@
     },
     {
         "ITEM":4448194,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4448195,
@@ -13921,8 +13911,8 @@
     },
     {
         "ITEM":4448196,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4448499,
@@ -13996,8 +13986,8 @@
     },
     {
         "ITEM":4451184,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR COLGADO A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4451186,
@@ -14031,7 +14021,7 @@
     },
     {
         "ITEM":4454100,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -14061,7 +14051,7 @@
     },
     {
         "ITEM":4454537,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -14081,7 +14071,7 @@
     },
     {
         "ITEM":4454542,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -14231,13 +14221,13 @@
     },
     {
         "ITEM":4465133,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4465134,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4465136,
@@ -14367,7 +14357,7 @@
     {
         "ITEM":4468906,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4468925,
@@ -14581,8 +14571,8 @@
     },
     {
         "ITEM":4479085,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4479087,
@@ -14986,8 +14976,8 @@
     },
     {
         "ITEM":4493657,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4493658,
@@ -15036,7 +15026,7 @@
     },
     {
         "ITEM":4498950,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -15206,18 +15196,18 @@
     },
     {
         "ITEM":4523618,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4523619,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4523620,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4523621,
@@ -15361,7 +15351,7 @@
     },
     {
         "ITEM":4528310,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -15386,7 +15376,7 @@
     },
     {
         "ITEM":4529798,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -15521,13 +15511,13 @@
     },
     {
         "ITEM":4531839,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4531841,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4531952,
@@ -15746,8 +15736,8 @@
     },
     {
         "ITEM":4542621,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4542622,
@@ -15831,8 +15821,8 @@
     },
     {
         "ITEM":4545842,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4545843,
@@ -15856,8 +15846,8 @@
     },
     {
         "ITEM":4545899,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4545900,
@@ -15886,8 +15876,8 @@
     },
     {
         "ITEM":4547576,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4547577,
@@ -15981,13 +15971,13 @@
     },
     {
         "ITEM":4548895,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
         "ITEM":4548897,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTIRGUFAR SECADO EN LINE A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4549003,
@@ -16236,8 +16226,8 @@
     },
     {
         "ITEM":4560171,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4560172,
@@ -16381,8 +16371,8 @@
     },
     {
         "ITEM":4564121,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4565002,
@@ -16391,8 +16381,8 @@
     },
     {
         "ITEM":4565003,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4565005,
@@ -16476,8 +16466,8 @@
     },
     {
         "ITEM":4565930,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4565931,
@@ -16861,8 +16851,8 @@
     },
     {
         "ITEM":4581618,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "OBSERVACIONES":"UNIDAD DE MEDIDA M  E IMPOTAZDOR",
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4582011,
@@ -17201,7 +17191,7 @@
     },
     {
         "ITEM":4654594,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -17416,8 +17406,8 @@
     },
     {
         "ITEM":4693490,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4693491,
@@ -17616,8 +17606,8 @@
     },
     {
         "ITEM":4711236,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4711355,
@@ -17766,7 +17756,7 @@
     },
     {
         "ITEM":4713688,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECAR COLGADO A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -18056,8 +18046,8 @@
     },
     {
         "ITEM":4744754,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4744755,
@@ -18156,8 +18146,8 @@
     },
     {
         "ITEM":4747581,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4747809,
@@ -18581,7 +18571,7 @@
     },
     {
         "ITEM":4767627,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -18601,7 +18591,7 @@
     },
     {
         "ITEM":4767716,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -18751,8 +18741,8 @@
     },
     {
         "ITEM":4776656,
-        "OBSERVACIONES":"INSUMOS (NO DECLARA TIRAJE)",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4776658,
@@ -18801,7 +18791,7 @@
     },
     {
         "ITEM":4777194,
-        "OBSERVACIONES":"No exprimir, no centrifugar y secado en línea a la sombra.",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -18851,7 +18841,7 @@
     },
     {
         "ITEM":4786370,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -19011,7 +19001,7 @@
     },
     {
         "ITEM":4792563,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -19081,7 +19071,7 @@
     },
     {
         "ITEM":4794789,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":null
     },
     {
@@ -19376,7 +19366,7 @@
     },
     {
         "ITEM":4808703,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -19406,8 +19396,8 @@
     },
     {
         "ITEM":4808765,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4808852,
@@ -19511,17 +19501,17 @@
     },
     {
         "ITEM":4819786,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4819794,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEA A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4819795,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -19771,7 +19761,7 @@
     },
     {
         "ITEM":4843877,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -20185,16 +20175,6 @@
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":4851162,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":4851169,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":4851194,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -20321,7 +20301,7 @@
     },
     {
         "ITEM":4852449,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -20401,8 +20381,8 @@
     },
     {
         "ITEM":4864130,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4865708,
@@ -20461,8 +20441,8 @@
     },
     {
         "ITEM":4866366,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4866368,
@@ -20656,7 +20636,7 @@
     },
     {
         "ITEM":4870634,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -20666,12 +20646,12 @@
     },
     {
         "ITEM":4871310,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4871311,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -20971,8 +20951,8 @@
     },
     {
         "ITEM":4879990,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4879991,
@@ -21001,7 +20981,7 @@
     },
     {
         "ITEM":4881889,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21296,12 +21276,12 @@
     },
     {
         "ITEM":4897759,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4897760,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21416,7 +21396,7 @@
     },
     {
         "ITEM":4898467,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21426,7 +21406,7 @@
     },
     {
         "ITEM":4898469,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21502,11 +21482,11 @@
     {
         "ITEM":4899397,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4899398,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21591,8 +21571,8 @@
     },
     {
         "ITEM":4908566,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4909568,
@@ -21706,7 +21686,7 @@
     },
     {
         "ITEM":4923840,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21866,8 +21846,8 @@
     },
     {
         "ITEM":4925416,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4925445,
@@ -21886,7 +21866,7 @@
     },
     {
         "ITEM":4925448,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -21951,12 +21931,12 @@
     },
     {
         "ITEM":4925495,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4925497,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -22291,8 +22271,8 @@
     },
     {
         "ITEM":4950668,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4950669,
@@ -22301,13 +22281,13 @@
     },
     {
         "ITEM":4954493,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4954497,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4955226,
@@ -22317,7 +22297,7 @@
     {
         "ITEM":4964191,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4964192,
@@ -22446,8 +22426,8 @@
     },
     {
         "ITEM":4967047,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4967048,
@@ -22471,7 +22451,7 @@
     },
     {
         "ITEM":4967628,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -22606,12 +22586,12 @@
     },
     {
         "ITEM":4976456,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4976457,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -23001,18 +22981,18 @@
     },
     {
         "ITEM":4997187,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
         "ITEM":4997188,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4997189,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4997194,
@@ -23081,7 +23061,7 @@
     },
     {
         "ITEM":4997645,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -23426,7 +23406,7 @@
     },
     {
         "ITEM":5008904,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -23676,7 +23656,7 @@
     },
     {
         "ITEM":5014860,
-        "OBSERVACIONES":"No exprimir, no centrifugar y secado en línea a la sombra.",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -23761,7 +23741,7 @@
     },
     {
         "ITEM":5025029,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -23896,8 +23876,8 @@
     },
     {
         "ITEM":5038097,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5039098,
@@ -24160,11 +24140,6 @@
         "CRITERIO":null
     },
     {
-        "ITEM":5044385,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":5044636,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -24335,11 +24310,6 @@
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":5054326,
-        "OBSERVACIONES":null,
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":5055362,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -24446,8 +24416,8 @@
     },
     {
         "ITEM":5055894,
-        "OBSERVACIONES":"No exprimir, no centrifugar y secado en línea a la sombra.",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5055895,
@@ -24456,7 +24426,7 @@
     },
     {
         "ITEM":5056172,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -24571,8 +24541,8 @@
     },
     {
         "ITEM":5056934,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5056935,
@@ -24816,7 +24786,7 @@
     },
     {
         "ITEM":5057457,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -24836,8 +24806,8 @@
     },
     {
         "ITEM":5057464,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5057465,
@@ -24911,7 +24881,7 @@
     },
     {
         "ITEM":5058585,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -25001,8 +24971,8 @@
     },
     {
         "ITEM":5064354,
-        "OBSERVACIONES":"No exprimir, no centrifugar y secado en línea a la sombra.",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5064403,
@@ -25026,7 +24996,7 @@
     },
     {
         "ITEM":5064902,
-        "OBSERVACIONES":"No exprimir, no centrifugar y secado en línea a la sombra.",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -25301,7 +25271,7 @@
     },
     {
         "ITEM":5085127,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -25336,7 +25306,7 @@
     },
     {
         "ITEM":5086256,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -25371,8 +25341,8 @@
     },
     {
         "ITEM":5086576,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5086578,
@@ -25736,12 +25706,12 @@
     },
     {
         "ITEM":5104613,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":5104620,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -26206,7 +26176,7 @@
     },
     {
         "ITEM":5164156,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -26411,8 +26381,8 @@
     },
     {
         "ITEM":5165366,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5165390,
@@ -26421,7 +26391,7 @@
     },
     {
         "ITEM":5165502,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -26473,26 +26443,6 @@
         "ITEM":5166317,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
-    },
-    {
-        "ITEM":5166646,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5166648,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5166650,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5166651,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":5174599,
@@ -26611,7 +26561,7 @@
     },
     {
         "ITEM":5177883,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -28112,12 +28062,12 @@
     {
         "ITEM":5274723,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5274724,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5275176,
@@ -28196,8 +28146,8 @@
     },
     {
         "ITEM":5275194,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5275195,
@@ -28366,8 +28316,8 @@
     },
     {
         "ITEM":5283917,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5283989,
@@ -28416,7 +28366,7 @@
     },
     {
         "ITEM":5286359,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINE A LA SOMBRA",
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -28776,7 +28726,7 @@
     },
     {
         "ITEM":5324628,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"PAIS DE ORIGEN",
         "CRITERIO":"REVISADO"
     },
     {
@@ -29146,7 +29096,7 @@
     },
     {
         "ITEM":5334355,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -29156,7 +29106,7 @@
     },
     {
         "ITEM":5334377,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -29666,7 +29616,7 @@
     },
     {
         "ITEM":5355503,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -30046,8 +29996,8 @@
     },
     {
         "ITEM":5365271,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"NO CONTIENE ETIQUETA PERMANENTE",
+        "CRITERIO":null
     },
     {
         "ITEM":5365275,
@@ -30056,7 +30006,7 @@
     },
     {
         "ITEM":5365277,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -31186,8 +31136,8 @@
     },
     {
         "ITEM":5398534,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5399063,
@@ -31771,8 +31721,8 @@
     },
     {
         "ITEM":5411303,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5411304,
@@ -31781,7 +31731,7 @@
     },
     {
         "ITEM":5411305,
-        "OBSERVACIONES":"SIN",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -31791,7 +31741,7 @@
     },
     {
         "ITEM":5411335,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -31825,21 +31775,6 @@
         "CRITERIO":null
     },
     {
-        "ITEM":5413047,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5413053,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5413054,
-        "OBSERVACIONES":"SIN",
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":5413283,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -31871,8 +31806,8 @@
     },
     {
         "ITEM":5413375,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5413380,
@@ -31886,7 +31821,7 @@
     },
     {
         "ITEM":5414191,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -32211,7 +32146,7 @@
     },
     {
         "ITEM":5415785,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -32372,12 +32307,12 @@
     {
         "ITEM":5416930,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5416931,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5416932,
@@ -32386,8 +32321,8 @@
     },
     {
         "ITEM":5416933,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5416938,
@@ -33487,7 +33422,7 @@
     {
         "ITEM":5446509,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5446581,
@@ -33597,7 +33532,7 @@
     {
         "ITEM":5447379,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5447535,
@@ -33627,7 +33562,7 @@
     {
         "ITEM":5447630,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5447634,
@@ -33761,8 +33696,8 @@
     },
     {
         "ITEM":5447837,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5447838,
@@ -33821,7 +33756,7 @@
     },
     {
         "ITEM":5448226,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -33951,8 +33886,8 @@
     },
     {
         "ITEM":5449713,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5449715,
@@ -34142,7 +34077,7 @@
     {
         "ITEM":5455600,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5455601,
@@ -34711,8 +34646,8 @@
     },
     {
         "ITEM":5513953,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5513954,
@@ -34791,17 +34726,17 @@
     },
     {
         "ITEM":5514206,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"SIN",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":5514207,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":5514208,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"SIN",
         "CRITERIO":"REVISADO"
     },
     {
@@ -34811,7 +34746,7 @@
     },
     {
         "ITEM":5514841,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"SIN",
         "CRITERIO":"REVISADO"
     },
     {
@@ -34821,7 +34756,7 @@
     },
     {
         "ITEM":5514843,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"SIN",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35176,7 +35111,7 @@
     },
     {
         "ITEM":5549472,
-        "OBSERVACIONES":"NO EXPRIMIR NO CENTRIFUGAR SECADO EN LINEAL A LA SOMBRA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35211,7 +35146,7 @@
     },
     {
         "ITEM":5553098,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"UNIDAD DE MEDIDA",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35606,7 +35541,7 @@
     },
     {
         "ITEM":5466960,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35641,27 +35576,27 @@
     },
     {
         "ITEM":4899301,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2745730,
-        "OBSERVACIONES":"PAIS E IMPORTADOR",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":4232397,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4667088,
         "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
+        "ITEM":2745730,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4232397,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4667088,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
         "ITEM":2630629,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35730,41 +35665,6 @@
         "CRITERIO":null
     },
     {
-        "ITEM":2901126,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2901125,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2901124,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2901123,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2901122,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2901121,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2901120,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":1798043,
         "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
@@ -35815,61 +35715,6 @@
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":5155484,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4851165,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4294665,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4294666,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236894,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236896,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4857818,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5054323,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4229515,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4743551,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4743553,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":4864683,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -35906,7 +35751,7 @@
     },
     {
         "ITEM":2966756,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -35941,13 +35786,13 @@
     },
     {
         "ITEM":5412528,
-        "OBSERVACIONES":"IMPORTADOR EDAR RECOMENDADA",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4004220,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4934723,
@@ -36001,7 +35846,7 @@
     },
     {
         "ITEM":2705854,
-        "OBSERVACIONES":"IMOPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36021,7 +35866,7 @@
     },
     {
         "ITEM":2943547,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36036,7 +35881,7 @@
     },
     {
         "ITEM":4022183,
-        "OBSERVACIONES":"SIN NORMA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36055,18 +35900,8 @@
         "CRITERIO":null
     },
     {
-        "ITEM":4236870,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236898,
-        "OBSERVACIONES":"SE EVALUA CON NOM 020",
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":4265813,
-        "OBSERVACIONES":"SE EVALUA CON NOM 050",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36096,16 +35931,6 @@
     },
     {
         "ITEM":4333025,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4342874,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4423284,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -36185,18 +36010,8 @@
         "CRITERIO":null
     },
     {
-        "ITEM":4773151,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4781436,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":null
-    },
-    {
         "ITEM":4788518,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36206,13 +36021,8 @@
     },
     {
         "ITEM":4846702,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":4894884,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
     },
     {
         "ITEM":4898333,
@@ -36231,18 +36041,13 @@
     },
     {
         "ITEM":4925384,
-        "OBSERVACIONES":"INSTRUCCIONES Y NO ES NOM 020",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4955228,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
-    },
-    {
-        "ITEM":4966058,
-        "OBSERVACIONES":"SE EVALUA CON NOM 020",
-        "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4975190,
@@ -36255,19 +36060,9 @@
         "CRITERIO":null
     },
     {
-        "ITEM":5054324,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5054325,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":5134050,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":5134087,
@@ -36401,13 +36196,13 @@
     },
     {
         "ITEM":5217342,
-        "OBSERVACIONES":"INSTRUCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5217345,
-        "OBSERVACIONES":"INSTRUCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5414196,
@@ -36440,58 +36235,13 @@
         "CRITERIO":null
     },
     {
-        "ITEM":4143906,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4143919,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4143920,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5418864,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5418865,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5418866,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4781408,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5418655,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2943653,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":4820036,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
         "ITEM":4820037,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":null
     },
     {
@@ -36520,47 +36270,12 @@
         "CRITERIO":null
     },
     {
-        "ITEM":5155482,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":5406965,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
         "ITEM":5406968,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4875162,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4423286,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4151112,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5144659,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4307493,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4307494,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -36581,46 +36296,6 @@
     },
     {
         "ITEM":5407034,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2307023,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2307024,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2307026,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2307027,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236864,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236779,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236782,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4236786,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -36706,7 +36381,7 @@
     },
     {
         "ITEM":4523161,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36726,7 +36401,7 @@
     },
     {
         "ITEM":2010655,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36771,8 +36446,8 @@
     },
     {
         "ITEM":5325126,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"DEBE CUMPLIR CON AMBAS NORMAS, CUMPLE CON LA 50 PERO CON LA 004 NO EN CUESTION DE INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":631585,
@@ -36801,8 +36476,8 @@
     },
     {
         "ITEM":4243477,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4333507,
@@ -36891,7 +36566,7 @@
     },
     {
         "ITEM":4899428,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"INSTRUCCIONES",
         "CRITERIO":"REVISADO"
     },
     {
@@ -36946,13 +36621,13 @@
     },
     {
         "ITEM":4246822,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5205422,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4533467,
@@ -37011,8 +36686,8 @@
     },
     {
         "ITEM":4547575,
-        "OBSERVACIONES":"INSTRUCCIONES",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4036393,
@@ -37036,31 +36711,6 @@
     },
     {
         "ITEM":4036398,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4004496,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4501126,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4501128,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4501129,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4501130,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -37101,11 +36751,6 @@
     },
     {
         "ITEM":4605460,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5045256,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -37230,46 +36875,6 @@
         "CRITERIO":null
     },
     {
-        "ITEM":5418863,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5058911,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":2943651,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5144558,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5144559,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5205734,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5205735,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5205736,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":5119120,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -37286,11 +36891,6 @@
     },
     {
         "ITEM":5119126,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5155486,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -37315,92 +36915,12 @@
         "CRITERIO":null
     },
     {
-        "ITEM":4765176,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4765179,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4340595,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4345773,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4345779,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4870786,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5157698,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5157700,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4310579,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4310587,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4996443,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4996444,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5374435,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":5407026,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
         "ITEM":5407036,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4229516,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4229517,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4765234,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -37446,7 +36966,7 @@
     },
     {
         "ITEM":2937894,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -37461,12 +36981,12 @@
     },
     {
         "ITEM":2224271,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":2625713,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -37496,7 +37016,7 @@
     },
     {
         "ITEM":4975937,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -37721,7 +37241,7 @@
     },
     {
         "ITEM":5134047,
-        "OBSERVACIONES":"INSTRUCCIONES",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -37805,19 +37325,14 @@
         "CRITERIO":null
     },
     {
-        "ITEM":2717396,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":5407486,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
         "ITEM":2902569,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":2762988,
@@ -37856,13 +37371,13 @@
     },
     {
         "ITEM":2013598,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":2762086,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
     },
     {
         "ITEM":4074459,
@@ -37896,7 +37411,7 @@
     },
     {
         "ITEM":2709236,
-        "OBSERVACIONES":"IMPORTADOR NOM-050",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -37906,11 +37421,6 @@
     },
     {
         "ITEM":2922430,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4004489,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
@@ -37955,11 +37465,6 @@
         "CRITERIO":null
     },
     {
-        "ITEM":5374436,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":2630618,
         "OBSERVACIONES":"REVISADO",
         "CRITERIO":null
@@ -38000,26 +37505,6 @@
         "CRITERIO":"IMPORTADOR"
     },
     {
-        "ITEM":2728607,
-        "OBSERVACIONES":"INSUMOS",
-        "CRITERIO":"INSUMOS"
-    },
-    {
-        "ITEM":4015607,
-        "OBSERVACIONES":"INSUMOS",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":4015610,
-        "OBSERVACIONES":"INSUMOS",
-        "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":4015613,
-        "OBSERVACIONES":"INSUMOS",
-        "CRITERIO":"REVISADO"
-    },
-    {
         "ITEM":4766952,
         "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
@@ -38052,7 +37537,7 @@
     {
         "ITEM":2423158,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2777403,
@@ -38072,12 +37557,12 @@
     {
         "ITEM":4361632,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4579477,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":4786665,
@@ -38086,7 +37571,7 @@
     },
     {
         "ITEM":4788495,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38111,8 +37596,8 @@
     },
     {
         "ITEM":5044110,
-        "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
     },
     {
         "ITEM":5194314,
@@ -38171,7 +37656,7 @@
     },
     {
         "ITEM":5529265,
-        "OBSERVACIONES":"IMPORTADOR",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38196,7 +37681,7 @@
     },
     {
         "ITEM":4975191,
-        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38212,7 +37697,7 @@
     {
         "ITEM":4104604,
         "OBSERVACIONES":"REVISADO",
-        "CRITERIO":"REVISADO"
+        "CRITERIO":null
     },
     {
         "ITEM":2707220,
@@ -38226,7 +37711,7 @@
     },
     {
         "ITEM":2540280,
-        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38310,34 +37795,9 @@
         "CRITERIO":null
     },
     {
-        "ITEM":4004495,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
         "ITEM":5044430,
-        "OBSERVACIONES":"IMPOTADOR PAIS EDAD",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
-    },
-    {
-        "ITEM":5418879,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":4781433,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5058912,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
-    },
-    {
-        "ITEM":5144561,
-        "OBSERVACIONES":"CUMPLE",
-        "CRITERIO":null
     },
     {
         "ITEM":4467254,
@@ -38351,7 +37811,7 @@
     },
     {
         "ITEM":4667095,
-        "OBSERVACIONES":"IMPOTADOR PAIS EDAD",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38376,7 +37836,7 @@
     },
     {
         "ITEM":5158613,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
@@ -38401,7 +37861,7 @@
     },
     {
         "ITEM":5295153,
-        "OBSERVACIONES":"REVISADO",
+        "OBSERVACIONES":"CUMPLE",
         "CRITERIO":null
     },
     {
@@ -38421,12 +37881,12 @@
     },
     {
         "ITEM":4964945,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":2404873,
-        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38441,7 +37901,7 @@
     },
     {
         "ITEM":4645933,
-        "OBSERVACIONES":"CARACTERISTICAS ELECTRICAS",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38456,22 +37916,22 @@
     },
     {
         "ITEM":2354661,
-        "OBSERVACIONES":null,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4169366,
-        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":4228783,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
         "ITEM":333642,
-        "OBSERVACIONES":"INSUMOS",
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
     },
     {
@@ -38510,29 +37970,209 @@
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":5165504,
-        "OBSERVACIONES":"IMPORTADOR",
+        "ITEM":4866067,
+        "OBSERVACIONES":"REVISADO",
         "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5545030,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5546064,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5165651,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5224541,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5224545,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5157484,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5551724,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5225100,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5225104,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5225145,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5664474,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4923143,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5166855,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5644569,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5638479,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5638480,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":882521,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5167451,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5535598,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2956676,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4434857,
+        "OBSERVACIONES":"PAIS, IMPORTADOR, INSTRUCCIONES ELECTRICAS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5118891,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5056498,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4988914,
+        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4852750,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4521487,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":5419576,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4570173,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5474918,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5275239,
         "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":4772553,
-        "OBSERVACIONES":"IMPORTADOR",
+        "ITEM":4359271,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5476862,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2958486,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4564119,
+        "OBSERVACIONES":"INTRUCCIONES",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":5503694,
-        "OBSERVACIONES":"IMPORTADOR",
-        "CRITERIO":"REVISADO"
+        "ITEM":4066974,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
-        "ITEM":4533407,
-        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
-        "CRITERIO":"REVISADO"
+        "ITEM":4302515,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5158599,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5477611,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5477617,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4560111,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
     },
     {
         "ITEM":4560113,
@@ -38541,21 +38181,1151 @@
     },
     {
         "ITEM":4560114,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4326639,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4326640,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4326641,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5264155,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5281053,
         "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":2665774,
+        "ITEM":5281054,
         "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":2665775,
+        "ITEM":5281055,
         "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":2354657,
+        "ITEM":5281056,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5281057,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5281058,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5166910,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4755777,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5204798,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5204799,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5167448,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5476861,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5467006,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2538901,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4774330,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4774331,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4774332,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4774333,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4823485,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5165505,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5104597,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2712535,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5034985,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2654200,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2654204,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2880509,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2708779,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2708781,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4833904,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":951350,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2982982,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2602579,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5044109,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4146994,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5064150,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4591889,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4732257,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5034339,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5157487,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5393921,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5075551,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4945506,
+        "OBSERVACIONES":"UNIDAD DE MEDIDA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5476860,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2014290,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2920336,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4438978,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4531538,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5664475,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4071610,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2603818,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5384367,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4570093,
+        "OBSERVACIONES":"UNIDAD DE MEIDA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5447376,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2940026,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5313779,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5157725,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":1485147,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2940600,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2940615,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4548896,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4246405,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4246409,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5010506,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4533406,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4814029,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4660465,
+        "OBSERVACIONES":"UNIDAD DE MEDIDA KG",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4809979,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5134051,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5134094,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5414917,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5414918,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5414919,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5414920,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5304434,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5304435,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5304436,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5304438,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5304439,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5304440,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2433177,
+        "OBSERVACIONES":"IMPORTADOR, MARCA PAIS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4788490,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5644560,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":1650967,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5644570,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4518229,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5167449,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5167493,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4934021,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2341261,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4823486,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4364759,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4172258,
+        "OBSERVACIONES":"INSTRUCCIONES,INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4172274,
+        "OBSERVACIONES":"INTRUCCIONES INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5351946,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5665317,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5665318,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4438925,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4438927,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5135249,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5135251,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2880413,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2880420,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4438961,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4309964,
+        "OBSERVACIONES":"PAIS DE ORIGEN",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2722890,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4131938,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4131939,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2958480,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2958485,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5076145,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2880699,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2880700,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2880702,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4881599,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4881602,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5174481,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5475652,
+        "OBSERVACIONES":"INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5475653,
+        "OBSERVACIONES":"INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5475654,
+        "OBSERVACIONES":"INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5475655,
+        "OBSERVACIONES":"INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4521313,
+        "OBSERVACIONES":"INSTRUCCIONES,INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2956709,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2983366,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5066187,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5244366,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5244394,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5264921,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4996657,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2987582,
+        "OBSERVACIONES":"PAIS,IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5164653,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5158612,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5158614,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5664473,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4245243,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5115651,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4923144,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5535590,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5535592,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5535594,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2422755,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2781180,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5124101,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4100134,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4235491,
+        "OBSERVACIONES":"PAIS,IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4536704,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4135365,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5174010,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4560129,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4560130,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":1154350,
+        "OBSERVACIONES":"NO CONTIENE ETIQUETA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4560219,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4527518,
+        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5158323,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2069965,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4388377,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5557811,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4236898,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4486869,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4581317,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5056575,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2543683,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":796776,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2941143,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2770922,
+        "OBSERVACIONES":"NO CONTIENE ETIQUETA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2406883,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4887214,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5055196,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4819793,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5415882,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4545547,
+        "OBSERVACIONES":"IMPORTADOR E INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5416004,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5416005,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5416006,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5416007,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5416008,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5416101,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4537573,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4537577,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4064534,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5055850,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5055856,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4683212,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4683213,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4502994,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2010654,
+        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5514811,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4454089,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5355502,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4274166,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4274169,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":569380,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":569387,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5056571,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4016197,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2515017,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2543717,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4821209,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4235486,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2160940,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4465135,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4592154,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5177908,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2452036,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2652759,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4995852,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4664147,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5563223,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2509781,
+        "OBSERVACIONES":"NO CONTIENE ETIQUETA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5514222,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4895750,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4549863,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4537589,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4265219,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2837811,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4367777,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4718095,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5095008,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5330559,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4228776,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4579026,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":1056577,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":567230,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4657115,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5205988,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4274731,
         "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
@@ -38565,13 +39335,538 @@
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":2955008,
+        "ITEM":4988915,
+        "OBSERVACIONES":"EDAD RECOMENDADA NO CUMPLE",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2017323,
+        "OBSERVACIONES":"UNIDAD DE MEDIDA KG",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5295157,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":409706,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2583663,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5510309,
+        "OBSERVACIONES":"EDAD RECOMENDADA",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4697271,
+        "OBSERVACIONES":"INSUMOS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5445451,
         "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
         "CRITERIO":"REVISADO"
     },
     {
-        "ITEM":4261780,
+        "ITEM":4530607,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4934598,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2406881,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5024236,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4641781,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4813859,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4325035,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4451535,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4316966,
         "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4316967,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4528458,
+        "OBSERVACIONES":"CARACTERISTICAS ELECTRICAS",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2709604,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2709606,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2531585,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2470361,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2470363,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4311556,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4098793,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2835332,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2016228,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2962408,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4174880,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5006376,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5217346,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4498536,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2698415,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5463304,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2956722,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":849332,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":2881206,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":5158617,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4828762,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4828763,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4519572,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4757508,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4227118,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2910281,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5294201,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2640040,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4761798,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5404870,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5404871,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4743403,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4004123,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5255467,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4004201,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4276640,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2546101,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4026809,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4672001,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5155411,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5474916,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5474917,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5474919,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5474920,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5434003,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4848298,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4385461,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4385469,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2919137,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2919139,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2919141,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4565835,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4883297,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4166582,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2962397,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4557833,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4838451,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2708558,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4564124,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4232404,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4246819,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4246820,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2387253,
+        "OBSERVACIONES":"NO CUENTA CON ETIQUETA PERMANENTE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5205428,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2758088,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2616783,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2897445,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5557813,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5318198,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5318199,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5318200,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5318201,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":5318203,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2391739,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2391742,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2965197,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2965200,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4847338,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2938695,
+        "OBSERVACIONES":"INSTRUCCIONES DE CUIDADO",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2715581,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4581315,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2951118,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":2944993,
+        "OBSERVACIONES":"CUMPLE",
+        "CRITERIO":null
+    },
+    {
+        "ITEM":4015613,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4015607,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4015610,
+        "OBSERVACIONES":"REVISADO",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4667084,
+        "OBSERVACIONES":"IMPORTADOR",
+        "CRITERIO":"REVISADO"
+    },
+    {
+        "ITEM":4232398,
+        "OBSERVACIONES":"IMPORTADOR",
         "CRITERIO":"REVISADO"
     }
 ]
