@@ -841,7 +841,7 @@ def main():
 
     # Frame derecho para archivos
 
-    right_frame = tk.Frame(content_frame, bg=COL_BG, width=480)
+    right_frame = tk.Frame(content_frame, bg=COL_BG, width=450)
     right_frame.pack(side="right", fill="y")
     right_frame.pack_propagate(False)
 

@@ -271,7 +271,6 @@ def abrir_editor_codigos(parent):
         messagebox.showerror("Error", f"Ocurrió un error al abrir el editor de códigos:\n{e}")
         return None
 
-
 # FUNCIONES AUXILIARES
 def modificar_tipo_proceso(row, normas_adherible, normas_costura):
     norma = str(row['NORMA']).upper().strip()
@@ -307,7 +306,7 @@ def procesar_reporte(reporte_path):
 
     # REGISTRAR ARCHIVO PROCESADO
     nombre_archivo = os.path.basename(reporte_path)
-    fecha_proceso = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    fecha_proceso = datetime.now().strftime("%Y-%m-%d")
     
     registrar_archivo_procesado(nombre_archivo, fecha_proceso)
 
