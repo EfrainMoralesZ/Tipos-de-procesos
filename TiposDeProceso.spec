@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['ProcesosV2.py'],
+    ['ProcesosV3.py'],
     pathex=[],
     binaries=[],
     datas=[('datos\\codigos_cumple.xlsx', 'datos'), ('datos\\base_general.json', 'datos'), ('datos\\codigos_cumple.json', 'datos'), ('datos\\config.json', 'datos'), ('img', 'img')],

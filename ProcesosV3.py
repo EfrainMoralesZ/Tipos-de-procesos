@@ -684,7 +684,7 @@ if __name__ == "__main__":
     footer_content.pack(fill="x")
 
     tk.Label(footer_content, 
-             text="Sistema V&C v2.0 • © 2025",
+             text="Sistema V&C v3.0 • © 2025",
              font=("Inter", 9),
              fg="#4B4B4B", 
              bg="#FFFFFF").pack()
