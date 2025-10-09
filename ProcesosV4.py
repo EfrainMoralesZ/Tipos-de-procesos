@@ -422,8 +422,8 @@ def procesar_reporte(reporte_path):
         df_result.loc[df_result['CRITERIO'].str.upper() == 'REVISADO', 'CRITERIO'] = df_result['OBSERVACIONES']
 
 
-        df_result.loc[(df_result['NORMA'].isin(['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'])) & \
-                     ~df_result['CRITERIO'].str.contains('CUMPLE', na=False), 'TIPO DE PROCESO'] = 'ADHERIBLE'
+        # df_result.loc[(df_result['NORMA'].isin(['NOM-050-SCFI-2004', 'NOM-015-SCFI-2007'])) & \
+        #              ~df_result['CRITERIO'].str.contains('CUMPLE', na=False), 'TIPO DE PROCESO'] = 'ADHERIBLE'
 
         # --- Asignar columna PIEZAS sumando la 'Cantidad Factura' por cada ITEM (número de parte) ---
         # Buscar la columna correcta de cantidad facturada
@@ -747,7 +747,7 @@ if __name__ == "__main__":
     footer_content.pack(fill="x")
 
     tk.Label(footer_content, 
-             text="Sistema V&C v3.0 • © 2025",
+             text="Sistema V&C v4.0 • © 2025",
              font=("Inter", 9),
              fg="#4B4B4B", 
              bg="#FFFFFF").pack()
