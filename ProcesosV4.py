@@ -427,7 +427,7 @@ def procesar_reporte(reporte_path):
 
         # --- Asignar columna PIEZAS sumando la 'Cantidad Factura' por cada ITEM (número de parte) ---
         # Buscar la columna correcta de cantidad facturada
-        cantidad_cols = ['Cantidad Factura', 'Cantidad Facturada', 'I', 'AQ']
+        cantidad_cols = ['Cantidad Factura', 'Cantidad Facturada', 'I', 'AQ','Cant. comercial']
         cant_col = None
         for col in cantidad_cols:
             if col in df_reporte.columns:
@@ -462,9 +462,6 @@ def procesar_reporte(reporte_path):
                 df_result.drop(columns=[num_parte_col], inplace=True)
         else:
             df_result['PIEZAS'] = 0
-
-
-
 
 
         # PREVIO: buscar la observación en codigos_cumple.json según ITEM
