@@ -301,6 +301,7 @@ def modificar_tipo_proceso(row, normas_adherible, normas_costura):
     return 'SIN NORMA'
 
 #  FUNCION PARA GENERAR EL TIPO DE PROCESO
+
 def procesar_reporte(reporte_path):
     # REGISTRAR ARCHIVO PROCESADO
     nombre_archivo = os.path.basename(reporte_path)
@@ -480,10 +481,6 @@ def procesar_reporte(reporte_path):
 
         barra.finalizar("¡Completado!")
    
-         # 📝 Crear DataFrame para la nueva hoja "Codigos Actualizados"
-        df_codigos_actualizados = df_codigos_cumple[['ITEM', 'OBSERVACIONES', 'CRITERIO']].copy()
-        df_codigos_actualizados['ITEM'] = pd.to_numeric(df_codigos_actualizados['ITEM'], errors='coerce').astype('Int64')
-
         # Guardar archivo final
         save_path = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
@@ -493,20 +490,12 @@ def procesar_reporte(reporte_path):
         )
 
         if save_path:
-            with pd.ExcelWriter(save_path, engine='openpyxl') as writer:
-                # Hoja 1: TIPO DE PROCESO
-                df_result.to_excel(writer, index=False, sheet_name="TIPO DE PROCESO")
-                # Hoja 2: Codigos Actualizados
-                df_codigos_actualizados.to_excel(writer, index=False, sheet_name="Codigos Actualizados")
-            
-            messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}")
+            exportar_excel(df_result, save_path)
         else:
             messagebox.showwarning("Cancelado", "No se guardó el archivo.")
 
     except Exception as e:
         messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
-
-
 
 def seleccionar_reporte():
     
