@@ -98,6 +98,8 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import Rutas  # Debe estar en la misma carpeta que ProcesosV2.py
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import PatternFill, Alignment, Font
 
 
 # Configuración de rutas para .py y .exe
@@ -124,7 +126,6 @@ def asegurar_excel_vacio(ruta, columnas):
         df = pd.DataFrame(columns=columnas)
         df.to_excel(ruta, index=False)
         print(f"✅ Archivo Excel creado vacío: {ruta}")
-
 
 # Configuración de Rutas integrada
 def configurar_rutas(parent=None):
@@ -490,7 +491,66 @@ def procesar_reporte(reporte_path):
         )
 
         if save_path:
-            exportar_excel(df_result, save_path)
+            # Crear DataFrame vacío solo con encabezados para la hoja "Codigos Actualizados"
+            df_codigos_actualizados = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
+            try:
+                # Escribir ambas hojas en el archivo Excel
+                with pd.ExcelWriter(save_path, engine='openpyxl') as writer:
+                    df_result.to_excel(writer, index=False, sheet_name="TIPO DE PROCESO")
+                    df_codigos_actualizados.to_excel(writer, index=False, sheet_name="Codigos Actualizados")
+
+                    # Aplicar formato a la hoja "TIPO DE PROCESO"
+                    workbook = writer.book
+                    ws = writer.sheets.get("TIPO DE PROCESO")
+                    if ws is not None:
+                        try:
+                            # Estilos para encabezado: fondo azul y texto centrado
+                            # Azul claro similar al de Excel
+                            header_fill = PatternFill(start_color='4FADEA', end_color='4FADEA', fill_type='solid')
+                            header_font = Font(color='000000')
+                            header_align = Alignment(horizontal='center', vertical='center')
+
+                            # Aplicar estilo a la primera fila (encabezadosS)
+                            for cell in list(ws[1]):
+                                cell.fill = header_fill
+                                cell.font = header_font
+                                cell.alignment = header_align
+                            
+
+                            # Ajustar ancho de columnas según contenido
+                            for i, col in enumerate(df_result.columns, 1):
+                                col_letter = get_column_letter(i)
+                                # calcular ancho máximo entre encabezado y celdas
+                                try:
+                                    max_length = max(
+                                        df_result[col].astype(str).map(len).max(),
+                                        len(str(col))
+                                    )
+                                except Exception:
+                                    max_length = len(str(col))
+                                # Ajuste con factor y límite mínimo/máximo
+                                adjusted_width = max(10, min(60, int(max_length * 1.2) + 2))
+                                ws.column_dimensions[col_letter].width = adjusted_width
+
+                            # Congelar la fila de encabezados
+                            ws.freeze_panes = 'A2'
+                        except Exception as e:
+                            # No interrumpir el guardado por fallos de formato
+                            print(f"[WARN] No se pudo aplicar formato Excel: {e}")
+
+                    # También centrar encabezados de la hoja "Codigos Actualizados" por consistencia
+                    ws2 = writer.sheets.get("Codigos Actualizados")
+                    if ws2 is not None:
+                        try:
+                            for cell in list(ws2[1]):
+                                cell.alignment = Alignment(horizontal='center', vertical='center')
+                                cell.font = Font(bold=True)
+                        except Exception:
+                            pass
+
+                messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo guardar el archivo:\n{e}")
         else:
             messagebox.showwarning("Cancelado", "No se guardó el archivo.")
 
