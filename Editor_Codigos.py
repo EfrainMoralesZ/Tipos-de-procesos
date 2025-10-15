@@ -316,6 +316,9 @@ class EditorCodigos:
         except Exception as e:
             messagebox.showerror("Error", f"No se pudieron guardar los datos: {str(e)}")
 
+
+
+
     def importar_excel(self):
         file_path = filedialog.askopenfilename(
             title="Seleccionar archivo Excel para importar",
@@ -325,29 +328,41 @@ class EditorCodigos:
             return
 
         try:
-            # Leer el archivo Excel
+            # --- Leer archivo Excel ---
             df_nuevo = pd.read_excel(file_path)
 
-            # Verificar columnas requeridas
-            columnas_requeridas = {"ITEM", "OBSERVACIONES", "CRITERIO"}
+            # Columnas requeridas
+            columnas_requeridas = {"ITEM", "CRITERIO"}
             if not columnas_requeridas.issubset(df_nuevo.columns):
-                messagebox.showerror("Error", 
-                    f"El archivo Excel debe contener las columnas: {', '.join(columnas_requeridas)}")
+                messagebox.showerror("Error", f"El archivo Excel debe contener las columnas: {', '.join(columnas_requeridas)}")
                 return
 
-            # Limpiar datos
+            # Limpiar y convertir ITEM a número
             df_nuevo = df_nuevo.fillna("")
-            mask_cumple = df_nuevo["OBSERVACIONES"].astype(str).str.upper() == "CUMPLE"
-            df_nuevo.loc[mask_cumple, "CRITERIO"] = ""
+            df_nuevo["ITEM"] = (
+                df_nuevo["ITEM"].astype(str)
+                .str.extract(r"(\d+)")  # extrae solo números
+                .astype(float)
+                .astype("Int64")
+            )
+
+            # Guardar el CRITERIO original para mostrar en la columna "Obs. Nueva"
+            df_nuevo["CRITERIO_ORIGINAL"] = df_nuevo["CRITERIO"].astype(str).str.strip()
+
+            # Asignar CRITERIO automáticamente para la lógica interna
+            df_nuevo["CRITERIO"] = df_nuevo["CRITERIO_ORIGINAL"].str.upper()
+            df_nuevo["CRITERIO"] = df_nuevo["CRITERIO"].apply(lambda x: "" if x == "CUMPLE" else "REVISADO")
+
+            # Crear columnas de salida para el treeview
+            df_nuevo["OBS_NEW"] = df_nuevo["CRITERIO_ORIGINAL"]  # Obs. Nueva = el valor original del archivo
+            df_nuevo["CRIT_NEW"] = df_nuevo["CRITERIO"]           # Crit. Nueva = lógica interna (REVISADO o vacío)
+
 
             # Si no hay datos existentes, importar todo
             if self.df_codigos_cumple is None or self.df_codigos_cumple.empty:
                 self.df_codigos_cumple = df_nuevo.copy()
                 self.actualizar_tabla()
-                
-                # Guardar datos (esto guardará en la ruta del dashboard)
                 self.guardar_datos()
-                
                 messagebox.showinfo("Importar Excel", "Todos los datos han sido importados correctamente.")
                 return
 
@@ -358,44 +373,35 @@ class EditorCodigos:
             cambios = []
             nuevos_items = []
             actualizaciones = 0
-            
+
             for _, row in df_nuevo.iterrows():
                 item = row["ITEM"]
-                obs_nuevo = str(row["OBSERVACIONES"]).strip()
-                crit_nuevo = str(row["CRITERIO"]).strip()
+                obs_nuevo = row["OBS_NEW"]     # valor original del archivo
+                crit_nuevo = row["CRIT_NEW"]   # REVISADO o vacío según la lógica
 
                 if item in dict_existente:
-                    obs_actual = str(dict_existente[item].get("OBSERVACIONES", "")).strip()
-                    crit_actual = str(dict_existente[item].get("CRITERIO", "")).strip()
-                    
-                    # No cambiar items que digan "CUMPLE" a "REVISADO"
-                    if obs_actual.upper() == "CUMPLE":
-                        continue
-                    
-                    if obs_actual != obs_nuevo or crit_actual != crit_nuevo:
+                    crit_actual = dict_existente[item].get("CRITERIO", "")
+                    if crit_actual != crit_nuevo:
                         cambios.append({
-                            "item": item, 
-                            "obs_actual": obs_actual, 
+                            "item": item,
+                            "obs_actual": dict_existente[item].get("OBSERVACIONES", ""),
                             "crit_actual": crit_actual,
-                            "obs_nuevo": obs_nuevo, 
+                            "obs_nuevo": obs_nuevo,
                             "crit_nuevo": crit_nuevo,
                             "tipo": "actualización"
                         })
                         actualizaciones += 1
                 else:
                     cambios.append({
-                        "item": item, 
-                        "obs_actual": "", 
+                        "item": item,
+                        "obs_actual": "",
                         "crit_actual": "",
-                        "obs_nuevo": obs_nuevo, 
+                        "obs_nuevo": obs_nuevo,
                         "crit_nuevo": crit_nuevo,
                         "tipo": "nuevo"
                     })
                     nuevos_items.append(item)
 
-            if not cambios:
-                messagebox.showinfo("Importar Excel", "No se encontraron cambios para actualizar.")
-                return
 
             # Crear ventana de revisión más compacta
             win = tk.Toplevel(self.parent if hasattr(self, "parent") else None)
@@ -635,6 +641,9 @@ class EditorCodigos:
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo importar el Excel: {str(e)}")
+
+
+
 
 class AgregarItem:
     def __init__(self, editor: EditorCodigos):
