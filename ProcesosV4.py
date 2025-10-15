@@ -473,7 +473,7 @@ def procesar_reporte(reporte_path):
         )
 
         # --- Columnas que se imprimen en el tipo de proceso --- #
-        df_result = df_result[['ITEM', 'TIPO DE PROCESO', 'NORMA','CRITERIO', 'DESCRIPCION','PIEZAS', 'PREVIO']]
+        df_result = df_result[['ITEM', 'TIPO DE PROCESO', 'NORMA', 'CRITERIO', 'DESCRIPCION', 'PIEZAS', 'PREVIO']]
         # Asegurar que ITEM se exporte como entero en el Excel
         df_result['ITEM'] = df_result['ITEM'].astype('Int64')
 
@@ -481,7 +481,36 @@ def procesar_reporte(reporte_path):
         df_result = df_result.drop_duplicates(subset=["ITEM"], keep="first").reset_index(drop=True)
 
         barra.finalizar("¡Completado!")
-   
+
+        # # --- Crear hoja de Códigos Actualizados ---
+        # df_codigos_actualizados = df_codigos_cumple[['ITEM', 'OBSERVACIONES', 'CRITERIO']].copy()
+        # df_codigos_actualizados['ITEM'] = pd.to_numeric(df_codigos_actualizados['ITEM'], errors='coerce').astype('Int64')
+
+        # # Filtrar ITEM que están en df_result
+        # df_codigos_actualizados = df_codigos_actualizados[
+        #     df_codigos_actualizados['ITEM'].isin(df_result['ITEM'])
+        # ].drop_duplicates(subset=['ITEM'], keep='first').reset_index(drop=True)
+
+        # # 🪄 Si la columna OBSERVACIONES está vacía, copiar valor de CRITERIO
+        # df_codigos_actualizados['OBSERVACIONES'] = df_codigos_actualizados.apply(
+        #     lambda row: row['CRITERIO'] if pd.isna(row['OBSERVACIONES']) or row['OBSERVACIONES'] == '' else row['OBSERVACIONES'],
+        #     axis=1
+        # )
+
+
+        # # Si algún ITEM no está en codigos_cumple, agregarlo vacío para mantener correspondencia 1 a 1
+        # items_faltantes = df_result[~df_result['ITEM'].isin(df_codigos_actualizados['ITEM'])]['ITEM']
+        # if not items_faltantes.empty:
+        #     df_faltantes = pd.DataFrame({
+        #         'ITEM': items_faltantes,
+        #         'OBSERVACIONES': [''] * len(items_faltantes),
+        #         'CRITERIO': [''] * len(items_faltantes)
+        #     })
+        #     df_codigos_actualizados = pd.concat([df_codigos_actualizados, df_faltantes], ignore_index=True)
+
+        # # Ordenar igual que df_result
+        # df_codigos_actualizados = df_codigos_actualizados.sort_values(by='ITEM').reset_index(drop=True)
+
         # Guardar archivo final
         save_path = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
@@ -491,62 +520,49 @@ def procesar_reporte(reporte_path):
         )
 
         if save_path:
-            # Crear DataFrame vacío solo con encabezados para la hoja "Codigos Actualizados"
-            df_codigos_actualizados = pd.DataFrame(columns=["ITEM", "OBSERVACIONES", "CRITERIO"])
             try:
-                # Escribir ambas hojas en el archivo Excel
                 with pd.ExcelWriter(save_path, engine='openpyxl') as writer:
+                    # Hoja 1: Tipo de proceso
                     df_result.to_excel(writer, index=False, sheet_name="TIPO DE PROCESO")
-                    df_codigos_actualizados.to_excel(writer, index=False, sheet_name="Codigos Actualizados")
+                    # Hoja 2: Codigos Actualizados
+                    # df_codigos_actualizados.to_excel(writer, index=False, sheet_name="Codigos Actualizados")
 
-                    # Aplicar formato a la hoja "TIPO DE PROCESO"
+                    # --- Formato de encabezados y columnas ---
                     workbook = writer.book
-                    ws = writer.sheets.get("TIPO DE PROCESO")
-                    if ws is not None:
-                        try:
-                            # Estilos para encabezado: fondo azul y texto centrado
-                            # Azul claro similar al de Excel
-                            header_fill = PatternFill(start_color='4FADEA', end_color='4FADEA', fill_type='solid')
-                            header_font = Font(color='000000')
-                            header_align = Alignment(horizontal='center', vertical='center')
+                    header_fill = PatternFill(start_color='4FADEA', end_color='4FADEA', fill_type='solid')
+                    header_font = Font(color='000000')
+                    header_align = Alignment(horizontal='center', vertical='center')
 
-                            # Aplicar estilo a la primera fila (encabezadosS)
-                            for cell in list(ws[1]):
-                                cell.fill = header_fill
-                                cell.font = header_font
-                                cell.alignment = header_align
-                            
+                    def aplicar_estilo(ws, df):
+                        # Encabezado azul centrado
+                        for cell in list(ws[1]):
+                            cell.fill = header_fill
+                            cell.font = header_font
+                            cell.alignment = header_align
 
-                            # Ajustar ancho de columnas según contenido
-                            for i, col in enumerate(df_result.columns, 1):
-                                col_letter = get_column_letter(i)
-                                # calcular ancho máximo entre encabezado y celdas
-                                try:
-                                    max_length = max(
-                                        df_result[col].astype(str).map(len).max(),
-                                        len(str(col))
-                                    )
-                                except Exception:
-                                    max_length = len(str(col))
-                                # Ajuste con factor y límite mínimo/máximo
-                                adjusted_width = max(10, min(60, int(max_length * 1.2) + 2))
-                                ws.column_dimensions[col_letter].width = adjusted_width
+                        # Ajuste de ancho dinámico
+                        for i, col in enumerate(df.columns, 1):
+                            col_letter = get_column_letter(i)
+                            try:
+                                max_length = max(
+                                    df[col].astype(str).map(len).max(),
+                                    len(str(col))
+                                )
+                            except Exception:
+                                max_length = len(str(col))
+                            adjusted_width = max(10, min(60, int(max_length * 1.2) + 2))
+                            ws.column_dimensions[col_letter].width = adjusted_width
 
-                            # Congelar la fila de encabezados
-                            ws.freeze_panes = 'A2'
-                        except Exception as e:
-                            # No interrumpir el guardado por fallos de formato
-                            print(f"[WARN] No se pudo aplicar formato Excel: {e}")
+                        # Congelar encabezado
+                        ws.freeze_panes = 'A2'
 
-                    # También centrar encabezados de la hoja "Codigos Actualizados" por consistencia
+                    # Aplicar estilo a ambas hojas
+                    ws1 = writer.sheets.get("TIPO DE PROCESO")
                     ws2 = writer.sheets.get("Codigos Actualizados")
-                    if ws2 is not None:
-                        try:
-                            for cell in list(ws2[1]):
-                                cell.alignment = Alignment(horizontal='center', vertical='center')
-                                cell.font = Font(bold=True)
-                        except Exception:
-                            pass
+                    if ws1 is not None:
+                        aplicar_estilo(ws1, df_result)
+                    # if ws2 is not None:
+                    #     aplicar_estilo(ws2, df_codigos_actualizados)
 
                 messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}")
             except Exception as e:
@@ -554,8 +570,7 @@ def procesar_reporte(reporte_path):
         else:
             messagebox.showwarning("Cancelado", "No se guardó el archivo.")
 
-    except Exception as e:
-        messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
+    except Exception as e: messagebox.showerror("Error", f"Ocurrió un problema:\n{e}")
 
 def seleccionar_reporte():
     
