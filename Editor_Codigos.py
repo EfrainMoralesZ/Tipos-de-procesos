@@ -357,6 +357,8 @@ class EditorCodigos:
             df_nuevo["OBS_NEW"] = df_nuevo["CRITERIO_ORIGINAL"]  # Obs. Nueva = el valor original del archivo
             df_nuevo["CRIT_NEW"] = df_nuevo["CRITERIO"]           # Crit. Nueva = lógica interna (REVISADO o vacío)
 
+            # 🔹 Filtrar filas que tienen Obs. Nueva vacía
+            df_nuevo = df_nuevo[df_nuevo["OBS_NEW"].str.strip() != ""].copy()
 
             # Si no hay datos existentes, importar todo
             if self.df_codigos_cumple is None or self.df_codigos_cumple.empty:
