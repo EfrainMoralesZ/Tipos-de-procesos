@@ -353,12 +353,19 @@ class EditorCodigos:
             df_nuevo["CRITERIO"] = df_nuevo["CRITERIO_ORIGINAL"].str.upper()
             df_nuevo["CRITERIO"] = df_nuevo["CRITERIO"].apply(lambda x: "" if x == "CUMPLE" else "REVISADO")
 
+            df_nuevo = df_nuevo[["ITEM", "CRITERIO_ORIGINAL", "CRITERIO"]].copy()
+
             # Crear columnas de salida para el treeview
             df_nuevo["OBS_NEW"] = df_nuevo["CRITERIO_ORIGINAL"]  # Obs. Nueva = el valor original del archivo
             df_nuevo["CRIT_NEW"] = df_nuevo["CRITERIO"]           # Crit. Nueva = lógica interna (REVISADO o vacío)
 
             # 🔹 Filtrar filas que tienen Obs. Nueva vacía
-            df_nuevo = df_nuevo[df_nuevo["OBS_NEW"].str.strip() != ""].copy()
+            # 🔹 Filtrar filas que tienen Obs. Nueva vacía
+            df_nuevo = df_nuevo[df_nuevo["OBS_NEW"].str.strip() != ""]
+
+            # 🔹 Eliminar filas donde OBS_NEW contenga "REVISADO" (de la columna CRITERIO original del archivo)
+            df_nuevo = df_nuevo[~df_nuevo["OBS_NEW"].str.upper().str.contains("REVISADO", na=False)]
+
 
             # Si no hay datos existentes, importar todo
             if self.df_codigos_cumple is None or self.df_codigos_cumple.empty:
@@ -382,17 +389,21 @@ class EditorCodigos:
                 crit_nuevo = row["CRIT_NEW"]   # REVISADO o vacío según la lógica
 
                 if item in dict_existente:
+                    obs_actual = dict_existente[item].get("OBSERVACIONES", "")
                     crit_actual = dict_existente[item].get("CRITERIO", "")
-                    if crit_actual != crit_nuevo:
+
+                    # Verificar si hay algún cambio en OBSERVACIONES o CRITERIO
+                    if obs_actual != obs_nuevo or crit_actual != crit_nuevo:
                         cambios.append({
                             "item": item,
-                            "obs_actual": dict_existente[item].get("OBSERVACIONES", ""),
+                            "obs_actual": obs_actual,
                             "crit_actual": crit_actual,
                             "obs_nuevo": obs_nuevo,
                             "crit_nuevo": crit_nuevo,
                             "tipo": "actualización"
                         })
                         actualizaciones += 1
+
                 else:
                     cambios.append({
                         "item": item,
