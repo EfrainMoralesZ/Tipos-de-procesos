@@ -1,0 +1,89 @@
+graph TD
+
+    %% ======================================================
+    %% ESCÁNER
+    %% ======================================================
+    subgraph "Inicio"
+        L[login.py] -->|Autentica Credenciales| M[Escanaer_V0.2.1.5.py]
+    end
+
+    M -->|Configura inicial| Config[Carga de Archivos de Configuración]
+    
+    Config -->|Tipos de Proceso| PROC[(Tipos de Proceso)]
+    Config -->|Archivo CLP/SHU| CLP[(Archivo CLP/SHU)]
+    
+    PROC & CLP -->|Utilizado por| P[(Indice de Escaneo)]
+    P -->|Genera| IDX[(Índice.json)]
+    
+    M -->|Lee/Gestiona| P
+    
+    subgraph "Operaciones del Usuario"
+        M -->|Usa índice para| Scan[Escaneo de Códigos]
+        M -->|Edita ítems| Edit[Editor]
+        M -->|Actualiza índice| Update[Gestión de Índice]
+    end
+    
+    P -->|Almacena/Recupera| Data[Tipos de Proceso Actualizados]
+    
+    Scan & Edit & Update -->|Consultan/Modifican| IDX
+    IDX -->|Da lugar| Data
+    
+    Data -->|Se copian/pegan en| GS[Google Sheets<br/>Reporte de Contenedores]
+    
+    subgraph "Google Sheets"
+        GS --> H1_GS[Concentrado de Datos]
+        H1_GS --> H2[Reporte]
+    end
+    
+    H2 -->|Base de datos para| PB[Power BI]
+
+    %% ======================================================
+    %% TIPOS DE PROCESOS
+    %% ======================================================
+    A[ProcesosV4.py<br/>Archivo Principal] --> B[Inicialización del Sistema]
+
+    %% CARGA Y PROCESAMIENTO
+    B --> C[Carga de Reportes Excel]
+    
+    subgraph "Procesamiento de Datos"
+        C --> C1[Lectura archivos .xlsx]
+        C1 --> C2[Normalización de datos]
+        C2 --> C3[Validación de estructura]
+        C3 --> D[Procesamiento de Ítems]
+    end
+
+    %% GESTIÓN DE ÍTEMS
+    subgraph "Gestión de Ítems"
+        D --> D1[Detección ítems existentes]
+        D1 --> D2[Asignación automática tipo de proceso]
+        
+        D --> E[Gestión Nuevos Ítems]
+        E --> E1[Detección automática nuevos]
+        E1 --> E2[Diálogo interactivo captura]
+        E2 --> E3[Validación campos requeridos]
+        E3 --> E4[Procesamiento en lote]
+    end
+
+    %% BASE DE DATOS
+    subgraph "Base de Datos JSON"
+        B --> F[Gestión Base de Datos]
+        F --> F1[Almacenamiento en JSON]
+        F1 --> F2[Carga rápida datos]
+    end
+
+    %% EXPORTACIÓN/IMPORTACIÓN
+    subgraph "Intercambio de Datos"
+        F --> G[Importación/Exportación]
+        G --> G1[Exportar BD a Excel]
+        G --> G2[Importar datos Excel]
+    end
+
+    %% CONSOLIDACIÓN Y SALIDA
+    D2 & E4 --> D3[Generación archivos proceso]
+    D3 --> H[Salida de Resultados]
+    H --> H1[Archivos tipo de proceso<br/>generados]
+
+    %% ======================================================
+    %% CONEXIÓN ENTRE AMBOS SISTEMAS (ÚNICA LÍNEA NUEVA)
+    %% ======================================================
+    H1 -->|Carga en configuración| PROC
