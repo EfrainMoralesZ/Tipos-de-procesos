@@ -113,7 +113,7 @@ def configurar_rutas(parent=None):
 
             try:
                 shutil.copy2(archivo, destino)
-                df = pd.read_excel(destino)
+                df = pd.read_excel(destino, engine='openpyxl')
                 # Convertir a JSON en carpeta Datos
                 nombre_json = os.path.splitext(os.path.basename(destino))[0] + ".json"
                 json_path = os.path.abspath(os.path.join(CONFIG_DIR, nombre_json))

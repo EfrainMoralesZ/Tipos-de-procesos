@@ -8,7 +8,6 @@ from reportlab.lib.utils import ImageReader
 from datetime import datetime
 from tkinter import filedialog, messagebox
 from io import BytesIO
-import matplotlib.pyplot as plt
 
 # Detectar el directorio base compatible con .py y .exe
 if getattr(sys, 'frozen', False):
@@ -53,7 +52,6 @@ from reportlab.pdfgen import canvas as pdf_canvas
 import os
 import sys
 from datetime import datetime
-import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import threading
@@ -466,7 +464,7 @@ def leer_datos_desde_excel():
             print("❌ El archivo Excel tampoco existe")
             return 0, 0, 0
             
-        df = pd.read_excel(ARCHIVO_EXCEL)
+        df = pd.read_excel(ARCHIVO_EXCEL, engine='openpyxl')
         total_codigos = len(df)
         codigos_cumple = len(df[df["OBSERVACIONES"].astype(str).str.upper() == "CUMPLE"])
         codigos_no_cumple = total_codigos - codigos_cumple
@@ -599,6 +597,7 @@ def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
 # ---------------- Exportar PDF ---------------- 
 def exportar_pdf_simple():
     """Genera un PDF simple con estadísticas, varias páginas, encabezado, footer y numeración"""
+    import matplotlib.pyplot as plt
     try:
         total_codigos, codigos_cumple, codigos_no_cumple = leer_datos()
         porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0

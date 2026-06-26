@@ -37,7 +37,7 @@ class EditorCodigos:
         try:
             # Cargar Excel
             if os.path.exists(self.ARCHIVO_CODIGOS):
-                self.df_codigos_cumple = pd.read_excel(self.ARCHIVO_CODIGOS)
+                self.df_codigos_cumple = pd.read_excel(self.ARCHIVO_CODIGOS, engine='openpyxl')
                 # Reemplazar NaN por cadenas vacías en CRITERIO cuando OBSERVACIONES es "CUMPLE"
                 mask_cumple = self.df_codigos_cumple["OBSERVACIONES"].astype(str).str.upper() == "CUMPLE"
                 self.df_codigos_cumple.loc[mask_cumple, "CRITERIO"] = ""
@@ -329,7 +329,7 @@ class EditorCodigos:
 
         try:
             # --- Leer archivo Excel ---
-            df_nuevo = pd.read_excel(file_path)
+            df_nuevo = pd.read_excel(file_path, engine='openpyxl')
 
             # Columnas requeridas
             columnas_requeridas = {"ITEM", "CRITERIO"}

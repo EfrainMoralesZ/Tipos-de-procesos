@@ -27,7 +27,7 @@ def inicializar_datos_externos():
 def cargar_excel(path, columnas_requeridas=None):
     if not os.path.exists(path):
         raise FileNotFoundError(f"No se encontró el archivo: {path}")
-    df = pd.read_excel(path)
+    df = pd.read_excel(path, engine='openpyxl')
     if columnas_requeridas and not set(columnas_requeridas).issubset(df.columns):
         raise ValueError(f"Faltan columnas requeridas en {path}")
     return df
@@ -612,7 +612,7 @@ def mostrar_estadisticas():
         import Dashboard
         Dashboard.main()
     except Exception as e:
-        print(f"Error al abrir el dashboard: {e}")
+        messagebox.showerror("Error", f"No se pudo abrir el dashboard:\n{e}")
 
 #  FUNCION PARA LA BARRA DE PROGRESO 
 class BarraProgreso:
