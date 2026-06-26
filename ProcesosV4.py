@@ -94,7 +94,6 @@ from Formato import exportar_excel
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas as pdf_canvas
-import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import Rutas  # Debe estar en la misma carpeta que ProcesosV2.py
@@ -375,7 +374,7 @@ def procesar_reporte(reporte_path):
         df_items[num_parte_col] = df_items[num_parte_col].astype(str)
         df_base['EAN'] = df_base['EAN'].astype(str)
         df_codigos_cumple['ITEM'] = df_codigos_cumple['ITEM'].astype(str)
-        df_reporte[num_parte_col] = df_reporte[num_parte_col].astype(str)
+        df_reporte[num_parte_col] = df_reporte[num_parte_col].astype(str).str.strip()
 
         # Merge para obtener toda la información en un solo DataFrame
         df_result = df_items.merge(df_base, left_on=num_parte_col, right_on='EAN', how='left')
@@ -401,10 +400,30 @@ def procesar_reporte(reporte_path):
         normas_validas = ['003','NOM-004-SE-2021','008','NOM-015-SCFI-2007','020','NOM-020-SCFI-1997',
                           'NOM-024-SCFI-2013','035','NOM-050-SCFI-2004','051','116','NOM-141-SSA1/SCFI-2012','142','173','185','186','NOM-189-SSA1/SCFI-2018','192','199','235','NOM-115-STPS-2009','NOM-121-SCFI-2004']
 
+        # DEBUG: columna de norma detectada y valor crudo en el reporte
+        print(f"\n[DEBUG] Columna de norma detectada: '{norma_col}'")
+        item_debug = '4479813'
+        raw = df_reporte[df_reporte[num_parte_col].astype(str).str.strip() == item_debug]
+        print(f"[DEBUG] Filas en df_reporte para item {item_debug}:")
+        print(raw[[num_parte_col, norma_col]].to_string() if norma_col in df_reporte.columns else f"  columna '{norma_col}' NO existe en df_reporte")
+        merged_row = df_result[df_result[num_parte_col].astype(str).str.strip() == item_debug]
+        print(f"[DEBUG] Fila en df_result tras merge para item {item_debug}:")
+        print(merged_row[[num_parte_col, norma_col, 'NORMA']].to_string() if norma_col in df_result.columns else merged_row[[num_parte_col, 'NORMA']].to_string())
+
+        # DEBUG: estado antes de aplicar reglas
+        print("\n===== DEBUG: ANTES DE APLICAR REGLAS =====")
+        print(df_result[['ITEM', 'NORMA', 'TIPO DE PROCESO', 'CRITERIO']].to_string())
+        print("==========================================\n")
+
         # Aplicar reglas
         df_result['TIPO DE PROCESO'] = df_result.apply(lambda row: modificar_tipo_proceso(row, normas_adherible, normas_costura), axis=1)
         df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
         df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
+
+        # DEBUG: estado después de aplicar reglas
+        print("\n===== DEBUG: DESPUÉS DE APLICAR REGLAS =====")
+        print(df_result[['ITEM', 'NORMA', 'TIPO DE PROCESO', 'CRITERIO']].to_string())
+        print("============================================\n")
 
         # Vectorizar reglas adicionales sobre el DataFrame
         df_result['TIPO DE PROCESO'] = df_result['TIPO DE PROCESO'].astype(str).str.strip()
@@ -417,6 +436,11 @@ def procesar_reporte(reporte_path):
                      ((df_result['TIPO DE PROCESO'] == '0') & (df_result['NORMA'] == '0')) | \
                      ((df_result['TIPO DE PROCESO'] == '') & (df_result['NORMA'] == '')), ['TIPO DE PROCESO', 'NORMA']] = ['SIN NORMA', 'SIN NORMA']
         df_result.loc[df_result['CRITERIO'].str.contains('CUMPLE', na=False), ['TIPO DE PROCESO', 'CRITERIO']] = ['CUMPLE', '']
+
+        # DEBUG: estado final después de reglas vectorizadas
+        print("\n===== DEBUG: RESULTADO FINAL =====")
+        print(df_result[['ITEM', 'NORMA', 'TIPO DE PROCESO', 'CRITERIO']].to_string())
+        print("==================================\n")
 
         #Cambia la forma en la que se imprime el resultado en la columna "CRITERIO" poniendo todo en REVISADO
         # Si CRITERIO dice "REVISADO", reemplázalo por el texto de OBSERVACIONES
