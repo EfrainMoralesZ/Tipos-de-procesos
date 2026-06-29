@@ -27,7 +27,8 @@ def inicializar_datos_externos():
 def cargar_excel(path, columnas_requeridas=None):
     if not os.path.exists(path):
         raise FileNotFoundError(f"No se encontró el archivo: {path}")
-    df = pd.read_excel(path, engine='openpyxl')
+    engine = 'xlrd' if path.lower().endswith('.xls') else 'openpyxl'
+    df = pd.read_excel(path, engine=engine)
     if columnas_requeridas and not set(columnas_requeridas).issubset(df.columns):
         raise ValueError(f"Faltan columnas requeridas en {path}")
     return df
@@ -843,7 +844,7 @@ if __name__ == "__main__":
     footer_content.pack(fill="x")
 
     tk.Label(footer_content, 
-             text="Sistema V&C v4.0 • © 2025",
+             text="Sistema V&C v4.0 • © 2026",
              font=("Inter", 9),
              fg="#4B4B4B", 
              bg="#FFFFFF").pack()
