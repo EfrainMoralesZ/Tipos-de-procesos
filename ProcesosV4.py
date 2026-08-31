@@ -278,11 +278,31 @@ def modificar_tipo_proceso(row, normas_adherible, normas_costura):
     descripcion = str(row['DESCRIPCION']).upper().strip()
     tipo = str(row.get('TIPO DE PROCESO', '')).upper().strip()
 
-    # Excepción NOM-004: calcetines, medias, ropa interior
-    excepciones_nom004 = ['CALCETIN', 'CALCETINES', 'MEDIA', 'MEDIAS', 'SOCKS', 'ROPA INTERIOR', 
-                          'PANTIMEDIAS', 'BANDA PARA LA CABEZA','MUÑEQUERAS', 'CALCETAS']
+    # Excepción NOM-004: calcetines, medias, ropa interior y accesorios varios
+    excepciones_nom004 = [
+        'CALCETIN', 'CALCETINES', 'MEDIA', 'MEDIAS', 'SOCKS', 'ROPA INTERIOR',
+        'PANTIMEDIAS', 'BANDA PARA LA CABEZA', 'MUÑEQUERAS', 'CALCETAS', 'CALCETÍN',
+        'MOCHILAS', 'BOLSAS', 'BOLSA', 'RIÑONERAS', 'BOLSA DE DEPORTE', 'BOLSA RIÑON',
+        'SANDALIAS', 'RIENDA DE EQUITACIÓN', 'RIENDA', 'CINTA PARA CABEZA',
+        'CINTURÓN CORREDOR CON FRASCO', 'CAMPANAS ABIERTAS EQUITACIÓN',
+        'CUERDA DE POLIAMIDA (KIT VIENTOS Y TENSORES)', 'CUERDAS',
+    ]
     if norma in ['NOM-004-SE-2021', 'NOM004']:
         for palabra in excepciones_nom004:
+            if palabra in descripcion:
+                return 'ADHERIBLE'
+
+    # Excepción NOM-020: mismos artículos exceptuados que NOM-004
+    excepciones_nom020 = [
+        'CALCETIN', 'CALCETINES', 'MEDIA', 'MEDIAS', 'SOCKS', 'ROPA INTERIOR',
+        'PANTIMEDIAS', 'BANDA PARA LA CABEZA', 'MUÑEQUERAS', 'CALCETAS', 'CALCETÍN',
+        'MOCHILAS', 'BOLSAS', 'BOLSA', 'RIÑONERAS', 'BOLSA DE DEPORTE', 'BOLSA RIÑON',
+        'SANDALIAS', 'RIENDA DE EQUITACIÓN', 'RIENDA', 'CINTA PARA CABEZA',
+        'CINTURÓN CORREDOR CON FRASCO', 'CAMPANAS ABIERTAS EQUITACIÓN',
+        'CUERDA DE POLIAMIDA (KIT VIENTOS Y TENSORES)', 'CUERDAS',
+    ]
+    if norma in ['NOM-020-SCFI-1997', 'NOM020']:
+        for palabra in excepciones_nom020:
             if palabra in descripcion:
                 return 'ADHERIBLE'
 
