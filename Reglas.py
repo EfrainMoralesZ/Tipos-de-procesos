@@ -46,6 +46,18 @@ REGLAS_POR_DEFECTO = {
         {"nombre": "Excepción NOM-020", "normas": ['NOM-020-SCFI-1997', 'NOM020'],
          "palabras": list(_PALABRAS_EXCEPCION), "resultado": "ADHERIBLE"},
     ],
+    # NORMA UVA del pedimento (número) -> norma que se escribe en el TIPO DE PROCESO
+    "equivalencias_pedimento": [
+        {"numero": "4", "norma": "NOM-004-SE-2021"},
+        {"numero": "15", "norma": "NOM-015-SCFI-2007"},
+        {"numero": "20", "norma": "NOM-020-SCFI-1997"},
+        {"numero": "24", "norma": "NOM-024-SCFI-2013"},
+        {"numero": "50", "norma": "NOM-050-SCFI-2004"},
+        {"numero": "115", "norma": "NOM-115-STPS-2009"},
+        {"numero": "121", "norma": "NOM-121-SCFI-2004"},
+        {"numero": "141", "norma": "NOM-141-SSA1/SCFI-2012"},
+        {"numero": "189", "norma": "NOM-189-SSA1/SCFI-2018"},
+    ],
 }
 
 
@@ -70,6 +82,14 @@ def _normalizar_reglas(reglas):
          "resultado": exc.get("resultado") if exc.get("resultado") in RESULTADOS else "ADHERIBLE"}
         for exc in reglas.get("excepciones", REGLAS_POR_DEFECTO["excepciones"])
     ]
+    equivalencias, numeros = [], set()
+    for eq in reglas.get("equivalencias_pedimento", REGLAS_POR_DEFECTO["equivalencias_pedimento"]):
+        numero = numero_norma(eq.get("numero"))
+        norma = str(eq.get("norma", "")).strip().upper()
+        if numero and norma and numero not in numeros:
+            numeros.add(numero)
+            equivalencias.append({"numero": numero, "norma": norma})
+    limpias["equivalencias_pedimento"] = sorted(equivalencias, key=lambda eq: int(eq["numero"]))
     return limpias
 
 
@@ -113,6 +133,35 @@ def clasificar(norma, descripcion, tipo, reglas):
 
 def es_norma_valida(norma, reglas):
     return str(norma).upper().strip() in reglas["normas_validas"]
+
+
+#  PEDIMENTO
+def numero_norma(valor):
+    """'4', 4.0, '004' -> '4'. Devuelve None si el valor no es un número entero."""
+    texto = str(valor).strip()
+    try:
+        numero = float(texto)
+    except ValueError:
+        return None
+    if numero != numero or numero != int(numero):  # NaN o con decimales
+        return None
+    return str(int(numero))
+
+
+def norma_pedimento(valor, reglas):
+    """Convierte la NORMA UVA del pedimento a la norma completa.
+
+    Devuelve (norma, conocida): conocida=False si el número no está en las equivalencias
+    (entonces se usa el número a 3 dígitos, p. ej. '003'). Devuelve (None, True) si viene vacía."""
+    if valor is None or str(valor).strip().upper() in ("", "NAN", "NONE"):
+        return None, True
+    numero = numero_norma(valor)
+    if numero is None:  # ya viene escrita como norma (ej. NOM-004-SE-2021)
+        return str(valor).strip().upper(), True
+    for eq in reglas["equivalencias_pedimento"]:
+        if eq["numero"] == numero:
+            return eq["norma"], True
+    return numero.zfill(3), False
 
 
 #  INTERFAZ
@@ -226,6 +275,134 @@ class ListaEditable(ctk.CTkFrame):
         self.al_cambiar()
 
 
+class TablaEquivalencias(ctk.CTkFrame):
+    """Card con las equivalencias número de pedimento -> norma. Modifica en sitio la lista recibida."""
+
+    def __init__(self, parent, ventana, al_cambiar):
+        super().__init__(parent, fg_color=E.COLOR_CARD, corner_radius=14,
+                         border_width=1, border_color=E.COLOR_BORDE)
+        self.ventana = ventana
+        self.al_cambiar = al_cambiar
+        self.valores = []
+        self.editando = None
+
+        cabecera = ctk.CTkFrame(self, fg_color="transparent")
+        cabecera.pack(fill="x", padx=16, pady=(14, 0))
+        ctk.CTkLabel(cabecera, text="Equivalencias de NORMA UVA", font=E.fuente(14, "bold"),
+                     text_color=E.COLOR_TEXTO, anchor="w").pack(side="left")
+        self.lbl_conteo = ctk.CTkLabel(cabecera, text="0", font=E.fuente(11, "bold"), width=34, height=22,
+                                       corner_radius=11, fg_color=E.COLOR_ICONO_FONDO, text_color=E.COLOR_TEXTO)
+        self.lbl_conteo.pack(side="right")
+        ctk.CTkLabel(self, text="El pedimento trae la norma como número (4, 15, 20…). Al generar el tipo de "
+                                "proceso se escribe la norma completa de esta tabla. Si un número no está aquí, "
+                                "se usa a 3 dígitos (ej. 3 → 003) y se avisa al terminar.",
+                     font=E.fuente(11), text_color=E.COLOR_TEXTO_SEC, anchor="w", justify="left",
+                     wraplength=900).pack(fill="x", padx=16, pady=(2, 10))
+
+        fila = ctk.CTkFrame(self, fg_color="transparent")
+        fila.pack(fill="x", padx=16)
+        estilo_entry = dict(height=34, corner_radius=8, border_color=E.COLOR_BORDE_FUERTE,
+                            fg_color=E.COLOR_CARD, text_color=E.COLOR_TEXTO, font=E.fuente(12))
+        self.entry_num = ctk.CTkEntry(fila, width=110, placeholder_text="Número", **estilo_entry)
+        self.entry_num.pack(side="left", padx=(0, 8))
+        self.entry_norma = ctk.CTkEntry(fila, placeholder_text="Norma, ej. NOM-004-SE-2021", **estilo_entry)
+        self.entry_norma.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.btn = E.boton(fila, "Agregar", self._confirmar, "primario", icono="mas", width=110, height=34)
+        self.btn.pack(side="left")
+
+        cont, self.tree = E.tabla(self, ("NUMERO", "NORMA"), horizontal=False, selectmode="extended")
+        self.tree.heading("NUMERO", text="NORMA UVA (PEDIMENTO)", anchor="w")
+        self.tree.heading("NORMA", text="NORMA EN EL TIPO DE PROCESO", anchor="w")
+        self.tree.column("NUMERO", width=200, anchor="w", stretch=False)
+        self.tree.column("NORMA", width=300, anchor="w")
+        pie = ctk.CTkFrame(self, fg_color="transparent")
+        pie.pack(side="bottom", fill="x", padx=16, pady=(0, 14))
+        cont.pack(fill="both", expand=True, padx=16, pady=10)
+        ctk.CTkLabel(pie, text="Doble clic para editar", font=E.fuente(11),
+                     text_color=E.COLOR_TEXTO_TENUE).pack(side="left")
+        E.boton(pie, "Eliminar", self._eliminar, "peligro", icono="basura",
+                width=96, height=30).pack(side="right")
+
+        for entry in (self.entry_num, self.entry_norma):
+            entry.bind("<Return>", self._confirmar)
+            entry.bind("<Escape>", lambda e: self._cancelar_edicion())
+        self.tree.bind("<Double-1>", self._editar)
+        self.tree.bind("<Delete>", lambda e: self._eliminar())
+
+    def set_lista(self, lista):
+        self.valores = lista
+        self._cancelar_edicion()
+        self._refrescar()
+
+    def _refrescar(self, seleccionar=None):
+        self.valores.sort(key=lambda eq: int(eq["numero"]))
+        self.tree.delete(*self.tree.get_children())
+        for i, eq in enumerate(self.valores):
+            self.tree.insert("", "end", iid=str(i), values=(eq["numero"], eq["norma"]), tags=E.tag_fila(i))
+        if seleccionar is not None:
+            i = next((i for i, eq in enumerate(self.valores) if eq["numero"] == seleccionar), None)
+            if i is not None:
+                self.tree.selection_set(str(i))
+                self.tree.see(str(i))
+        self.lbl_conteo.configure(text=str(len(self.valores)))
+
+    def _confirmar(self, _e=None):
+        numero = numero_norma(self.entry_num.get())
+        norma = self.entry_norma.get().strip().upper()
+        if numero is None:
+            messagebox.showinfo("Número inválido", "Escribe el número de la norma tal como viene en el "
+                                                    "pedimento (ej. 4, 15, 20).", parent=self.ventana)
+            return
+        if not norma:
+            messagebox.showinfo("Falta la norma", "Escribe la norma completa (ej. NOM-004-SE-2021).",
+                                parent=self.ventana)
+            return
+        repetido = [eq for i, eq in enumerate(self.valores) if i != self.editando and eq["numero"] == numero]
+        if repetido:
+            messagebox.showinfo("Número repetido", f'El {numero} ya equivale a {repetido[0]["norma"]}.',
+                                parent=self.ventana)
+            return
+        if self.editando is None:
+            self.valores.append({"numero": numero, "norma": norma})
+        else:
+            self.valores[self.editando] = {"numero": numero, "norma": norma}
+        self._cancelar_edicion()
+        self._refrescar(numero)
+        self.al_cambiar()
+
+    def _editar(self, _e=None):
+        seleccion = self.tree.selection()
+        if not seleccion:
+            return
+        self._cancelar_edicion()
+        self.editando = int(seleccion[0])
+        eq = self.valores[self.editando]
+        self.entry_num.insert(0, eq["numero"])
+        self.entry_norma.insert(0, eq["norma"])
+        self.entry_norma.focus_set()
+        self.btn.configure(text="Guardar")
+        E.estilo_boton(self.btn, "oscuro", icono="check")
+
+    def _cancelar_edicion(self):
+        if self.editando is not None:
+            self.entry_num.delete(0, "end")
+            self.entry_norma.delete(0, "end")
+        self.editando = None
+        self.btn.configure(text="Agregar")
+        E.estilo_boton(self.btn, "primario", icono="mas")
+
+    def _eliminar(self):
+        indices = sorted((int(i) for i in self.tree.selection()), reverse=True)
+        if not indices:
+            messagebox.showinfo("Eliminar", "Selecciona una o más equivalencias.", parent=self.ventana)
+            return
+        for i in indices:
+            del self.valores[i]
+        self._cancelar_edicion()
+        self._refrescar()
+        self.al_cambiar()
+
+
 def _estilo_segmentado():
     return dict(fg_color=E.COLOR_GRIS, selected_color=E.COLOR_AMARILLO,
                 selected_hover_color=E.COLOR_AMARILLO_HOVER, unselected_color=E.COLOR_GRIS,
@@ -283,6 +460,8 @@ class EditorReglas:
         tabs.pack(fill="both", expand=True, padx=18)
         self._tab_normas(tabs.add("  Normas por tipo  "))
         self._tab_excepciones(tabs.add("  Excepciones por descripción  "))
+        self.tabla_equivalencias = TablaEquivalencias(tabs.add("  Pedimento  "), self.ventana, self.marcar_cambio)
+        self.tabla_equivalencias.pack(fill="both", expand=True, padx=6, pady=(4, 0))
         self._tab_probar(tabs.add("  Probar  "))
 
         self.cargar_en_pantalla()
@@ -405,6 +584,7 @@ class EditorReglas:
     def cargar_en_pantalla(self, seleccionar=0):
         for clave, lista in self.listas_normas.items():
             lista.set_lista(self.reglas[clave])
+        self.tabla_equivalencias.set_lista(self.reglas["equivalencias_pedimento"])
         self._refrescar_excepciones(seleccionar)
 
     def _refrescar_excepciones(self, seleccionar=None):
@@ -510,6 +690,11 @@ class EditorReglas:
         incompletas = [e["nombre"] for e in self.reglas["excepciones"] if not e["normas"] or not e["palabras"]]
         if incompletas:
             avisos.append("Estas excepciones no tienen normas o palabras y no harán nada:\n  " + ", ".join(incompletas))
+        no_validas = [f'{eq["numero"]} → {eq["norma"]}' for eq in self.reglas["equivalencias_pedimento"]
+                      if not es_norma_valida(eq["norma"], self.reglas)]
+        if no_validas:
+            avisos.append("Estas equivalencias apuntan a normas que no están en Normas válidas "
+                          "(quedarán como SIN NORMA):\n  " + ", ".join(no_validas))
         if avisos and not messagebox.askyesno("Revisar", "\n\n".join(avisos) + "\n\n¿Guardar de todos modos?",
                                               parent=self.ventana):
             return

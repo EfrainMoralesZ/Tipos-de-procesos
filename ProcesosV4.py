@@ -44,6 +44,31 @@ def cargar_json(path, columnas_requeridas=None):
         raise ValueError(f"Faltan columnas requeridas en {path}")
     return df
 
+def _texto_columna(valor):
+    """Encabezado en mayúsculas y sin acentos, para comparar nombres de columnas."""
+    import unicodedata
+    texto = unicodedata.normalize("NFKD", str(valor)).encode("ascii", "ignore").decode()
+    return " ".join(texto.upper().split())
+
+def cargar_pedimento(path):
+    """Busca en el Excel del pedimento la hoja con CODIGO y NORMA UVA (ej. la hoja MACHOTE).
+    Devuelve un DataFrame con CODIGO (texto) y NORMA UVA, una fila por código."""
+    engine = 'xlrd' if path.lower().endswith('.xls') else 'openpyxl'
+    libro = pd.ExcelFile(path, engine=engine)
+    for hoja in libro.sheet_names:
+        muestra = pd.read_excel(libro, hoja, header=None, nrows=15)
+        for fila, valores in muestra.iterrows():
+            columnas = {_texto_columna(v): v for v in valores if pd.notna(v)}
+            if "CODIGO" in columnas and "NORMA UVA" in columnas:
+                df = pd.read_excel(libro, hoja, header=fila)
+                df = df[[columnas["CODIGO"], columnas["NORMA UVA"]]]
+                df.columns = ["CODIGO", "NORMA UVA"]
+                df["CODIGO"] = pd.to_numeric(df["CODIGO"], errors="coerce").astype("Int64").astype(str)
+                df = df[df["CODIGO"] != "<NA>"]
+                # Si un código se repite, se usa la primera fila que sí trae norma
+                return df.sort_values("NORMA UVA", key=lambda s: s.isna(), kind="stable").drop_duplicates("CODIGO")
+    raise ValueError("El pedimento no tiene una hoja con las columnas CODIGO y NORMA UVA.")
+
 def limpiar_items(df, columna):
     items = pd.to_numeric(df[columna], errors='coerce')
     items = items.dropna().astype(int)
@@ -266,7 +291,7 @@ def modificar_tipo_proceso(row, reglas):
 
 #  FUNCION PARA GENERAR EL TIPO DE PROCESO
 
-def procesar_reporte(reporte_path):
+def procesar_reporte(reporte_path, pedimento_path=None):
     # REGISTRAR ARCHIVO PROCESADO
     nombre_archivo = os.path.basename(reporte_path)
     fecha_proceso = datetime.now().strftime("%Y-%m-%d")
@@ -355,6 +380,28 @@ def procesar_reporte(reporte_path):
 
         # Reglas de negocio (datos/reglas.json, editables desde la ventana Reglas)
         reglas = Reglas.cargar_reglas()
+
+        # NORMA desde el pedimento: NORMA UVA (4, 15, 20...) -> norma completa según las equivalencias
+        resumen_pedimento = ""
+        if pedimento_path:
+            df_pedimento = cargar_pedimento(pedimento_path)
+            normas_ped, sin_equivalencia = {}, set()
+            for codigo, valor in zip(df_pedimento["CODIGO"], df_pedimento["NORMA UVA"]):
+                norma, conocida = Reglas.norma_pedimento(valor, reglas)
+                if norma:
+                    normas_ped[codigo] = norma
+                    if not conocida:
+                        sin_equivalencia.add(Reglas.numero_norma(valor))
+            codigos = df_result[num_parte_col].astype(str).str.strip()
+            encontrados = codigos.isin(normas_ped.keys())
+            df_result.loc[encontrados, 'NORMA'] = codigos[encontrados].map(normas_ped)
+            n_items = codigos[encontrados].nunique()
+            resumen_pedimento = (f"\n\nPedimento: norma asignada a {n_items} de {total} ítems."
+                                 f"\nLos {total - n_items} restantes conservan la norma del reporte.")
+            if sin_equivalencia:
+                resumen_pedimento += ("\n\nNúmeros de norma sin equivalencia (se dejaron a 3 dígitos): "
+                                      + ", ".join(sorted(sin_equivalencia, key=int))
+                                      + "\nAgrégalos en Reglas → Pedimento.")
 
         # DEBUG: columna de norma detectada y valor crudo en el reporte
         print(f"\n[DEBUG] Columna de norma detectada: '{norma_col}'")
@@ -544,7 +591,7 @@ def procesar_reporte(reporte_path):
                     # if ws2 is not None:
                     #     aplicar_estilo(ws2, df_codigos_actualizados)
 
-                messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}")
+                messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}{resumen_pedimento}")
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo guardar el archivo:\n{e}")
         else:
@@ -558,8 +605,17 @@ def seleccionar_reporte():
         title="Seleccionar REPORTE DE MERCANCIA",
         filetypes=[("Archivos Excel", "*.xlsx *.xls")]
     )
-    if ruta:
-        procesar_reporte(ruta)
+    if not ruta:
+        return
+    pedimento = filedialog.askopenfilename(
+        title="Seleccionar PEDIMENTO (hoja con CODIGO y NORMA UVA)",
+        filetypes=[("Archivos Excel", "*.xlsx *.xls")]
+    )
+    if not pedimento and not messagebox.askyesno(
+            "Sin pedimento", "No se seleccionó el pedimento.\n\n"
+                             "¿Generar el tipo de proceso con la norma que trae el reporte?"):
+        return
+    procesar_reporte(ruta, pedimento or None)
 
 #  VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
