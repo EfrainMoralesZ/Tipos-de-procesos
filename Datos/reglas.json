@@ -1,0 +1,101 @@
+{
+    "normas_adherible": [
+        "NOM-050-SCFI-2004",
+        "NOM-015-SCFI-2007",
+        "NOM-024-SCFI-2013",
+        "NOM-141-SSA1/SCFI-2012",
+        "NOM004TEXX",
+        "NOM-189-SSA1/SCFI-2018"
+    ],
+    "normas_costura": [
+        "NOM-004-SE-2021",
+        "NOM-020-SCFI-1997"
+    ],
+    "normas_validas": [
+        "NOM-004-SE-2021",
+        "NOM-015-SCFI-2007",
+        "NOM-020-SCFI-1997",
+        "NOM-024-SCFI-2013",
+        "NOM-050-SCFI-2004",
+        "NOM-141-SSA1/SCFI-2012",
+        "NOM-189-SSA1/SCFI-2018"
+    ],
+    "excepciones": [
+        {
+            "nombre": "Excepción NOM-004",
+            "normas": [
+                "NOM-004-SE-2021"
+            ],
+            "palabras": [
+                "CALCETIN",
+                "CALCETINES",
+                "MEDIA",
+                "MEDIAS",
+                "SOCKS",
+                "ROPA INTERIOR",
+                "PANTIMEDIAS",
+                "BANDA PARA LA CABEZA",
+                "MUÑEQUERAS",
+                "CALCETAS",
+                "CALCETÍN",
+                "MOCHILAS",
+                "BOLSAS",
+                "BOLSA",
+                "RIÑONERAS",
+                "BOLSA DE DEPORTE",
+                "BOLSA RIÑON",
+                "SANDALIAS",
+                "RIENDA DE EQUITACIÓN",
+                "RIENDA",
+                "CINTA PARA CABEZA",
+                "CINTURÓN CORREDOR CON FRASCO",
+                "CAMPANAS ABIERTAS EQUITACIÓN",
+                "CUERDA DE POLIAMIDA (KIT VIENTOS Y TENSORES)",
+                "CUERDAS",
+                "MOCHILA",
+                "CANGURERA",
+                "RIÑONERA",
+                "CINTURONES"
+            ],
+            "resultado": "ADHERIBLE"
+        },
+        {
+            "nombre": "Excepción NOM-020",
+            "normas": [
+                "NOM-020-SCFI-1997"
+            ],
+            "palabras": [
+                "CALCETIN",
+                "CALCETINES",
+                "MEDIA",
+                "MEDIAS",
+                "SOCKS",
+                "ROPA INTERIOR",
+                "PANTIMEDIAS",
+                "BANDA PARA LA CABEZA",
+                "MUÑEQUERAS",
+                "CALCETAS",
+                "CALCETÍN",
+                "MOCHILAS",
+                "BOLSAS",
+                "BOLSA",
+                "RIÑONERAS",
+                "BOLSA DE DEPORTE",
+                "BOLSA RIÑON",
+                "SANDALIAS",
+                "RIENDA DE EQUITACIÓN",
+                "RIENDA",
+                "CINTA PARA CABEZA",
+                "CINTURÓN CORREDOR CON FRASCO",
+                "CAMPANAS ABIERTAS EQUITACIÓN",
+                "CUERDA DE POLIAMIDA (KIT VIENTOS Y TENSORES)",
+                "CUERDAS",
+                "CINTURONES",
+                "MOCHILA",
+                "RIÑONERA",
+                "CANGURERA"
+            ],
+            "resultado": "ADHERIBLE"
+        }
+    ]
+}

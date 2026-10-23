@@ -11,7 +11,8 @@ def inicializar_datos_externos():
             'codigos_cumple.xlsx',
             'base_general.json',
             'codigos_cumple.json',
-            'config.json'
+            'config.json',
+            'reglas.json'
         ]
         for archivo in archivos:
             externo = os.path.join(datos_externos, archivo)
@@ -48,25 +49,6 @@ def limpiar_items(df, columna):
     items = items.dropna().astype(int)
     return list(set(items))
 
-def modificar_tipo_proceso(row, normas_adherible, normas_costura):
-    norma_val = str(row['NORMA'])
-    tipo = str(row['TIPO DE PROCESO'])
-    if 'NOM004TEXX' in tipo or 'TEXX' in norma_val:
-        return 'ADHERIBLE'
-    if 'NOM004' in tipo or '004' in tipo or 'NOM-004-SE-2021' in norma_val:
-        return 'COSTURA'
-    if 'NOM020INS' in norma_val:
-        return 'ADHERIBLE'
-    if any(n in norma_val for n in normas_adherible):
-        return 'ADHERIBLE'
-    if any(n in norma_val for n in normas_costura):
-        return 'COSTURA'
-    if norma_val == '0':
-        return 'SIN NORMA'
-    if norma_val == 'N/D':
-        return ''
-    return tipo
-
 def modificar_norma(norma_val):
     if str(norma_val) == '0':
         return 'SIN NORMA'
@@ -101,6 +83,7 @@ from reportlab.pdfgen import canvas as pdf_canvas
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
 import Rutas  # Debe estar en la misma carpeta que ProcesosV2.py
+import Reglas
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Alignment, Font
 
@@ -276,53 +259,10 @@ def abrir_editor_codigos(parent):
         return None
 
 # FUNCIONES AUXILIARES
-def modificar_tipo_proceso(row, normas_adherible, normas_costura):
-    norma = str(row['NORMA']).upper().strip()
-    descripcion = str(row['DESCRIPCION']).upper().strip()
-    tipo = str(row.get('TIPO DE PROCESO', '')).upper().strip()
-
-    # Excepción NOM-004: calcetines, medias, ropa interior y accesorios varios
-    excepciones_nom004 = [
-        'CALCETIN', 'CALCETINES', 'MEDIA', 'MEDIAS', 'SOCKS', 'ROPA INTERIOR',
-        'PANTIMEDIAS', 'BANDA PARA LA CABEZA', 'MUÑEQUERAS', 'CALCETAS', 'CALCETÍN',
-        'MOCHILAS', 'BOLSAS', 'BOLSA', 'RIÑONERAS', 'BOLSA DE DEPORTE', 'BOLSA RIÑON',
-        'SANDALIAS', 'RIENDA DE EQUITACIÓN', 'RIENDA', 'CINTA PARA CABEZA',
-        'CINTURÓN CORREDOR CON FRASCO', 'CAMPANAS ABIERTAS EQUITACIÓN',
-        'CUERDA DE POLIAMIDA (KIT VIENTOS Y TENSORES)', 'CUERDAS',
-    ]
-    if norma in ['NOM-004-SE-2021', 'NOM004']:
-        for palabra in excepciones_nom004:
-            if palabra in descripcion:
-                return 'ADHERIBLE'
-
-    # Excepción NOM-020: mismos artículos exceptuados que NOM-004
-    excepciones_nom020 = [
-        'CALCETIN', 'CALCETINES', 'MEDIA', 'MEDIAS', 'SOCKS', 'ROPA INTERIOR',
-        'PANTIMEDIAS', 'BANDA PARA LA CABEZA', 'MUÑEQUERAS', 'CALCETAS', 'CALCETÍN',
-        'MOCHILAS', 'BOLSAS', 'BOLSA', 'RIÑONERAS', 'BOLSA DE DEPORTE', 'BOLSA RIÑON',
-        'SANDALIAS', 'RIENDA DE EQUITACIÓN', 'RIENDA', 'CINTA PARA CABEZA',
-        'CINTURÓN CORREDOR CON FRASCO', 'CAMPANAS ABIERTAS EQUITACIÓN',
-        'CUERDA DE POLIAMIDA (KIT VIENTOS Y TENSORES)', 'CUERDAS',
-    ]
-    if norma in ['NOM-020-SCFI-1997', 'NOM020']:
-        for palabra in excepciones_nom020:
-            if palabra in descripcion:
-                return 'ADHERIBLE'
-
-    # Normas adheribles
-    if norma in normas_adherible:
-        return 'ADHERIBLE'
-
-    # Normas de costura
-    if norma in normas_costura:
-        return 'COSTURA'
-
-    # Si ya tiene tipo asignado
-    if tipo:
-        return tipo
-
-    # Default
-    return 'SIN NORMA'
+def modificar_tipo_proceso(row, reglas):
+    # Las reglas (adheribles, costura y excepciones por descripción) se editan en la ventana Reglas
+    tipo, _motivo = Reglas.clasificar(row['NORMA'], row['DESCRIPCION'], row.get('TIPO DE PROCESO', ''), reglas)
+    return tipo
 
 #  FUNCION PARA GENERAR EL TIPO DE PROCESO
 
@@ -413,16 +353,8 @@ def procesar_reporte(reporte_path):
         # Criterio: si OBSERVACIONES contiene 'CUMPLE', poner 'CUMPLE', si no, usar CRITERIO
         df_result['CRITERIO'] = df_result.apply(lambda row: 'CUMPLE' if str(row['OBSERVACIONES']).upper().strip() == 'CUMPLE' else (row['CRITERIO'] if pd.notna(row['CRITERIO']) else ''), axis=1)
 
-        # Reglas de negocio
-        normas_adherible = [
-            'NOM-050-SCFI-2004', 'NOM-121-SCFI-2004',
-            'NOM-015-SCFI-2007', 'NOM-050-SCFI-2004',
-            'NOM-024-SCFI-2013', 'NOM-141-SSA1/SCFI-2012',
-            'NOM004TEXX', 'NOM020INS', 'NOM-115-STPS-2009','NOM-189-SSA1/SCFI-2018'
-        ]
-        normas_costura = ['NOM-004-SE-2021', 'NOM-020-SCFI-1997', 'NOM004', 'NOM020']
-        normas_validas = ['003','NOM-004-SE-2021','008','NOM-015-SCFI-2007','020','NOM-020-SCFI-1997',
-                          'NOM-024-SCFI-2013','035','NOM-050-SCFI-2004','051','116','NOM-141-SSA1/SCFI-2012','142','173','185','186','NOM-189-SSA1/SCFI-2018','192','199','235','NOM-115-STPS-2009','NOM-121-SCFI-2004']
+        # Reglas de negocio (datos/reglas.json, editables desde la ventana Reglas)
+        reglas = Reglas.cargar_reglas()
 
         # DEBUG: columna de norma detectada y valor crudo en el reporte
         print(f"\n[DEBUG] Columna de norma detectada: '{norma_col}'")
@@ -440,7 +372,7 @@ def procesar_reporte(reporte_path):
         print("==========================================\n")
 
         # Aplicar reglas
-        df_result['TIPO DE PROCESO'] = df_result.apply(lambda row: modificar_tipo_proceso(row, normas_adherible, normas_costura), axis=1)
+        df_result['TIPO DE PROCESO'] = df_result.apply(lambda row: modificar_tipo_proceso(row, reglas), axis=1)
         df_result['NORMA'] = df_result['NORMA'].apply(modificar_norma)
         df_result['CRITERIO'] = df_result['CRITERIO'].apply(modificar_criterio)
 
@@ -454,7 +386,7 @@ def procesar_reporte(reporte_path):
         df_result['NORMA'] = df_result['NORMA'].astype(str).str.strip()
         df_result['CRITERIO'] = df_result['CRITERIO'].astype(str).str.strip().str.upper()
 
-        df_result.loc[~df_result['NORMA'].isin(normas_validas), 'TIPO DE PROCESO'] = 'SIN NORMA'
+        df_result.loc[~df_result['NORMA'].str.upper().isin(reglas['normas_validas']), 'TIPO DE PROCESO'] = 'SIN NORMA'
         df_result.loc[df_result['NORMA'].isin(['', '0']), 'NORMA'] = 'SIN NORMA'
         df_result.loc[(df_result['TIPO DE PROCESO'] == '') | \
                      ((df_result['TIPO DE PROCESO'] == '0') & (df_result['NORMA'] == '0')) | \
@@ -712,18 +644,18 @@ class BarraProgreso:
 #  CARD DE MENU
 def crear_card(parent, icono, titulo, descripcion, texto_boton, comando, oscuro=False):
     card = ctk.CTkFrame(parent, fg_color=COLOR_CARD, corner_radius=14,
-                        border_width=1, border_color=COLOR_BORDE, width=180, height=250)
+                        border_width=1, border_color=COLOR_BORDE, width=250, height=220)
     card.grid_propagate(False)
     card.pack_propagate(False)
 
-    ctk.CTkLabel(card, text="", image=crear_icono(icono)).pack(pady=(22, 10))
+    ctk.CTkLabel(card, text="", image=crear_icono(icono, tam=56)).pack(pady=(20, 8))
     ctk.CTkLabel(card, text=titulo, font=ctk.CTkFont("Inter", 17, "bold"),
                  text_color=COLOR_TEXTO).pack()
     ctk.CTkLabel(card, text=descripcion, font=ctk.CTkFont("Inter", 12),
-                 text_color=COLOR_TEXTO_SEC, justify="center", wraplength=150).pack(pady=(8, 0))
+                 text_color=COLOR_TEXTO_SEC, justify="center", wraplength=210).pack(pady=(6, 0))
 
     boton(card, f"{texto_boton}  →", comando, "oscuro" if oscuro else "primario",
-          height=34, corner_radius=6).pack(side="bottom", fill="x", padx=16, pady=(0, 20))
+          height=34, corner_radius=6).pack(side="bottom", fill="x", padx=20, pady=(0, 18))
 
     # Resaltar el borde al pasar el mouse (Leave también se dispara al entrar a un hijo)
     def al_salir(e):
@@ -743,8 +675,8 @@ def cerrar_aplicacion():
 ctk.set_appearance_mode("light")
 root = ctk.CTk(fg_color=COLOR_FONDO)
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.minsize(1000, 500)
-centrar(root, 1080, 520)
+root.minsize(860, 640)
+centrar(root, 880, 660)
 try:
     root.iconbitmap(ICONO_APP)
 except Exception:
@@ -803,28 +735,31 @@ if __name__ == "__main__":
     cards_frame.pack(expand=True)
 
     cards = [
-        ("configurar", "Configurar", "Define los parámetros\nde los procesos y\najustes del sistema.",
+        ("configurar", "Configurar", "Define los parámetros de los procesos y ajustes del sistema.",
          "Ir a Configurar", lambda: configurar_rutas(cards_frame), False),
-        ("reporte", "Reporte", "Genera reportes\npersonalizados de\ntu información.",
+        ("reporte", "Reporte", "Genera reportes personalizados de tu información.",
          "Ir a Reporte", seleccionar_reporte, False),
-        ("editor", "Editor", "Edita y administra\nlos datos de procesos\ny formatos.",
+        ("editor", "Editor", "Edita y administra los datos de procesos y formatos.",
          "Ir a Editor", lambda: abrir_editor_codigos(cards_frame), False),
-        ("dashboard", "Dashboard", "Visualiza indicadores,\nestadísticas y resumen\nde procesos.",
+        ("reglas", "Reglas", "Define qué normas son adheribles o costura y sus excepciones.",
+         "Ir a Reglas", lambda: Reglas.abrir_editor_reglas(cards_frame), False),
+        ("dashboard", "Dashboard", "Visualiza indicadores, estadísticas y resumen de procesos.",
          "Ir a Dashboard", mostrar_estadisticas, False),
-        ("cerrar", "Cerrar", "Finaliza la sesión\nde la aplicación de\nforma segura.",
+        ("cerrar", "Cerrar", "Finaliza la sesión de la aplicación de forma segura.",
          "Cerrar", cerrar_aplicacion, True),
     ]
 
-    for col, (icono, titulo, desc, texto_btn, comando, oscuro) in enumerate(cards):
+    # Cuadrícula de 3 columnas x 2 filas
+    for i, (icono, titulo, desc, texto_btn, comando, oscuro) in enumerate(cards):
         crear_card(cards_frame, icono, titulo, desc, texto_btn, comando, oscuro).grid(
-            row=0, column=col, padx=8, pady=8)
+            row=i // 3, column=i % 3, padx=8, pady=8)
 
     # --- Footer ---
     footer_frame = ctk.CTkFrame(frame, fg_color="transparent")
     footer_frame.pack(fill="x", side="bottom")
 
     ctk.CTkFrame(footer_frame, height=1, fg_color=COLOR_BORDE, corner_radius=0).pack(fill="x", pady=(0, 10))
-    ctk.CTkLabel(footer_frame, text="Sistema V&C v4.0 • © 2026",
+    ctk.CTkLabel(footer_frame, text="Sistema de V&C para DECATHLON v5.0 • © 2026",
                  font=ctk.CTkFont("Inter", 11), text_color=COLOR_TEXTO_SEC).pack()
 
     root.mainloop()

@@ -121,6 +121,12 @@ def crear_icono(tipo, tam=64, circulo=True, color=COLOR_TEXTO, escala=4):
         d.arc(caja(-r, -r, r, r), start=300, end=240, fill=tinta, width=w)
         linea((0, -0.25), (0, -0.02))
 
+    elif tipo == "reglas":
+        # Controles deslizantes (parámetros ajustables)
+        for y, x in ((-0.14, 0.09), (0.0, -0.08), (0.14, 0.03)):
+            linea((-0.22, y), (0.22, y))
+            circulo_en(x, y, 0.055, fill=tinta)
+
     elif tipo == "mas":
         linea((-0.2, 0), (0.2, 0))
         linea((0, -0.2), (0, 0.2))

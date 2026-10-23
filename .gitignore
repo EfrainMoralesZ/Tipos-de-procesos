@@ -9,3 +9,11 @@ dist/datos/
 # Archivos de depuración que genera procesar_reporte
 Datos/debug_reporte_mercancia_*.json
 datos/debug_reporte_mercancia_*.json
+
+Datos/.xlsx
+
+# Archivos Excel de la carpeta de datos (son locales de cada equipo)
+Datos/*.xlsx
+Datos/*.xls
+datos/*.xlsx
+datos/*.xls

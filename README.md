@@ -9,6 +9,7 @@ Tipos-de-procesos/
 ├── ProcesosV4.py          Punto de entrada: menú principal y procesamiento del reporte
 ├── Configurar.py          Ventana para seleccionar los Excel base y convertirlos a JSON
 ├── Editor_Codigos.py      Editor de códigos de cumplimiento (agregar, editar, importar Excel)
+├── Reglas.py              Reglas ADHERIBLE/COSTURA, excepciones por descripción y su editor
 ├── Dashboard.py           Indicadores, archivos procesados y exportación a PDF
 ├── Estilos.py             Colores, iconos y componentes compartidos de la interfaz
 ├── Rutas.py               Ubicación de la carpeta de datos (.py y .exe)
@@ -25,8 +26,9 @@ Tipos-de-procesos/
 
 1. **Configurar**: se eligen los Excel de *códigos de cumplimiento* y *base general*. Se copian a `Datos/` y se convierten a JSON.
 2. **Reporte**: se elige un reporte de mercancía. Se cruza con `base_general.json` y `codigos_cumple.json`, se aplican las reglas de normas y se guarda `TIPO DE PROCESO.xlsx`.
-3. **Editor**: mantiene `codigos_cumple` (Excel y JSON). Al importar un Excel muestra los cambios para revisarlos antes de aplicarlos.
-4. **Dashboard**: lee `codigos_cumple.json` y `archivos_procesados.json`, se actualiza solo cada 2 s y exporta un PDF.
+3. **Reglas**: edita `reglas.json` (normas adheribles, de costura, válidas y excepciones por palabra en la descripción, p. ej. calcetas o mochilas con NOM-004/NOM-020 → ADHERIBLE). Incluye una pestaña para probar una norma y descripción. Si se borra `reglas.json`, se vuelve a crear con los valores originales.
+4. **Editor**: mantiene `codigos_cumple` (Excel y JSON). Al importar un Excel muestra los cambios para revisarlos antes de aplicarlos.
+5. **Dashboard**: lee `codigos_cumple.json` y `archivos_procesados.json`, se actualiza solo cada 2 s y exporta un PDF.
 
 `Datos/` se crea junto al script (o junto al `.exe`) y es el punto de intercambio entre ventanas.
 

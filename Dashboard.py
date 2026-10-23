@@ -54,8 +54,6 @@ import sys
 from datetime import datetime
 from io import BytesIO
 from reportlab.lib.utils import ImageReader
-import threading
-import time
 import pandas as pd
 from tkinter import ttk
 import customtkinter as ctk
@@ -109,49 +107,48 @@ lbl_totales = None
 
 # ---------------- Sistema de Monitoreo ---------------- #
 class MonitorCambios:
+    """Revisa cada `intervalo` segundos si cambiaron los archivos y solo entonces refresca.
+
+    Corre con `after` en el hilo de la interfaz (tkinter no admite llamadas desde otros hilos).
+    """
+    ARCHIVOS = (ARCHIVO_JSON, ARCHIVO_EXCEL, ARCHIVOS_PROCESADOS_FILE)
+
     def __init__(self, intervalo=2):  # 2 segundos entre verificaciones
         self.intervalo = intervalo
-        self.ultima_modificacion_json = 0
-        self.ultima_modificacion_excel = 0
-        self.ejecutando = False
-        self.thread = None
-    
-    def iniciar_monitoreo(self):
-        """Inicia el monitoreo en segundo plano"""
-        self.ejecutando = True
-        self.thread = threading.Thread(target=self._monitorear, daemon=True)
-        self.thread.start()
-    
+        self.ultimas_modificaciones = {}
+        self.ventana = None
+        self.tarea = None
+
+    def _fechas_actuales(self):
+        return {ruta: os.path.getmtime(ruta) if os.path.exists(ruta) else None for ruta in self.ARCHIVOS}
+
+    def iniciar_monitoreo(self, ventana):
+        """Toma el estado actual como punto de partida y empieza a revisar"""
+        self.detener_monitoreo()
+        self.ventana = ventana
+        self.ultimas_modificaciones = self._fechas_actuales()
+        self.tarea = ventana.after(self.intervalo * 1000, self._revisar)
+
     def detener_monitoreo(self):
         """Detiene el monitoreo"""
-        self.ejecutando = False
-    
-    def _monitorear(self):
-        """Monitorea cambios en los archivos"""
-        while self.ejecutando:
+        if self.ventana is not None and self.tarea is not None:
             try:
-                # Verificar cambios en JSON
-                if os.path.exists(ARCHIVO_JSON):
-                    mod_time = os.path.getmtime(ARCHIVO_JSON)
-                    if mod_time > self.ultima_modificacion_json:
-                        self.ultima_modificacion_json = mod_time
-                        print("📁 Cambio detectado en JSON - Actualizando dashboard...")
-                        # Actualizar interfaz desde el hilo principal
-                        root.after(0, actualizar_interfaz_completa)
-                
-                # Verificar cambios en Excel
-                if os.path.exists(ARCHIVO_EXCEL):
-                    mod_time = os.path.getmtime(ARCHIVO_EXCEL)
-                    if mod_time > self.ultima_modificacion_excel:
-                        self.ultima_modificacion_excel = mod_time
-                        print("📁 Cambio detectado en Excel - Actualizando dashboard...")
-                        root.after(0, actualizar_interfaz_completa)
-                
-                time.sleep(self.intervalo)
-                
-            except Exception as e:
-                print(f"Error en monitoreo: {e}")
-                time.sleep(self.intervalo)
+                self.ventana.after_cancel(self.tarea)
+            except Exception:
+                pass
+        self.tarea = None
+
+    def _revisar(self):
+        try:
+            if not self.ventana.winfo_exists():
+                return
+            actuales = self._fechas_actuales()
+            if actuales != self.ultimas_modificaciones:
+                self.ultimas_modificaciones = actuales
+                actualizar_interfaz_completa()
+        except Exception as e:
+            print(f"Error en monitoreo: {e}")
+        self.tarea = self.ventana.after(self.intervalo * 1000, self._revisar)
 
 # Instancia global del monitor
 monitor = MonitorCambios()
@@ -427,8 +424,6 @@ def leer_datos():
     codigos_no_cumple = 0
     
     try:
-        print(f"Leyendo archivo JSON desde: {ARCHIVO_JSON}")
-        
         if not os.path.exists(ARCHIVO_JSON):
             print("❌ El archivo JSON no existe. Creando uno vacío...")
             # Crear archivo JSON vacío si no existe
@@ -439,7 +434,6 @@ def leer_datos():
         # Intentar leer desde JSON primero
         with open(ARCHIVO_JSON, "r", encoding="utf-8") as f:
             codigos_data = json.load(f)
-            print(f"Datos leídos desde JSON: {len(codigos_data)} registros")
             
         for d in codigos_data:
             if not isinstance(d, dict):
@@ -453,7 +447,6 @@ def leer_datos():
             else:
                 codigos_no_cumple += 1
                 
-        print(f"Estadísticas: Total={total_codigos}, Cumple={codigos_cumple}, No Cumple={codigos_no_cumple}")
         
     except json.JSONDecodeError as e:
         print(f"❌ Error: El archivo JSON está corrupto o vacío: {e}")
@@ -477,7 +470,6 @@ def leer_datos_desde_excel():
         codigos_cumple = len(df[df["OBSERVACIONES"].astype(str).str.upper() == "CUMPLE"])
         codigos_no_cumple = total_codigos - codigos_cumple
         
-        print(f"Datos leídos desde Excel: {total_codigos} registros")
         return total_codigos, codigos_cumple, codigos_no_cumple
         
     except Exception as e:
@@ -571,9 +563,6 @@ def dibujar_grafica(canvas, lbl_totales_ref, lst_archivos_ref):
     
     # Actualizar lista de archivos
     actualizar_lista_archivos(lst_archivos_ref)
-    
-    # Programar próxima actualización
-    canvas.after(2000, lambda: dibujar_grafica(canvas, lbl_totales_ref, lst_archivos_ref))
 
 def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     """Crea una tarjeta de estadística moderna"""
@@ -788,9 +777,6 @@ def main(parent=None):
                                redimensionable=True)
         root.minsize(900, 560)
 
-    # Iniciar monitoreo de cambios
-    monitor.iniciar_monitoreo()
-
     # Cargar archivos procesados al iniciar
     cargar_archivos_procesados()
 
@@ -874,8 +860,9 @@ def main(parent=None):
     E.boton(footer_frame, "Cerrar", cerrar, "oscuro", "x", width=110).pack(side="right")
     root.protocol("WM_DELETE_WINDOW", cerrar)
 
-    # Dibujar gráfica inicial
+    # Dibujar gráfica inicial y vigilar cambios a partir de ese estado
     dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
+    monitor.iniciar_monitoreo(root)
 
     if parent is None:
         root.mainloop()
