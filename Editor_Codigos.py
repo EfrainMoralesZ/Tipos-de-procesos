@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+import customtkinter as ctk
+import Estilos as E
 import pandas as pd
 import json
 import os
@@ -53,107 +55,76 @@ class EditorCodigos:
             messagebox.showerror("Error", f"No se pudieron cargar los datos: {str(e)}")
 
     def crear_ventana(self):
-        self.ventana = tk.Toplevel(self.parent)
-        self.ventana.title("📋 Editor de Códigos")
-        
-        # Tamaño de la ventana
-        ancho_ventana = 900
-        alto_ventana = 600
-        self.ventana.geometry(f"{ancho_ventana}x{alto_ventana}")
-        self.ventana.resizable(False, False)
-        self.ventana.configure(bg="#FFFFFF")
-        self.centrar_ventana(ancho_ventana, alto_ventana)
+        self.ventana = E.nueva_ventana(self.parent, "Editor de Códigos", 980, 660, modal=False,
+                                       redimensionable=True)
+        self.ventana.minsize(820, 520)
+
+        contenido = ctk.CTkFrame(self.ventana, fg_color="transparent")
+        contenido.pack(fill="both", expand=True, padx=26, pady=22)
 
         # Título
-        title_frame = tk.Frame(self.ventana, bg="#FFFFFF", pady=15)
-        title_frame.pack(fill="x")
-        tk.Label(title_frame, text="EDITOR DE CÓDIGOS", font=("Segoe UI", 20, "bold"),
-                bg="#FFFFFF", fg="#282828").pack()
+        header, self.lbl_conteo = E.encabezado(contenido, "editor", "Editor de Códigos", "")
+        header.pack(fill="x", pady=(0, 16))
 
         # Buscador
-        search_frame = tk.Frame(self.ventana, bg="#FFFFFF", pady=15)
-        search_frame.pack(fill="x", padx=20)
-        search_inner_frame = tk.Frame(search_frame, bg="#F5F5F5", relief="solid", bd=1)
-        search_inner_frame.pack(fill="x", padx=10, pady=10)
-        tk.Label(search_inner_frame, text="🔍 Buscar:", bg="#F5F5F5", fg="#282828",
-                font=("INTER", 11)).pack(side="left", padx=10)
-        
-        self.search_var = tk.StringVar()
-        self.search_entry = tk.Entry(search_inner_frame, textvariable=self.search_var,
-                                    font=("INTER", 11), bg="#FFFFFF", fg="#282828",
-                                    relief="flat", width=50)
-        self.search_entry.pack(side="left", padx=5, fill="x", expand=True)
-        
-        btn_search = tk.Button(search_inner_frame, text="Buscar", bg="#ECD925", fg="#282828",
-                            font=("INTER", 9, "bold"), command=self.filtrar_tabla,
-                            relief="flat", padx=15)
-        btn_search.pack(side="left", padx=5)
-        
-        btn_clear = tk.Button(search_inner_frame, text="Limpiar", bg="#E0E0E0", fg="#282828",
-                            font=("INTER", 9), command=self.actualizar_tabla,
-                            relief="flat", padx=15)
-        btn_clear.pack(side="left", padx=5)
+        search_frame = E.card(contenido, corner_radius=12)
+        search_frame.pack(fill="x", pady=(0, 14))
+        ctk.CTkLabel(search_frame, text="", image=E.crear_icono("lupa", tam=18, circulo=False,
+                     color=E.COLOR_TEXTO_TENUE)).pack(side="left", padx=(14, 6), pady=10)
+
+        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="Buscar por item, observación o criterio…",
+                                         font=E.fuente(12), height=36, border_width=0,
+                                         fg_color=E.COLOR_CARD, text_color=E.COLOR_TEXTO)
+        self.search_entry.pack(side="left", fill="x", expand=True, pady=8)
+
+        E.boton(search_frame, "Limpiar", self.limpiar_busqueda, "secundario", width=90,
+                height=32).pack(side="right", padx=(6, 10))
+        E.boton(search_frame, "Buscar", self.filtrar_tabla, "primario", "lupa", width=100,
+                height=32).pack(side="right")
 
         # Tabla con scrollbars
-        table_frame = tk.Frame(self.ventana, bg="#FFFFFF")
-        table_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        v_scrollbar = ttk.Scrollbar(table_frame)
-        v_scrollbar.pack(side="right", fill="y")
-        h_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
-        h_scrollbar.pack(side="bottom", fill="x")
+        table_card = E.card(contenido, corner_radius=12)
+        table_card.pack(fill="both", expand=True)
+        table_frame, self.tree = E.tabla(table_card, ("ITEM", "OBSERVACIONES", "CRITERIO"))
+        table_frame.pack(fill="both", expand=True, padx=2, pady=2)
 
-        style = ttk.Style()
-        style.configure("Treeview", 
-                        font=("INTER", 10), rowheight=25,
-                        background="#FFFFFF", fieldbackground="#FFFFFF", foreground="#282828")
-        style.configure("Treeview.Heading", 
-                        font=("INTER", 11, "bold"),
-                        background="#ECD925", foreground="#282828", relief="flat")
-        
-        self.tree = ttk.Treeview(table_frame, columns=("ITEM", "OBSERVACIONES", "CRITERIO"), 
-                                show="headings", yscrollcommand=v_scrollbar.set,
-                                xscrollcommand=h_scrollbar.set)
-        
         self.tree.heading("ITEM", text="ITEM")
         self.tree.heading("OBSERVACIONES", text="OBSERVACIONES")
         self.tree.heading("CRITERIO", text="CRITERIO")
         self.tree.column("ITEM", width=150, anchor="center", minwidth=100)
         self.tree.column("OBSERVACIONES", width=450, anchor="w", minwidth=300)
         self.tree.column("CRITERIO", width=150, anchor="w", minwidth=100)
-        self.tree.pack(fill="both", expand=True)
+        self.tree.bind("<Double-1>", lambda event: self.abrir_editar_item())
 
-        v_scrollbar.config(command=self.tree.yview)
-        h_scrollbar.config(command=self.tree.xview)
-
-        # Botones centrados en la parte inferior
-        button_frame = tk.Frame(self.ventana, bg="#FFFFFF", pady=15)
-        button_frame.pack(fill="x")
-        
-        inner_buttons = tk.Frame(button_frame, bg="#FFFFFF")
-        inner_buttons.pack()
+        # Botones en la parte inferior
+        button_frame = ctk.CTkFrame(contenido, fg_color="transparent")
+        button_frame.pack(fill="x", pady=(16, 0))
 
         buttons_config = [
-            ("➕ Agregar Item", self.abrir_agregar_item, "#ECD925"),
-            ("✏️ Editar Item", self.abrir_editar_item, "#ECD925"),
-            ("📤 Subir Excel", self.importar_excel, "#ECD925"),
-            ("🗑️ Eliminar Item", self.eliminar_item_principal, "#FF4444"),  # Rojo para indicar peligro
-            ("❌ Cerrar", self.ventana.destroy, "#282828")
+            ("Agregar item", self.abrir_agregar_item, "primario", "mas"),
+            ("Editar item", self.abrir_editar_item, "primario", "editor"),
+            ("Subir Excel", self.importar_excel, "primario", "subir"),
+            ("Eliminar item", self.eliminar_item_principal, "peligro", "basura"),  # Rojo para indicar peligro
         ]
-        
-        for text, command, color in buttons_config:
-            btn = tk.Button(inner_buttons, text=text, bg=color, fg="#FFFFFF" if color=="#282828" else "#282828",
-                            font=("INTER", 10, "bold"), command=command, relief="flat", padx=15, pady=8)
-            btn.pack(side="left", padx=5)
+
+        for text, command, variante, icono in buttons_config:
+            E.boton(button_frame, text, command, variante, icono).pack(side="left", padx=(0, 8))
+
+        E.boton(button_frame, "Cerrar", self.ventana.destroy, "oscuro", "x", width=110).pack(side="right")
 
         self.actualizar_tabla()
         self.search_entry.bind("<Return>", lambda event: self.filtrar_tabla())
+
+    def limpiar_busqueda(self):
+        self.search_entry.delete(0, "end")
+        self.actualizar_tabla()
+        self.ventana.focus_set()
 
     def eliminar_item_principal(self):
         """Elimina el item seleccionado con confirmación"""
         selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Eliminar Item", "Seleccione un item de la tabla para eliminar")
+            messagebox.showwarning("Eliminar Item", "Seleccione un item de la tabla para eliminar", parent=self.ventana)
             return
         
         # Obtener el valor del ITEM seleccionado
@@ -171,7 +142,8 @@ class EditorCodigos:
             f"ITEM: {item_id}\n"
             f"OBSERVACIONES: {observaciones}\n\n"
             f"Esta acción no se puede deshacer.",
-            icon="warning"
+            icon="warning",
+            parent=self.ventana
         )
         
         if not confirmacion:
@@ -190,30 +162,25 @@ class EditorCodigos:
                 # Actualizar la tabla
                 self.actualizar_tabla()
                 
-                messagebox.showinfo("Eliminar Item", f"Item '{item_id}' eliminado correctamente")
+                messagebox.showinfo("Eliminar Item", f"Item '{item_id}' eliminado correctamente", parent=self.ventana)
             else:
-                messagebox.showerror("Error", "No se pudo encontrar el item seleccionado")
+                messagebox.showerror("Error", "No se pudo encontrar el item seleccionado", parent=self.ventana)
                 
         except Exception as e:
-            messagebox.showerror("Error", f"Error al eliminar item: {str(e)}")
-
-    def centrar_ventana(self, ancho, alto):
-        """Centra la ventana en la pantalla con el tamaño específico"""
-        self.ventana.update_idletasks()
-        x = (self.ventana.winfo_screenwidth() // 2) - (ancho // 2)
-        y = (self.ventana.winfo_screenheight() // 2) - (alto // 2)
-        self.ventana.geometry(f'{ancho}x{alto}+{x}+{y}')
+            messagebox.showerror("Error", f"Error al eliminar item: {str(e)}", parent=self.ventana)
 
     def actualizar_tabla(self):
         """Actualiza la tabla con los datos actuales"""
         for row in self.tree.get_children():
             self.tree.delete(row)
         
+        self.lbl_conteo.configure(text=f"{len(self.df_codigos_cumple)} registros")
+
         if len(self.df_codigos_cumple) == 0:
             self.tree.insert("", "end", values=("No hay datos", "", ""))
             return
             
-        for _, row in self.df_codigos_cumple.iterrows():
+        for i, (_, row) in enumerate(self.df_codigos_cumple.iterrows()):
             # Formatear los valores para mostrar vacío en lugar de nan
             item = row["ITEM"]
             observaciones = row["OBSERVACIONES"]
@@ -223,11 +190,11 @@ class EditorCodigos:
             if pd.isna(criterio) or str(criterio).lower() == 'nan':
                 criterio = ""
             
-            self.tree.insert("", "end", values=(item, observaciones, criterio))
+            self.tree.insert("", "end", values=(item, observaciones, criterio), tags=E.tag_fila(i))
 
     def filtrar_tabla(self):
         """Filtra la tabla por el valor de búsqueda"""
-        busqueda = self.search_var.get().lower()
+        busqueda = self.search_entry.get().strip().lower()
         
         for row in self.tree.get_children():
             self.tree.delete(row)
@@ -245,11 +212,13 @@ class EditorCodigos:
         
         resultados = self.df_codigos_cumple[mask]
         
+        self.lbl_conteo.configure(text=f"{len(resultados)} de {len(self.df_codigos_cumple)} registros")
+
         if len(resultados) == 0:
             self.tree.insert("", "end", values=("No se encontraron resultados", "", ""))
             return
             
-        for _, row in resultados.iterrows():
+        for i, (_, row) in enumerate(resultados.iterrows()):
             # Formatear los valores para mostrar vacío en lugar de nan
             item = row["ITEM"]
             observaciones = row["OBSERVACIONES"]
@@ -259,7 +228,7 @@ class EditorCodigos:
             if pd.isna(criterio) or str(criterio).lower() == 'nan':
                 criterio = ""
             
-            self.tree.insert("", "end", values=(item, observaciones, criterio))
+            self.tree.insert("", "end", values=(item, observaciones, criterio), tags=E.tag_fila(i))
 
     def abrir_agregar_item(self):
         AgregarItem(self)
@@ -267,7 +236,7 @@ class EditorCodigos:
     def abrir_editar_item(self):
         selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Editar Item", "Seleccione an item de la tabla")
+            messagebox.showwarning("Editar Item", "Seleccione un item de la tabla", parent=self.ventana)
             return
         
         # Obtener el valor del ITEM seleccionado
@@ -284,9 +253,9 @@ class EditorCodigos:
                 index = self.df_codigos_cumple[mask].index[0]
                 EditorItem(self, index)
             else:
-                messagebox.showerror("Error", "No se pudo encontrar el item seleccionado")
+                messagebox.showerror("Error", "No se pudo encontrar el item seleccionado", parent=self.ventana)
         except Exception as e:
-            messagebox.showerror("Error", f"Error al editar item: {str(e)}")
+            messagebox.showerror("Error", f"Error al editar item: {str(e)}", parent=self.ventana)
 
     def guardar_datos(self):
         """Guarda los datos a Excel y JSON (en la ruta que el dashboard lee)"""
@@ -312,9 +281,9 @@ class EditorCodigos:
                     os.makedirs(json_dir)
                 self.df_codigos_cumple.to_json(self.ARCHIVO_JSON, orient="records", force_ascii=False, indent=4)
 
-            messagebox.showinfo("Guardar", "Datos guardados correctamente. El dashboard se actualizará automáticamente.")
+            messagebox.showinfo("Guardar", "Datos guardados correctamente. El dashboard se actualizará automáticamente.", parent=self.ventana)
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudieron guardar los datos: {str(e)}")
+            messagebox.showerror("Error", f"No se pudieron guardar los datos: {str(e)}", parent=self.ventana)
 
 
 
@@ -322,7 +291,8 @@ class EditorCodigos:
     def importar_excel(self):
         file_path = filedialog.askopenfilename(
             title="Seleccionar archivo Excel para importar",
-            filetypes=[("Excel files", "*.xlsx *.xls")]
+            filetypes=[("Excel files", "*.xlsx *.xls")],
+            parent=self.ventana
         )
         if not file_path:
             return
@@ -334,7 +304,7 @@ class EditorCodigos:
             # Columnas requeridas
             columnas_requeridas = {"ITEM", "CRITERIO"}
             if not columnas_requeridas.issubset(df_nuevo.columns):
-                messagebox.showerror("Error", f"El archivo Excel debe contener las columnas: {', '.join(columnas_requeridas)}")
+                messagebox.showerror("Error", f"El archivo Excel debe contener las columnas: {', '.join(columnas_requeridas)}", parent=self.ventana)
                 return
 
             # Limpiar y convertir ITEM a número
@@ -349,22 +319,38 @@ class EditorCodigos:
             # Guardar el CRITERIO original para mostrar en la columna "Obs. Nueva"
             df_nuevo["CRITERIO_ORIGINAL"] = df_nuevo["CRITERIO"].astype(str).str.strip()
 
-            # Asignar CRITERIO automáticamente para la lógica interna
-            df_nuevo["CRITERIO"] = df_nuevo["CRITERIO_ORIGINAL"].str.upper()
-            df_nuevo["CRITERIO"] = df_nuevo["CRITERIO"].apply(lambda x: "" if x == "CUMPLE" else "REVISADO")
+            if "TIPO DE PROCESO" in df_nuevo.columns:
+                # Archivo tipo reporte "TIPO DE PROCESO": la columna TIPO DE PROCESO indica
+                # si el item cumple; CRITERIO trae la observación cuando no cumple.
+                tipo_proceso = df_nuevo["TIPO DE PROCESO"].astype(str).str.strip().str.upper()
+                es_cumple = tipo_proceso == "CUMPLE"
 
-            df_nuevo = df_nuevo[["ITEM", "CRITERIO_ORIGINAL", "CRITERIO"]].copy()
+                df_nuevo["OBS_NEW"] = df_nuevo["CRITERIO_ORIGINAL"]
+                df_nuevo.loc[es_cumple, "OBS_NEW"] = "CUMPLE"
 
-            # Crear columnas de salida para el treeview
-            df_nuevo["OBS_NEW"] = df_nuevo["CRITERIO_ORIGINAL"]  # Obs. Nueva = el valor original del archivo
-            df_nuevo["CRIT_NEW"] = df_nuevo["CRITERIO"]           # Crit. Nueva = lógica interna (REVISADO o vacío)
+                df_nuevo["CRIT_NEW"] = df_nuevo["OBS_NEW"].str.upper().apply(lambda x: "" if x == "CUMPLE" else "REVISADO")
+                df_nuevo.loc[df_nuevo["OBS_NEW"].str.strip() == "", "CRIT_NEW"] = ""
 
-            # 🔹 Filtrar filas que tienen Obs. Nueva vacía
-            # 🔹 Filtrar filas que tienen Obs. Nueva vacía
-            df_nuevo = df_nuevo[df_nuevo["OBS_NEW"].str.strip() != ""]
+                df_nuevo = df_nuevo[["ITEM", "OBS_NEW", "CRIT_NEW"]].copy()
 
-            # 🔹 Eliminar filas donde OBS_NEW contenga "REVISADO" (de la columna CRITERIO original del archivo)
-            df_nuevo = df_nuevo[~df_nuevo["OBS_NEW"].str.upper().str.contains("REVISADO", na=False)]
+                # 🔹 Filtrar filas que no traen ni observación ni estado de cumplimiento
+                df_nuevo = df_nuevo[df_nuevo["OBS_NEW"].str.strip() != ""]
+            else:
+                # Asignar CRITERIO automáticamente para la lógica interna
+                df_nuevo["CRITERIO"] = df_nuevo["CRITERIO_ORIGINAL"].str.upper()
+                df_nuevo["CRITERIO"] = df_nuevo["CRITERIO"].apply(lambda x: "" if x == "CUMPLE" else "REVISADO")
+
+                df_nuevo = df_nuevo[["ITEM", "CRITERIO_ORIGINAL", "CRITERIO"]].copy()
+
+                # Crear columnas de salida para el treeview
+                df_nuevo["OBS_NEW"] = df_nuevo["CRITERIO_ORIGINAL"]  # Obs. Nueva = el valor original del archivo
+                df_nuevo["CRIT_NEW"] = df_nuevo["CRITERIO"]           # Crit. Nueva = lógica interna (REVISADO o vacío)
+
+                # 🔹 Filtrar filas que tienen Obs. Nueva vacía
+                df_nuevo = df_nuevo[df_nuevo["OBS_NEW"].str.strip() != ""]
+
+                # 🔹 Eliminar filas donde OBS_NEW contenga "REVISADO" (de la columna CRITERIO original del archivo)
+                df_nuevo = df_nuevo[~df_nuevo["OBS_NEW"].str.upper().str.contains("REVISADO", na=False)]
 
 
             # Si no hay datos existentes, importar todo
@@ -372,7 +358,7 @@ class EditorCodigos:
                 self.df_codigos_cumple = df_nuevo.copy()
                 self.actualizar_tabla()
                 self.guardar_datos()
-                messagebox.showinfo("Importar Excel", "Todos los datos han sido importados correctamente.")
+                messagebox.showinfo("Importar Excel", "Todos los datos han sido importados correctamente.", parent=self.ventana)
                 return
 
             # Preparar datos existentes
@@ -417,42 +403,31 @@ class EditorCodigos:
 
 
             # Crear ventana de revisión más compacta
-            win = tk.Toplevel(self.parent if hasattr(self, "parent") else None)
-            win.title("Revisión de cambios - Importar Excel")
-            win.geometry("1200x550")
-            win.configure(bg="#f5f5f5")
+            win = E.nueva_ventana(self.ventana, "Revisión de cambios - Importar Excel", 1200, 600,
+                                  redimensionable=True)
             win.minsize(900, 450)
-            
+
             # Frame principal
-            main_frame = ttk.Frame(win, padding="10")
-            main_frame.pack(fill="both", expand=True)
-            
+            main_frame = ctk.CTkFrame(win, fg_color="transparent")
+            main_frame.pack(fill="both", expand=True, padx=24, pady=20)
+
             # Título y estadísticas
-            title_frame = ttk.Frame(main_frame)
-            title_frame.pack(fill="x", pady=(0, 10))
-            
-            ttk.Label(title_frame, text="Revisión de Cambios", 
-                    font=("Arial", 12, "bold")).pack(anchor="w")
-            
-            stats_frame = ttk.Frame(title_frame)
-            stats_frame.pack(fill="x", pady=(5, 0))
-            
-            ttk.Label(stats_frame, text=f"• Nuevos items: {len(nuevos_items)}", 
-                    foreground="green", font=("Arial", 9)).pack(side="left", padx=(0, 15))
-            ttk.Label(stats_frame, text=f"• Actualizaciones: {actualizaciones}", 
-                    foreground="blue", font=("Arial", 9)).pack(side="left")
-            
+            title_frame, _ = E.encabezado(main_frame, "subir", "Revisión de cambios",
+                                          "Doble clic en una celda para editarla antes de aplicar")
+            title_frame.pack(fill="x", pady=(0, 12))
+
+            stats_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            stats_frame.pack(fill="x", pady=(0, 12))
+
+            for texto, color, fondo in ((f"Nuevos items: {len(nuevos_items)}", E.COLOR_VERDE, E.COLOR_VERDE_FONDO),
+                                        (f"Actualizaciones: {actualizaciones}", E.COLOR_AZUL, E.COLOR_AZUL_FONDO)):
+                ctk.CTkLabel(stats_frame, text=texto, font=E.fuente(12, "bold"), text_color=color,
+                             fg_color=fondo, corner_radius=8, height=30).pack(side="left", padx=(0, 8), ipadx=10)
+
             # Frame para la tabla con scrollbars
-            table_frame = ttk.Frame(main_frame)
-            table_frame.pack(fill="both", expand=True)
-            
-            # Configurar scrollbars
-            v_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
-            v_scrollbar.pack(side="right", fill="y")
-            
-            h_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
-            h_scrollbar.pack(side="bottom", fill="x")
-            
+            table_card = E.card(main_frame, corner_radius=12)
+            table_card.pack(fill="both", expand=True)
+
             # Crear treeview con nombres de columnas más cortos
             cols = ("ITEM", "TIPO", "OBS_ACT", "CRIT_ACT", "OBS_NEW", "CRIT_NEW", "ACTUALIZAR")
             col_names = {
@@ -466,9 +441,9 @@ class EditorCodigos:
             }
             
             # Definir tree como variable local dentro de esta función
-            tree = ttk.Treeview(table_frame, columns=cols, show="headings", 
-                            yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set,
-                            height=12, selectmode="extended")
+            table_frame, tree = E.tabla(table_card, cols, height=12, selectmode="extended")
+            table_frame.pack(fill="both", expand=True, padx=2, pady=2)
+            tree.tag_configure("nuevo", background=E.COLOR_VERDE_FONDO)
             
             # Configurar columnas con autoajuste y nombres cortos
             column_configs = {
@@ -499,17 +474,11 @@ class EditorCodigos:
                     cambio["crit_nuevo"],
                     "Sí"  # Por defecto seleccionado
                 ))
-                
+
                 # Aplicar color según el tipo
                 if cambio["tipo"] == "nuevo":
-                    tree.set(item_id, "TIPO", tipo_texto)
-            
-            tree.pack(fill="both", expand=True)
-            
-            # Configurar scrollbars
-            v_scrollbar.config(command=tree.yview)
-            h_scrollbar.config(command=tree.xview)
-            
+                    tree.item(item_id, tags=("nuevo",))
+
             # Autoajustar columnas al contenido después de insertar datos
             def autoajustar_columnas():
                 for col in cols:
@@ -582,13 +551,13 @@ class EditorCodigos:
                     tree.set(item, "ACTUALIZAR", new_val)
             
             # Frame de botones de selección
-            selection_frame = ttk.Frame(main_frame)
-            selection_frame.pack(fill="x", pady=(10, 5))
-            
-            ttk.Button(selection_frame, text="Seleccionar Todos", 
-                    command=lambda: toggle_selection(True)).pack(side="left", padx=(0, 5))
-            ttk.Button(selection_frame, text="Deseleccionar Todos", 
-                    command=lambda: toggle_selection(False)).pack(side="left", padx=(0, 10))
+            selection_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            selection_frame.pack(fill="x", pady=(14, 0))
+
+            E.boton(selection_frame, "Seleccionar todos", lambda: toggle_selection(True),
+                    "secundario", "check").pack(side="left", padx=(0, 8))
+            E.boton(selection_frame, "Deseleccionar todos", lambda: toggle_selection(False),
+                    "secundario", "x").pack(side="left")
             
             # Función para aplicar cambios
             def aplicar_cambios():
@@ -628,109 +597,88 @@ class EditorCodigos:
                 
                 # Mostrar resumen
                 resumen = f"Cambios aplicados y guardados exitosamente:\n\n• Nuevos items: {aplicados_nuevos}\n• Actualizaciones: {aplicados_actualizaciones}"
-                messagebox.showinfo("Importar Excel", resumen)
-                
+                messagebox.showinfo("Importar Excel", resumen, parent=self.ventana)
+
                 win.destroy()
-            
-            # Frame de botones de acción en la parte inferior
-            action_frame = ttk.Frame(main_frame)
-            action_frame.pack(fill="x", pady=(5, 0))
-            
-            # Botones alineados a la izquierda y derecha
-            ttk.Button(action_frame, text="Cancelar", 
-                    command=win.destroy).pack(side="right", padx=(5, 0))
-            ttk.Button(action_frame, text="Aplicar Cambios", 
-                    command=aplicar_cambios).pack(side="right", padx=(5, 0))
-            
-            # Centrar ventana
-            win.transient(self.parent if hasattr(self, "parent") else None)
-            win.grab_set()
-            win.update_idletasks()
-            width = win.winfo_width()
-            height = win.winfo_height()
-            x = (win.winfo_screenwidth() // 2) - (width // 2)
-            y = (win.winfo_screenheight() // 2) - (height // 2)
-            win.geometry(f"+{x}+{y}")
+
+            # Botones de acción (misma fila que los de selección, a la derecha)
+            E.boton(selection_frame, "Cancelar", win.destroy, "oscuro", "x",
+                    width=110).pack(side="right")
+            E.boton(selection_frame, "Aplicar cambios", aplicar_cambios, "primario",
+                    "check").pack(side="right", padx=(0, 8))
 
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo importar el Excel: {str(e)}")
+            messagebox.showerror("Error", f"No se pudo importar el Excel: {str(e)}", parent=self.ventana)
 
 
+
+
+def formulario_item(ventana, titulo, subtitulo, icono, campos, comando_guardar):
+    """Arma el diálogo de item: encabezado, campos (etiqueta, atributo, valor) y botones.
+
+    Devuelve un dict {atributo: CTkEntry}.
+    """
+    main_frame = ctk.CTkFrame(ventana, fg_color="transparent")
+    main_frame.pack(fill="both", expand=True, padx=26, pady=22)
+
+    header, _ = E.encabezado(main_frame, icono, titulo, subtitulo, tam_icono=44)
+    header.pack(fill="x", pady=(0, 16))
+
+    form = E.card(main_frame, corner_radius=12)
+    form.pack(fill="x")
+
+    entradas = {}
+    for label_text, attr_name, valor in campos:
+        ctk.CTkLabel(form, text=label_text, font=E.fuente(12, "bold"), text_color=E.COLOR_TEXTO,
+                     anchor="w").pack(fill="x", padx=18, pady=(14, 4))
+        entry = ctk.CTkEntry(form, font=E.fuente(12), height=36, corner_radius=8,
+                             border_color=E.COLOR_BORDE, fg_color=E.COLOR_SUPERFICIE,
+                             text_color=E.COLOR_TEXTO)
+        if valor:
+            entry.insert(0, str(valor))
+        entry.pack(fill="x", padx=18)
+        entradas[attr_name] = entry
+    entry.pack_configure(pady=(0, 18))  # margen inferior de la card
+
+    btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+    btn_frame.pack(fill="x", pady=(16, 0))
+    E.boton(btn_frame, "Cancelar", ventana.destroy, "secundario", "x", width=120).pack(side="right")
+    E.boton(btn_frame, "Guardar", comando_guardar, "primario", "guardar", width=120).pack(side="right", padx=(0, 8))
+
+    primera = next(iter(entradas.values()))
+    ventana.after(200, primera.focus_set)
+    ventana.bind("<Return>", lambda event: comando_guardar())
+    ventana.bind("<Escape>", lambda event: ventana.destroy())
+    return entradas
 
 
 class AgregarItem:
     def __init__(self, editor: EditorCodigos):
         self.editor = editor
-        self.ventana = tk.Toplevel(editor.ventana)
-        self.ventana.title("Agregar Nuevo Item")
-        
-        # TAMAÑO ESPECÍFICO PARA VENTANA DE AGREGAR
-        self.ventana.geometry("500x400")
-        self.ventana.resizable(False, False)
-        self.ventana.configure(bg="#FFFFFF")
-        
-        # Centrar ventana
-        self.ventana.transient(editor.ventana)
-        self.ventana.grab_set()
-        self.centrar_ventana()
-
-        # Frame principal
-        main_frame = tk.Frame(self.ventana, bg="#FFFFFF", padx=20, pady=20)
-        main_frame.pack(fill="both", expand=True)
-        
-        tk.Label(main_frame, text="AGREGAR NUEVO ITEM", font=("Segoe UI", 14, "bold"),
-                 bg="#FFFFFF", fg="#282828").pack(pady=10)
+        self.ventana = E.nueva_ventana(editor.ventana, "Agregar Nuevo Item", 500, 440)
 
         # Campos de entrada
         campos = [
-            ("ITEM:", "item_entry"),
-            ("OBSERVACIONES:", "obs_entry"),
-            ("CRITERIO:", "crit_entry")
+            ("ITEM", "item_entry", ""),
+            ("OBSERVACIONES", "obs_entry", ""),
+            ("CRITERIO", "crit_entry", "")
         ]
-        
-        for label_text, attr_name in campos:
-            frame = tk.Frame(main_frame, bg="#FFFFFF")
-            frame.pack(fill="x", pady=8)
-            
-            tk.Label(frame, text=label_text, bg="#FFFFFF", fg="#282828",
-                     font=("Segoe UI", 10)).pack(anchor="w")
-            
-            entry = tk.Entry(frame, font=("Segoe UI", 10), bg="#FFFFFF", 
-                            fg="#282828", relief="solid", bd=1)
-            entry.pack(fill="x", pady=5)
+        entradas = formulario_item(self.ventana, "Agregar nuevo item",
+                                   "Registra un código con su observación y criterio",
+                                   "mas", campos, self.agregar_item)
+        for attr_name, entry in entradas.items():
             setattr(self, attr_name, entry)
 
         # 🔹 Vinculamos el evento para desactivar criterio si es "CUMPLE"
         self.obs_entry.bind("<KeyRelease>", self.verificar_observacion)
 
-        # Botón guardar
-        btn_frame = tk.Frame(main_frame, bg="#FFFFFF")
-        btn_frame.pack(pady=20)
-        
-        tk.Button(btn_frame, text="💾 Guardar", bg="#ECD925", fg="#282828",
-                  font=("Segoe UI", 10, "bold"), command=self.agregar_item,
-                  relief="flat", padx=20, pady=8).pack(side="left", padx=10)
-                  
-        tk.Button(btn_frame, text="❌ Cancelar", bg="#E0E0E0", fg="#282828",
-                  font=("Segoe UI", 10), command=self.ventana.destroy,
-                  relief="flat", padx=20, pady=8).pack(side="left", padx=10)
-        
-    def centrar_ventana(self):
-        """Centra la ventana en la pantalla"""
-        self.ventana.update_idletasks()
-        ancho = self.ventana.winfo_width()
-        alto = self.ventana.winfo_height()
-        x = (self.ventana.winfo_screenwidth() // 2) - (ancho // 2)
-        y = (self.ventana.winfo_screenheight() // 2) - (alto // 2)
-        self.ventana.geometry(f'+{x}+{y}')
-
     def verificar_observacion(self, event=None):
         """Desactiva la entrada de criterio si la observación es 'CUMPLE'"""
         if self.obs_entry.get().strip().upper() == "CUMPLE":
             self.crit_entry.delete(0, tk.END)
-            self.crit_entry.config(state="disabled")
+            self.crit_entry.configure(state="disabled", fg_color=E.COLOR_GRIS)
         else:
-            self.crit_entry.config(state="normal")
+            self.crit_entry.configure(state="normal", fg_color=E.COLOR_SUPERFICIE)
 
     def agregar_item(self):
         item = self.item_entry.get().strip()
@@ -743,12 +691,12 @@ class AgregarItem:
             criterio = self.crit_entry.get().strip()
         
         if not item:
-            messagebox.showwarning("Advertencia", "El campo ITEM no puede estar vacío")
+            messagebox.showwarning("Advertencia", "El campo ITEM no puede estar vacío", parent=self.ventana)
             return
             
         # Verificar si el ITEM ya existe
         if item in self.editor.df_codigos_cumple["ITEM"].astype(str).values:
-            messagebox.showwarning("Advertencia", f"El ITEM {item} ya existe")
+            messagebox.showwarning("Advertencia", f"El ITEM {item} ya existe", parent=self.ventana)
             return
             
         # Seguridad extra: si la observación es "CUMPLE", limpiar criterio
@@ -767,67 +715,26 @@ class AgregarItem:
         # Refrescar tabla y cerrar
         self.editor.actualizar_tabla()
         self.ventana.destroy()
-        messagebox.showinfo("Éxito", "Item agregado y guardado correctamente")
+        messagebox.showinfo("Éxito", "Item agregado y guardado correctamente", parent=self.editor.ventana)
 
 class EditorItem:
     def __init__(self, editor: EditorCodigos, index):
         self.editor = editor
         self.index = index
-        self.ventana = tk.Toplevel(editor.ventana)
-        self.ventana.title(f"Editar Item")
-        
-        # TAMAÑO ESPECÍFICO PARA VENTANA DE EDITAR
-        self.ventana.geometry("500x400")
-        self.ventana.resizable(False, False)
-        
-        self.ventana.configure(bg="#FFFFFF")
-        
-        # Centrar ventana
-        self.ventana.transient(editor.ventana)
-        self.ventana.grab_set()
-        
-        self.centrar_ventana()
+        self.ventana = E.nueva_ventana(editor.ventana, "Editar Item", 500, 380)
 
-        row = editor.df_codigos_cumple.iloc[index]
-
-        # Frame principal
-        main_frame = tk.Frame(self.ventana, bg="#FFFFFF", padx=20, pady=20)
-        main_frame.pack(fill="both", expand=True)
-        
-        tk.Label(main_frame, text=f"EDITAR ITEM: {row['ITEM']}", font=("Segoe UI", 14, "bold"),
-                 bg="#FFFFFF", fg="#282828").pack(pady=10)
+        row = editor.df_codigos_cumple.loc[index]
 
         # Campos de entrada
         campos = [
-            ("OBSERVACIONES:", "obs_entry", row["OBSERVACIONES"]),
-            ("CRITERIO:", "crit_entry", self.format_value(row["CRITERIO"]))
+            ("OBSERVACIONES", "obs_entry", self.format_value(row["OBSERVACIONES"])),
+            ("CRITERIO", "crit_entry", self.format_value(row["CRITERIO"]))
         ]
-        
-        for label_text, attr_name, value in campos:
-            frame = tk.Frame(main_frame, bg="#FFFFFF")
-            frame.pack(fill="x", pady=8)
-            
-            tk.Label(frame, text=label_text, bg="#FFFFFF", fg="#282828",
-                     font=("Segoe UI", 10)).pack(anchor="w")
-            
-            entry = tk.Entry(frame, font=("Segoe UI", 10), bg="#FFFFFF", 
-                            fg="#282828", relief="solid", bd=1)
-            entry.insert(0, value)
-            entry.pack(fill="x", pady=5)
-            
+        entradas = formulario_item(self.ventana, f"Editar item {row['ITEM']}",
+                                   "Modifica la observación y el criterio del código",
+                                   "editor", campos, self.guardar_cambios)
+        for attr_name, entry in entradas.items():
             setattr(self, attr_name, entry)
-
-        # Botones
-        btn_frame = tk.Frame(main_frame, bg="#FFFFFF")
-        btn_frame.pack(pady=20)
-        
-        tk.Button(btn_frame, text="💾 Guardar", bg="#ECD925", fg="#282828",
-                  font=("Segoe UI", 10, "bold"), command=self.guardar_cambios,
-                  relief="flat", padx=20, pady=8).pack(side="left", padx=10)
-                  
-        tk.Button(btn_frame, text="❌ Cancelar", bg="#E0E0E0", fg="#282828",
-                  font=("Segoe UI", 10), command=self.ventana.destroy,
-                  relief="flat", padx=20, pady=8).pack(side="left", padx=10)
 
     def format_value(self, value):
         """Formatea el valor para mostrar vacío en lugar de nan"""
@@ -835,14 +742,6 @@ class EditorItem:
             return ""
         return value
 
-    def centrar_ventana(self):
-        """Centra la ventana en la pantalla"""
-        self.ventana.update_idletasks()
-        ancho = self.ventana.winfo_width()
-        alto = self.ventana.winfo_height()
-        x = (self.ventana.winfo_screenwidth() // 2) - (ancho // 2)
-        y = (self.ventana.winfo_screenheight() // 2) - (alto // 2)
-        self.ventana.geometry(f'+{x}+{y}')
 
     def guardar_cambios(self):
         observaciones = self.obs_entry.get().strip()
@@ -859,13 +758,15 @@ class EditorItem:
         self.editor.guardar_datos()
         
         self.ventana.destroy()
-        messagebox.showinfo("Éxito", "Cambios guardados correctamente")
+        messagebox.showinfo("Éxito", "Cambios guardados correctamente", parent=self.editor.ventana)
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    ctk.set_appearance_mode("light")
+    root = ctk.CTk()
     root.withdraw()
     archivo_excel = recurso_path("datos/codigos_cumple.xlsx")
     archivo_json = recurso_path("datos/codigos_cumple.json")
   # Ahora ambos apuntan al mismo archivo
     app = EditorCodigos(root, archivo_excel, archivo_json)
+    app.ventana.bind("<Destroy>", lambda e: root.destroy() if e.widget is app.ventana else None)
     root.mainloop()

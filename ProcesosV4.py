@@ -86,8 +86,11 @@ import os
 import pandas as pd
 from pathlib import Path
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
-from PIL import Image, ImageTk
+from tkinter import filedialog, messagebox
+import customtkinter as ctk
+from PIL import Image
+from Estilos import (COLOR_FONDO, COLOR_CARD, COLOR_BORDE, COLOR_AMARILLO, COLOR_TEXTO,
+                     COLOR_TEXTO_SEC, ICONO_APP, crear_icono, boton, centrar)
 import sys
 import json
 from Editor_Codigos import EditorCodigos
@@ -631,11 +634,11 @@ def mostrar_estadisticas():
     """Llama al archivo Dashboard.py para mostrar el dashboard externo"""
     try:
         import Dashboard
-        Dashboard.main()
+        Dashboard.main(root)
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo abrir el dashboard:\n{e}")
 
-#  FUNCION PARA LA BARRA DE PROGRESO 
+#  FUNCION PARA LA BARRA DE PROGRESO
 class BarraProgreso:
     def __init__(self, frame, texto="Procesando...", ancho=250, posicion="derecha"):
         """
@@ -646,12 +649,12 @@ class BarraProgreso:
         """
         self.frame = frame
         self.ancho = ancho
-        self.var = tk.DoubleVar()
-        
-        self.lbl = tk.Label(frame, text=texto, font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828")
-        self.percent_lbl = tk.Label(frame, text="0%", font=("INTER", 10, "bold"), bg="#FFFFFF", fg="#282828")
-        self.bar = ttk.Progressbar(frame, variable=self.var, maximum=100, length=self.ancho)
-        
+
+        self.lbl = ctk.CTkLabel(frame, text=texto, font=ctk.CTkFont("Inter", 12, "bold"), text_color=COLOR_TEXTO)
+        self.percent_lbl = ctk.CTkLabel(frame, text="0%", font=ctk.CTkFont("Inter", 12, "bold"), text_color=COLOR_TEXTO)
+        self.bar = ctk.CTkProgressBar(frame, width=self.ancho, progress_color=COLOR_AMARILLO, fg_color=COLOR_BORDE)
+        self.bar.set(0)
+
         # Guardar posición
         self.posicion = posicion
         self._colocar_widgets()
@@ -667,30 +670,31 @@ class BarraProgreso:
             x_offset = 20
 
         # Barra y etiquetas
-        self.bar.place(relx=1.0 if self.posicion=="derecha" else 0.0, rely=1.0, x=x_offset, y=-40, anchor=anchor)
-        self.lbl.place(relx=1.0 if self.posicion=="derecha" else 0.0, rely=1.0, x=x_offset, y=-60, anchor=anchor)
-        self.percent_lbl.place(relx=1.0 if self.posicion=="derecha" else 0.0, rely=1.0, x=x_offset, y=-20, anchor=anchor)
+        relx = 1.0 if self.posicion == "derecha" else 0.0
+        self.bar.place(relx=relx, rely=1.0, x=x_offset, y=-40, anchor=anchor)
+        self.lbl.place(relx=relx, rely=1.0, x=x_offset, y=-55, anchor=anchor)
+        self.percent_lbl.place(relx=relx, rely=1.0, x=x_offset, y=-12, anchor=anchor)
 
     def actualizar(self, valor, texto=None):
         try:
-            self.var.set(valor)
-            if texto and hasattr(self, 'lbl') and self.lbl.winfo_exists():
-                self.lbl.config(text=texto)
-            if hasattr(self, 'percent_lbl') and self.percent_lbl.winfo_exists():
-                self.percent_lbl.config(text=f"{int(valor)}%")
-            if hasattr(self, 'frame') and self.frame.winfo_exists():
+            self.bar.set(valor / 100)
+            if texto and self.lbl.winfo_exists():
+                self.lbl.configure(text=texto)
+            if self.percent_lbl.winfo_exists():
+                self.percent_lbl.configure(text=f"{int(valor)}%")
+            if self.frame.winfo_exists():
                 self.frame.update()
         except Exception as e:
             print(f"Error actualizando barra de progreso: {e}")
 
     def finalizar(self, mensaje="¡Completado!"):
         try:
-            self.var.set(100)
-            if hasattr(self, 'lbl') and self.lbl.winfo_exists():
-                self.lbl.config(text=mensaje)
-            if hasattr(self, 'percent_lbl') and self.percent_lbl.winfo_exists():
-                self.percent_lbl.config(text="100%")
-            if hasattr(self, 'frame') and self.frame.winfo_exists():
+            self.bar.set(1)
+            if self.lbl.winfo_exists():
+                self.lbl.configure(text=mensaje)
+            if self.percent_lbl.winfo_exists():
+                self.percent_lbl.configure(text="100%")
+            if self.frame.winfo_exists():
                 self.frame.update()
                 # Ocultar widgets después de un tiempo
                 self.frame.after(800, self._ocultar)
@@ -699,174 +703,128 @@ class BarraProgreso:
 
     def _ocultar(self):
         try:
-            if hasattr(self, 'bar') and self.bar.winfo_exists():
-                self.bar.place_forget()
-            if hasattr(self, 'lbl') and self.lbl.winfo_exists():
-                self.lbl.place_forget()
-            if hasattr(self, 'percent_lbl') and self.percent_lbl.winfo_exists():
-                self.percent_lbl.place_forget()
+            for widget in (self.bar, self.lbl, self.percent_lbl):
+                if widget.winfo_exists():
+                    widget.place_forget()
         except Exception as e:
             print(f"Error ocultando widgets: {e}")
 
-#  VENTANA PRINCIPAL 
-root = tk.Tk()
+#  CARD DE MENU
+def crear_card(parent, icono, titulo, descripcion, texto_boton, comando, oscuro=False):
+    card = ctk.CTkFrame(parent, fg_color=COLOR_CARD, corner_radius=14,
+                        border_width=1, border_color=COLOR_BORDE, width=180, height=250)
+    card.grid_propagate(False)
+    card.pack_propagate(False)
+
+    ctk.CTkLabel(card, text="", image=crear_icono(icono)).pack(pady=(22, 10))
+    ctk.CTkLabel(card, text=titulo, font=ctk.CTkFont("Inter", 17, "bold"),
+                 text_color=COLOR_TEXTO).pack()
+    ctk.CTkLabel(card, text=descripcion, font=ctk.CTkFont("Inter", 12),
+                 text_color=COLOR_TEXTO_SEC, justify="center", wraplength=150).pack(pady=(8, 0))
+
+    boton(card, f"{texto_boton}  →", comando, "oscuro" if oscuro else "primario",
+          height=34, corner_radius=6).pack(side="bottom", fill="x", padx=16, pady=(0, 20))
+
+    # Resaltar el borde al pasar el mouse (Leave también se dispara al entrar a un hijo)
+    def al_salir(e):
+        debajo = card.winfo_containing(e.x_root, e.y_root)
+        dentro = debajo is not None and str(debajo).startswith(str(card))
+        card.configure(border_color=COLOR_AMARILLO if dentro else COLOR_BORDE)
+
+    card.bind("<Enter>", lambda e: card.configure(border_color=COLOR_AMARILLO))
+    card.bind("<Leave>", al_salir)
+    return card
+
+def cerrar_aplicacion():
+    if messagebox.askokcancel("Salir", "¿Está seguro que desea cerrar la aplicación?"):
+        root.destroy()
+
+#  VENTANA PRINCIPAL
+ctk.set_appearance_mode("light")
+root = ctk.CTk(fg_color=COLOR_FONDO)
 root.title("GENERADOR DE TIPO DE PROCESO")
-root.geometry("700x450")
-root.configure(bg="#FFFFFF")
+root.minsize(1000, 500)
+centrar(root, 1080, 520)
+try:
+    root.iconbitmap(ICONO_APP)
+except Exception:
+    pass
 
 
-# --- Estilo global ---
 if __name__ == "__main__":
     # Inicializar datos externos si es .exe
     inicializar_datos_externos()
-    
-    # Configurar estilo global
+
     archivos_procesados = cargar_archivos_procesados()
-    style = ttk.Style()
-    style.theme_use('clam')
-    
-    # Frame principal con fondo blanco
-    frame = tk.Frame(root, bg="#FFFFFF")
-    frame.pack(expand=True, fill="both", padx=30, pady=30)
 
-    # --- Header con logo y título mejorado ---
-    header_frame = tk.Frame(frame, bg="#FFFFFF")
-    header_frame.pack(fill="x", pady=(0, 25))
+    # Frame principal
+    frame = ctk.CTkFrame(root, fg_color=COLOR_FONDO, corner_radius=0)
+    frame.pack(expand=True, fill="both", padx=30, pady=(24, 16))
 
-    # Contenedor para logo y título
-    header_content = tk.Frame(header_frame, bg="#FFFFFF")
-    header_content.pack(fill="x", pady=(0, 15))
+    # --- Header con logo y título ---
+    header_frame = ctk.CTkFrame(frame, fg_color="transparent")
+    header_frame.pack(fill="x", pady=(0, 20))
 
-    # Logo en la parte izquierda
-    logo_frame = tk.Frame(header_content, bg="#FFFFFF")
-    logo_frame.pack(side="left", padx=(0, 20))
+    header_content = ctk.CTkFrame(header_frame, fg_color="transparent")
+    header_content.pack(fill="x", pady=(0, 14))
 
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
-            logo_img_raw = Image.open(logo_path).resize((80, 50), Image.Resampling.LANCZOS)
-            logo_img = ImageTk.PhotoImage(logo_img_raw)
-            logo_label = tk.Label(logo_frame, image=logo_img, bg="#FFFFFF")
-            logo_label.image = logo_img
-            logo_label.pack()
+            logo_img = ctk.CTkImage(light_image=Image.open(logo_path), size=(80, 50))
+            ctk.CTkLabel(header_content, text="", image=logo_img).pack(side="left", padx=(0, 20))
     except Exception as e:
         print(f"Error cargando el logo: {e}")
 
-    # Título a la derecha del logo
-    title_frame = tk.Frame(header_content, bg="#FFFFFF")
+    title_frame = ctk.CTkFrame(header_content, fg_color="transparent")
     title_frame.pack(side="left", fill="both", expand=True)
 
-    label_titulo = tk.Label(
-        title_frame, 
-        text="INSPECCIÓN DE CUMPLIMIENTO\nNORMATIVO AL ARRIBO",
-        font=("Inter", 18, "bold"),
-        fg="#282828", 
-        bg="#FFFFFF", 
-        justify="left"
-    )
-    label_titulo.pack(anchor="w", pady=(0, 8))
+    ctk.CTkLabel(
+        title_frame,
+        text="INSPECCIÓN DE CUMPLIMIENTO NORMATIVO AL ARRIBO",
+        font=ctk.CTkFont("Inter", 20, "bold"),
+        text_color=COLOR_TEXTO,
+        justify="left",
+    ).pack(anchor="w")
 
-    label_sub = tk.Label(
-        title_frame, 
+    ctk.CTkLabel(
+        title_frame,
         text="Sistema integral para la gestión de procesos normativos",
-        font=("Inter", 10),
-        fg="#4B4B4B", 
-        bg="#FFFFFF",
-        justify="left"
-    )
-    label_sub.pack(anchor="w")
+        font=ctk.CTkFont("Inter", 12),
+        text_color=COLOR_TEXTO_SEC,
+        justify="left",
+    ).pack(anchor="w")
 
     # Separador decorativo
-    separator = tk.Frame(header_frame, height=3, bg="#ECD925")
-    separator.pack(fill="x")
+    ctk.CTkFrame(header_frame, height=3, fg_color=COLOR_AMARILLO, corner_radius=0).pack(fill="x")
 
-    # --- Contenido principal: Botones en disposición moderna ---
-    content_frame = tk.Frame(frame, bg="#FFFFFF")
-    content_frame.pack(fill="both", expand=True, pady=(30, 20))
+    # --- Cards del menú ---
+    cards_frame = ctk.CTkFrame(frame, fg_color="transparent")
+    cards_frame.pack(expand=True)
 
-    # Configurar estilos de botones mejorados
-    style.configure('Primary.TButton', 
-                   background='#ECD925', 
-                   foreground='#282828', 
-                   font=('Inter', 11, 'bold'),
-                   borderwidth=0,
-                   padding=(15, 12),
-                   focuscolor='none')
-    style.map('Primary.TButton',
-             background=[('active', '#D6BC00')],
-             foreground=[('active', '#282828')])
-    
-    style.configure('Secondary.TButton', 
-                   background='#282828', 
-                   foreground='#FFFFFF', 
-                   font=('Inter', 11, 'bold'),
-                   borderwidth=0,
-                   padding=(15, 12),
-                   focuscolor='none')
-    style.map('Secondary.TButton',
-             background=[('active', '#1A1A1A')],
-             foreground=[('active', '#FFFFFF')])
-
-    # Contenedor principal de botones
-    main_buttons_container = tk.Frame(content_frame, bg="#FFFFFF")
-    main_buttons_container.pack(expand=True)
-
-    # Primera fila: 3 botones principales
-    top_row = tk.Frame(main_buttons_container, bg="#FFFFFF")
-    top_row.pack(pady=(0, 15))
-
-    top_buttons = [
-        ("⚙️ CONFIGURAR", lambda: configurar_rutas(main_buttons_container)),
-        ("📊 REPORTE", seleccionar_reporte),
-        ("📋 EDITOR", lambda: abrir_editor_codigos(main_buttons_container))
+    cards = [
+        ("configurar", "Configurar", "Define los parámetros\nde los procesos y\najustes del sistema.",
+         "Ir a Configurar", lambda: configurar_rutas(cards_frame), False),
+        ("reporte", "Reporte", "Genera reportes\npersonalizados de\ntu información.",
+         "Ir a Reporte", seleccionar_reporte, False),
+        ("editor", "Editor", "Edita y administra\nlos datos de procesos\ny formatos.",
+         "Ir a Editor", lambda: abrir_editor_codigos(cards_frame), False),
+        ("dashboard", "Dashboard", "Visualiza indicadores,\nestadísticas y resumen\nde procesos.",
+         "Ir a Dashboard", mostrar_estadisticas, False),
+        ("cerrar", "Cerrar", "Finaliza la sesión\nde la aplicación de\nforma segura.",
+         "Cerrar", cerrar_aplicacion, True),
     ]
 
-    for texto, comando in top_buttons:
-        btn_container = tk.Frame(top_row, bg="#FFFFFF", padx=8)
-        btn_container.pack(side="left", expand=True)
-        
-        btn = ttk.Button(btn_container, text=texto, command=comando, 
-                        style='Primary.TButton', width=20)
-        btn.pack(fill="x", ipady=6)
+    for col, (icono, titulo, desc, texto_btn, comando, oscuro) in enumerate(cards):
+        crear_card(cards_frame, icono, titulo, desc, texto_btn, comando, oscuro).grid(
+            row=0, column=col, padx=8, pady=8)
 
-    # Segunda fila: 2 botones
-    bottom_row = tk.Frame(main_buttons_container, bg="#FFFFFF")
-    bottom_row.pack(pady=(15, 0))
+    # --- Footer ---
+    footer_frame = ctk.CTkFrame(frame, fg_color="transparent")
+    footer_frame.pack(fill="x", side="bottom")
 
-    # Centrar los dos botones de la segunda fila
-    center_frame = tk.Frame(bottom_row, bg="#FFFFFF")
-    center_frame.pack()
-
-    bottom_buttons = [
-        ("📈 DASHBOARD", mostrar_estadisticas, 'Primary.TButton'),
-        ("🚪 CERRAR", lambda: root.destroy() if messagebox.askokcancel(
-            "Salir", "¿Está seguro que desea cerrar la aplicación?") else None, 'Secondary.TButton')
-    ]
-
-    for texto, comando, estilo in bottom_buttons:
-        btn_container = tk.Frame(center_frame, bg="#FFFFFF", padx=12)
-        btn_container.pack(side="left", expand=True)
-        
-        btn = ttk.Button(btn_container, text=texto, command=comando, 
-                        style=estilo, width=20)
-        btn.pack(fill="x", ipady=6)
-
-    # --- Footer mejorado ---
-    footer_frame = tk.Frame(frame, bg="#FFFFFF")
-    footer_frame.pack(fill="x", pady=(25, 0))
-
-    # Separador del footer
-    footer_separator = tk.Frame(footer_frame, height=1, bg="#E0E0E0")
-    footer_separator.pack(fill="x", pady=(0, 12))
-
-    # Información del footer
-    footer_content = tk.Frame(footer_frame, bg="#FFFFFF")
-    footer_content.pack(fill="x")
-
-    tk.Label(footer_content, 
-             text="Sistema V&C v4.0 • © 2026",
-             font=("Inter", 9),
-             fg="#4B4B4B", 
-             bg="#FFFFFF").pack()
+    ctk.CTkFrame(footer_frame, height=1, fg_color=COLOR_BORDE, corner_radius=0).pack(fill="x", pady=(0, 10))
+    ctk.CTkLabel(footer_frame, text="Sistema V&C v4.0 • © 2026",
+                 font=ctk.CTkFont("Inter", 11), text_color=COLOR_TEXTO_SEC).pack()
 
     root.mainloop()

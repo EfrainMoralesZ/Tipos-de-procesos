@@ -5,7 +5,7 @@ a = Analysis(
     ['ProcesosV4.py'],
     pathex=[],
     binaries=[],
-    datas=[('datos', 'datos'), ('theme', 'theme')],
+    datas=[('datos', 'datos')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

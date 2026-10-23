@@ -57,21 +57,23 @@ from reportlab.lib.utils import ImageReader
 import threading
 import time
 import pandas as pd
+from tkinter import ttk
+import customtkinter as ctk
+import Estilos as E
 
 # ---------------- Configuración ---------------- #
-COL_BG = "#FFFFFF"  # Fondo blanco
-COL_TEXT = "#282828"  # Texto oscuro
-COL_BTN = "#ECD925"  # Amarillo para botones
-COL_LIST_BG = "#d8d8d8"  # Gris claro para lista
-COL_BAR = "#ECD925"  # Amarillo para barras
-COL_BTN_CERRAR = "#282828"  # Oscuro para botón cerrar
+COL_BG = E.COLOR_FONDO
+COL_TEXT = E.COLOR_TEXTO
+COL_BTN = E.COLOR_AMARILLO
+COL_BAR = E.COLOR_AMARILLO
+COL_BTN_CERRAR = E.COLOR_OSCURO
 
 # Colores para las tarjetas
-COL_CARD_BG = "#FFFFFF"  # Fondo de tarjetas blanco
-COL_BORDER = "#E2E8F0"  # Bordes grises suaves
-COL_SUCCESS = "#4CAF50"  # Verde para "Cumple"
-COL_DANGER = "#F44336"  # Rojo para "No cumple"
-COL_TEXT_LIGHT = "#666666"  # Texto secundario
+COL_CARD_BG = E.COLOR_CARD
+COL_BORDER = E.COLOR_BORDE
+COL_SUCCESS = E.COLOR_VERDE
+COL_DANGER = E.COLOR_ROJO
+COL_TEXT_LIGHT = E.COLOR_TEXTO_TENUE
 
 # ------------------ Rutas seguras para PyInstaller ------------------
 def recurso_path(ruta_relativa):
@@ -226,23 +228,23 @@ def actualizar_interfaz_completa():
         
         # Actualizar tarjetas
         if lbl_total_valor:
-            lbl_total_valor.config(text=f"{total_codigos}")
+            lbl_total_valor.configure(text=f"{total_codigos}")
         if lbl_cumple_valor:
-            lbl_cumple_valor.config(text=f"{codigos_cumple}")
+            lbl_cumple_valor.configure(text=f"{codigos_cumple}")
         if lbl_no_cumple_valor:
-            lbl_no_cumple_valor.config(text=f"{codigos_no_cumple}")
+            lbl_no_cumple_valor.configure(text=f"{codigos_no_cumple}")
         
         # Calcular porcentajes
         porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
         porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
         
         if lbl_cumple_porcentaje:
-            lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
+            lbl_cumple_porcentaje.configure(text=f"{porcentaje_cumple:.1f}%")
         if lbl_no_cumple_porcentaje:
-            lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
+            lbl_no_cumple_porcentaje.configure(text=f"{porcentaje_no_cumple:.1f}%")
         
         if lbl_totales:
-            lbl_totales.config(text=f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}")
+            lbl_totales.configure(text=f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}")
         
         # Redibujar gráfica
         if canvas_grafica:
@@ -325,11 +327,12 @@ def borrar_archivo_procesados():
         return False
 
 def actualizar_lista_archivos(lst_archivos):
-    """Actualiza la lista visual con los archivos procesados"""
-    lst_archivos.delete(0, tk.END)
+    """Actualiza la tabla visual con los archivos procesados, conservando la selección"""
+    seleccion = [lst_archivos.index(i) for i in lst_archivos.selection()]
+    lst_archivos.delete(*lst_archivos.get_children())
     cargar_archivos_procesados()  # Asegurarse de tener datos actualizados
-    
-    for archivo in archivos_procesados:
+
+    for i, archivo in enumerate(archivos_procesados):
         # Si el archivo es un diccionario, mostrar nombre y fecha
         if isinstance(archivo, dict) and 'nombre' in archivo:
             nombre = archivo['nombre']
@@ -341,60 +344,65 @@ def actualizar_lista_archivos(lst_archivos):
                     fecha = fecha_dt.strftime("%d/%m/%Y %H:%M")
                 except:
                     pass
-            lst_archivos.insert(tk.END, f"{nombre} - {fecha}")
+            valores = (nombre, fecha)
         # Si es un string (solo nombre), mostrarlo tal cual
         elif isinstance(archivo, str):
-            lst_archivos.insert(tk.END, archivo)
+            valores = (archivo, "")
         else:
             # Mostrar representación string para otros tipos
-            lst_archivos.insert(tk.END, str(archivo))
+            valores = (str(archivo), "")
+        lst_archivos.insert("", "end", values=valores, tags=E.tag_fila(i))
+
+    filas = lst_archivos.get_children()
+    lst_archivos.selection_set([filas[i] for i in seleccion if i < len(filas)])
 
 def eliminar_archivo_seleccionado(lst_archivos):
     """Elimina el archivo seleccionado de la lista y del disco"""
     global archivos_procesados
-    
-    seleccion = lst_archivos.curselection()
+
+    seleccion = lst_archivos.selection()
     if not seleccion:
-        messagebox.showwarning("Selección requerida", "Por favor seleccione un archivo de la lista para eliminar")
+        messagebox.showwarning("Selección requerida", "Por favor seleccione un archivo de la lista para eliminar", parent=root)
         return
-    
-    indice = seleccion[0]
-    
+
+    indice = lst_archivos.index(seleccion[0])
+
     # Obtener información del archivo
     archivo_info = archivos_procesados[indice]
     if isinstance(archivo_info, dict) and 'nombre' in archivo_info and 'ruta' in archivo_info:
         nombre_archivo = archivo_info['nombre']
         ruta_archivo = archivo_info['ruta']
     else:
-        nombre_archivo = str(archivo_info)
+        nombre_archivo = archivo_info.get('nombre', str(archivo_info)) if isinstance(archivo_info, dict) else str(archivo_info)
         ruta_archivo = str(archivo_info)
-    
+
     # Confirmar eliminación
     respuesta = messagebox.askyesno(
         "Confirmar eliminación",
-        f"¿Está seguro de que desea eliminar el archivo:\n\n{nombre_archivo}\n\nEsta acción no se puede deshacer."
+        f"¿Está seguro de que desea eliminar el archivo:\n\n{nombre_archivo}\n\nEsta acción no se puede deshacer.",
+        parent=root
     )
     if not respuesta:
         return
-    
+
     # Eliminar archivo físico si existe
     if os.path.exists(ruta_archivo):
         try:
             os.remove(ruta_archivo)
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo eliminar el archivo del disco:\n{str(e)}")
+            messagebox.showerror("Error", f"No se pudo eliminar el archivo del disco:\n{str(e)}", parent=root)
             return
-    
+
     # Eliminar el archivo de la lista
     archivos_procesados.pop(indice)
-    
+
     # Guardar cambios en JSON
     guardar_archivos_procesados()
-    
+
     # Actualizar la lista visual
     actualizar_lista_archivos(lst_archivos)
-    
-    messagebox.showinfo("Eliminado", f"Archivo eliminado correctamente: {nombre_archivo}")
+
+    messagebox.showinfo("Eliminado", f"Archivo eliminado correctamente: {nombre_archivo}", parent=root)
 
 def limpiar_lista(lst_archivos):
     """Limpia la lista de archivos procesados y elimina el archivo JSON"""
@@ -403,11 +411,11 @@ def limpiar_lista(lst_archivos):
 
     # Intentar borrar el JSON
     if borrar_archivo_procesados():
-        messagebox.showinfo("🗑️ Lista Limpiada", "Se han eliminado todos los archivos de la lista")
+        messagebox.showinfo("🗑️ Lista Limpiada", "Se han eliminado todos los archivos de la lista", parent=root)
     else:
         # Si no se pudo borrar el archivo, al menos guardar lista vacía
         guardar_archivos_procesados()
-        messagebox.showinfo("🗑️ Lista Limpiada", "Se han eliminado todos los archivos de la lista")
+        messagebox.showinfo("🗑️ Lista Limpiada", "Se han eliminado todos los archivos de la lista", parent=root)
 
     # Actualizar visualización de la lista en la interfaz
     actualizar_lista_archivos(lst_archivos)
@@ -477,64 +485,60 @@ def leer_datos_desde_excel():
         return 0, 0, 0
 
 def dibujar_grafica_estatica(canvas, total_codigos, codigos_cumple, codigos_no_cumple):
-    """Dibuja la gráfica con datos específicos (versión estática)"""
+    """Dibuja la gráfica de barras con datos específicos (versión estática)"""
     try:
         canvas.delete("all")
-        
+        canvas._ultimos_datos = (total_codigos, codigos_cumple, codigos_no_cumple)
+
+        # Usar el tamaño real del canvas (se adapta al redimensionar la ventana)
+        ancho, alto = canvas.winfo_width(), canvas.winfo_height()
+        if ancho < 50 or alto < 50:
+            ancho, alto = int(canvas["width"]), int(canvas["height"])
+
         # Solo dibujar gráfica si hay datos
         if total_codigos > 0:
             # --- Datos para las barras ---
             datos = [
-                ("Total de Códigos", total_codigos),
-                ("Códigos Cumple", codigos_cumple),
-                ("Códigos No cumple", codigos_no_cumple)
+                ("Total de códigos", total_codigos, COL_BAR),
+                ("Cumplen", codigos_cumple, COL_SUCCESS),
+                ("No cumplen", codigos_no_cumple, COL_DANGER)
             ]
 
             # --- Ajustes de espacio dinámicos ---
-            ancho, alto = int(canvas["width"]), int(canvas["height"])
-            margen_sup = 30
-            margen_inf = 60
-            margen_lat = 20
-            ancho_barra = 80
-            espacio = 60
+            margen_sup = 34
+            margen_inf = 44
+            margen_lat = 24
+            zona = (ancho - 2 * margen_lat) / len(datos)
+            ancho_barra = min(96, zona * 0.5)
 
             altura_max = alto - (margen_sup + margen_inf)
-            max_valor = max([v for _, v in datos], default=1)
-
-            # --- Dibujar ejes ---
+            max_valor = max([v for _, v, _ in datos], default=1)
             eje_x_y = alto - margen_inf
-            canvas.create_line(margen_lat, eje_x_y, ancho - margen_lat, eje_x_y, fill=COL_TEXT, width=2)
-            canvas.create_line(margen_lat, margen_sup, margen_lat, eje_x_y, fill=COL_TEXT, width=2)
+
+            # --- Líneas guía ---
+            for n in range(1, 5):
+                y = eje_x_y - altura_max * n / 4
+                canvas.create_line(margen_lat, y, ancho - margen_lat, y, fill=COL_BORDER, dash=(3, 4))
+            canvas.create_line(margen_lat, eje_x_y, ancho - margen_lat, eje_x_y, fill=E.COLOR_BORDE_FUERTE, width=2)
 
             # --- Dibujar barras ---
-            x_inicio = margen_lat + espacio
-            for i, (nombre, valor) in enumerate(datos):
+            for i, (nombre, valor, color) in enumerate(datos):
                 altura_barra = (valor / max_valor) * altura_max if valor > 0 else 0
-                x1 = x_inicio + i * (ancho_barra + espacio)
+                centro = margen_lat + zona * (i + 0.5)
+                x1 = centro - ancho_barra / 2
+                x2 = centro + ancho_barra / 2
                 y1 = eje_x_y - altura_barra
-                x2 = x1 + ancho_barra
-                y2 = eje_x_y
-                
-                # Color por categoría
-                if nombre == "Códigos Cumple":
-                    color = COL_SUCCESS
-                elif nombre == "Códigos No cumple":
-                    color = COL_DANGER
-                else:
-                    color = COL_BAR
-                    
-                # Barra
-                canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=COL_TEXT, width=1.5)
+
+                canvas.create_rectangle(x1, y1, x2, eje_x_y, fill=color, outline="")
                 # Valor encima
-                canvas.create_text((x1 + x2) / 2, y1 - 10, text=str(valor), font=("INTER", 9, "bold"), fill=COL_TEXT)
+                canvas.create_text(centro, y1 - 12, text=str(valor), font=(E.FUENTE, 11, "bold"), fill=COL_TEXT)
                 # Etiqueta abajo
-                canvas.create_text((x1 + x2) / 2, eje_x_y + 20, text=nombre, font=("INTER", 8, "bold"), 
-                                  fill=COL_TEXT, width=100, justify='center')
+                canvas.create_text(centro, eje_x_y + 20, text=nombre, font=(E.FUENTE, 10),
+                                   fill=E.COLOR_TEXTO_SEC, width=zona, justify='center')
         else:
             # Mostrar mensaje si no hay datos
-            ancho, alto = int(canvas["width"]), int(canvas["height"])
-            canvas.create_text(ancho/2, alto/2, text="No hay datos disponibles\nVerifique el archivo JSON", 
-                              font=("INTER", 10), fill=COL_TEXT_LIGHT, justify='center')
+            canvas.create_text(ancho/2, alto/2, text="No hay datos disponibles\nVerifique el archivo JSON",
+                              font=(E.FUENTE, 11), fill=COL_TEXT_LIGHT, justify='center')
 
     except Exception as e:
         print(f"Error en dibujar_grafica_estatica: {e}")
@@ -545,22 +549,22 @@ def dibujar_grafica(canvas, lbl_totales_ref, lst_archivos_ref):
     
     # Actualizar labels
     if lbl_total_valor:
-        lbl_total_valor.config(text=f"{total_codigos}")
+        lbl_total_valor.configure(text=f"{total_codigos}")
     if lbl_cumple_valor:
-        lbl_cumple_valor.config(text=f"{codigos_cumple}")
+        lbl_cumple_valor.configure(text=f"{codigos_cumple}")
     if lbl_no_cumple_valor:
-        lbl_no_cumple_valor.config(text=f"{codigos_no_cumple}")
+        lbl_no_cumple_valor.configure(text=f"{codigos_no_cumple}")
     
     porcentaje_cumple = (codigos_cumple / total_codigos * 100) if total_codigos > 0 else 0
     porcentaje_no_cumple = (codigos_no_cumple / total_codigos * 100) if total_codigos > 0 else 0
     
     if lbl_cumple_porcentaje:
-        lbl_cumple_porcentaje.config(text=f"{porcentaje_cumple:.1f}%")
+        lbl_cumple_porcentaje.configure(text=f"{porcentaje_cumple:.1f}%")
     if lbl_no_cumple_porcentaje:
-        lbl_no_cumple_porcentaje.config(text=f"{porcentaje_no_cumple:.1f}%")
+        lbl_no_cumple_porcentaje.configure(text=f"{porcentaje_no_cumple:.1f}%")
     
     if lbl_totales_ref:
-        lbl_totales_ref.config(text=f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}")
+        lbl_totales_ref.configure(text=f"Total: {total_codigos}  |  Cumple: {codigos_cumple}  |  No cumple: {codigos_no_cumple}")
 
     # Dibujar gráfica
     dibujar_grafica_estatica(canvas, total_codigos, codigos_cumple, codigos_no_cumple)
@@ -573,26 +577,24 @@ def dibujar_grafica(canvas, lbl_totales_ref, lst_archivos_ref):
 
 def crear_tarjeta(parent, titulo, valor, porcentaje=None, color=COL_BAR):
     """Crea una tarjeta de estadística moderna"""
-    frame = tk.Frame(parent, bg=COL_CARD_BG, relief="flat", bd=1, 
-                    highlightbackground=COL_BORDER, highlightthickness=1)
-    
-    # Título
-    lbl_titulo = tk.Label(frame, text=titulo, bg=COL_CARD_BG, fg=COL_TEXT_LIGHT, 
-                         font=("INTER", 9))
-    lbl_titulo.pack(pady=(8, 3))
-    
+    frame = E.card(parent, corner_radius=14)
+
+    # Título con punto de color
+    fila = ctk.CTkFrame(frame, fg_color="transparent")
+    fila.pack(fill="x", padx=18, pady=(14, 0))
+    ctk.CTkFrame(fila, width=10, height=10, corner_radius=5, fg_color=color).pack(side="left", padx=(0, 8))
+    ctk.CTkLabel(fila, text=titulo, font=E.fuente(11, "bold"), text_color=COL_TEXT_LIGHT).pack(side="left")
+
     # Valor principal
-    lbl_valor = tk.Label(frame, text=valor, bg=COL_CARD_BG, fg=color, 
-                        font=("INTER", 14, "bold"))
-    lbl_valor.pack(pady=3)
-    
+    lbl_valor = ctk.CTkLabel(frame, text=valor, font=E.fuente(28, "bold"), text_color=COL_TEXT, anchor="w")
+    lbl_valor.pack(fill="x", padx=18)
+
     # Porcentaje (opcional)
-    if porcentaje:
-        lbl_porcentaje = tk.Label(frame, text=porcentaje, bg=COL_CARD_BG, fg=COL_TEXT_LIGHT,
-                                 font=("INTER", 8))
-        lbl_porcentaje.pack(pady=(0, 8))
-    
-    return frame, lbl_valor, lbl_porcentaje if porcentaje else (frame, lbl_valor, None)
+    lbl_porcentaje = ctk.CTkLabel(frame, text=porcentaje or "", font=E.fuente(11),
+                                  text_color=color if porcentaje else COL_TEXT_LIGHT, anchor="w")
+    lbl_porcentaje.pack(fill="x", padx=18, pady=(0, 12))
+
+    return frame, lbl_valor, lbl_porcentaje
 
 # ---------------- Exportar PDF ---------------- 
 def exportar_pdf_simple():
@@ -606,7 +608,8 @@ def exportar_pdf_simple():
         ruta = filedialog.asksaveasfilename(
             defaultextension=".pdf",
             filetypes=[("Archivos PDF", "*.pdf")],
-            title="Guardar Reporte de Estadísticas"
+            title="Guardar Reporte de Estadísticas",
+            parent=root
         )
         if not ruta:
             return
@@ -745,10 +748,10 @@ def exportar_pdf_simple():
         dibujar_footer(pagina_actual)
 
         c.save()
-        messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}")
+        messagebox.showinfo("Éxito", f"PDF generado correctamente en:\n{ruta}", parent=root)
 
     except Exception as e:
-        messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}")
+        messagebox.showerror("Error", f"No se pudo generar el PDF:\n{e}", parent=root)
         print(f"Error detallado: {e}")
 
 
@@ -769,14 +772,21 @@ def on_closing():
 
 # ---------------- Ventana principal ---------------- #
 
-def main():
+def main(parent=None):
+    """Abre el dashboard. Con parent se abre como ventana hija; sin él, como aplicación propia."""
     global lbl_total_valor, lbl_cumple_valor, lbl_cumple_porcentaje, lbl_no_cumple_valor, lbl_no_cumple_porcentaje
     global canvas_grafica, lst_archivos, lbl_totales, root
 
-    root = tk.Tk()
-    root.title("Dashboard de Códigos - V&C")
-    root.geometry("1000x600")
-    root.configure(bg=COL_BG)
+    if parent is None:
+        ctk.set_appearance_mode("light")
+        root = ctk.CTk(fg_color=COL_BG)
+        root.title("Dashboard de Códigos - V&C")
+        root.minsize(900, 560)
+        E.centrar(root, 1080, 680)
+    else:
+        root = E.nueva_ventana(parent, "Dashboard de Códigos - V&C", 1080, 680, modal=False,
+                               redimensionable=True)
+        root.minsize(900, 560)
 
     # Iniciar monitoreo de cambios
     monitor.iniciar_monitoreo()
@@ -785,166 +795,90 @@ def main():
     cargar_archivos_procesados()
 
     # Frame principal
-    main_container = tk.Frame(root, bg=COL_BG)
-    main_container.pack(fill="both", expand=True, padx=15, pady=15)
+    main_container = ctk.CTkFrame(root, fg_color="transparent")
+    main_container.pack(fill="both", expand=True, padx=24, pady=20)
 
     # Header
-    header_frame = tk.Frame(main_container, bg=COL_BG)
-    header_frame.pack(fill="x", pady=(0, 10))
-
-    lbl_titulo = tk.Label(header_frame, text="📊 Dashboard de Análisis de Códigos",
-                          bg=COL_BG, fg=COL_TEXT, font=("INTER", 16, "bold"))
-    lbl_titulo.pack(side="left")
-
-    lbl_subtitulo = tk.Label(header_frame, text="Reporte de Mercancía - V&C",
-                             bg=COL_BG, fg=COL_TEXT_LIGHT, font=("INTER", 10))
-    lbl_subtitulo.pack(side="left", padx=(10, 0))
+    header_frame, _ = E.encabezado(main_container, "dashboard", "Dashboard de Análisis de Códigos",
+                                   "Reporte de Mercancía - V&C")
+    header_frame.pack(fill="x", pady=(0, 16))
 
     # Tarjetas
-    stats_frame = tk.Frame(main_container, bg=COL_BG)
-    stats_frame.pack(fill="x", pady=(0, 10))
+    stats_frame = ctk.CTkFrame(main_container, fg_color="transparent")
+    stats_frame.pack(fill="x", pady=(0, 14))
 
-    tarjeta_total, lbl_total_valor, _ = crear_tarjeta(stats_frame, "TOTAL DE CÓDIGOS", "0", color=COL_BAR)
-    tarjeta_total.pack(side="left", padx=(0, 10), fill="both", expand=True)
+    tarjeta_total, lbl_total_valor, lbl_total_desc = crear_tarjeta(stats_frame, "TOTAL DE CÓDIGOS", "0", "Códigos registrados", color=COL_BAR)
+    tarjeta_total.pack(side="left", padx=(0, 12), fill="both", expand=True)
+    lbl_total_desc.configure(text_color=COL_TEXT_LIGHT)
 
     tarjeta_cumple, lbl_cumple_valor, lbl_cumple_porcentaje = crear_tarjeta(stats_frame, "CÓDIGOS CUMPLEN", "0", "0%", color=COL_SUCCESS)
-    tarjeta_cumple.pack(side="left", padx=(0, 10), fill="both", expand=True)
+    tarjeta_cumple.pack(side="left", padx=(0, 12), fill="both", expand=True)
 
     tarjeta_no_cumple, lbl_no_cumple_valor, lbl_no_cumple_porcentaje = crear_tarjeta(stats_frame, "CÓDIGOS NO CUMPLEN", "0", "0%", color=COL_DANGER)
     tarjeta_no_cumple.pack(side="left", fill="both", expand=True)
 
-    # Contenido principal
-    content_frame = tk.Frame(main_container, bg=COL_BG)
-    content_frame.pack(fill="both", expand=True, pady=10)
+    # Footer con botones (se empaqueta antes del contenido para que siempre quede visible)
+    footer_frame = ctk.CTkFrame(main_container, fg_color="transparent")
+    footer_frame.pack(side="bottom", fill="x", pady=(14, 0))
 
-    # Frame izquierdo para la gráfica
-    left_frame = tk.Frame(content_frame, bg=COL_BG)
-    left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    # Contenido principal
+    content_frame = ctk.CTkFrame(main_container, fg_color="transparent")
+    content_frame.pack(fill="both", expand=True)
+    content_frame.grid_columnconfigure(0, weight=5)
+    content_frame.grid_columnconfigure(1, weight=4)
+    content_frame.grid_rowconfigure(0, weight=1)
 
     # Gráfica
-    graph_card = tk.Frame(left_frame, bg=COL_CARD_BG, relief="flat", bd=1,
-                          highlightbackground=COL_BORDER, highlightthickness=1)
-    graph_card.pack(fill="both", expand=True)
+    graph_card = E.card(content_frame)
+    graph_card.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
 
-    lbl_graph_title = tk.Label(graph_card, text="DISTRIBUCIÓN DE CÓDIGOS",
-                               bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
-    lbl_graph_title.pack(pady=(10, 5))
+    ctk.CTkLabel(graph_card, text="Distribución de códigos", font=E.fuente(14, "bold"),
+                 text_color=COL_TEXT, anchor="w").pack(fill="x", padx=18, pady=(14, 0))
 
     canvas_grafica = tk.Canvas(graph_card, width=400, height=250,
                                bg=COL_CARD_BG, highlightthickness=0)
-    canvas_grafica.pack(pady=(0, 5), padx=10, fill="both", expand=True)
+    canvas_grafica.pack(pady=(4, 0), padx=12, fill="both", expand=True)
+    canvas_grafica.bind("<Configure>", lambda e: dibujar_grafica_estatica(
+        canvas_grafica, *getattr(canvas_grafica, "_ultimos_datos", (0, 0, 0))))
 
-    lbl_totales = tk.Label(graph_card, text="", bg=COL_CARD_BG,
-                           fg=COL_TEXT_LIGHT, font=("INTER", 9))
-    lbl_totales.pack(pady=(0, 10))
+    lbl_totales = ctk.CTkLabel(graph_card, text="", font=E.fuente(11), text_color=COL_TEXT_LIGHT)
+    lbl_totales.pack(pady=(0, 12))
 
-    # Frame derecho para archivos
+    # Archivos procesados
+    files_card = E.card(content_frame)
+    files_card.grid(row=0, column=1, sticky="nsew")
 
-    right_frame = tk.Frame(content_frame, bg=COL_BG, width=450)
-    right_frame.pack(side="right", fill="y")
-    right_frame.pack_propagate(False)
+    fila_titulo = ctk.CTkFrame(files_card, fg_color="transparent")
+    fila_titulo.pack(fill="x", padx=18, pady=(14, 10))
+    ctk.CTkLabel(fila_titulo, text="", image=E.crear_icono("carpeta", tam=18, circulo=False)).pack(side="left", padx=(0, 8))
+    ctk.CTkLabel(fila_titulo, text="Archivos procesados", font=E.fuente(14, "bold"),
+                 text_color=COL_TEXT).pack(side="left")
 
-    files_card = tk.Frame(right_frame, bg=COL_CARD_BG, relief="flat", bd=1,
-                        highlightbackground=COL_BORDER, highlightthickness=1)
-    files_card.pack(fill="both", expand=True)
+    list_frame, lst_archivos = E.tabla(files_card, ("ARCHIVO", "FECHA"), horizontal=False, selectmode="browse")
+    list_frame.pack(fill="both", expand=True, padx=12, pady=(0, 12))
+    lst_archivos.heading("ARCHIVO", text="ARCHIVO", anchor="w")
+    lst_archivos.heading("FECHA", text="FECHA")
+    lst_archivos.column("ARCHIVO", width=280, anchor="w")
+    lst_archivos.column("FECHA", width=110, anchor="center", stretch=False)
 
-    lbl_archivos = tk.Label(files_card, text="📁 ARCHIVOS PROCESADOS",
-                            bg=COL_CARD_BG, fg=COL_TEXT, font=("INTER", 11, "bold"))
-    lbl_archivos.pack(pady=(10, 5))
+    def cerrar():
+        monitor.detener_monitoreo()
+        root.destroy()
 
-    # Frame principal para la lista
-    list_frame = tk.Frame(files_card, bg=COL_CARD_BG)
-    list_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-
-    # Frame para encabezados
-    header_frame = tk.Frame(list_frame, bg=COL_CARD_BG)
-    header_frame.pack(fill="x", pady=(0, 5))
-
-    # Encabezado para nombre de archivo (izquierda)
-    lbl_nombre = tk.Label(header_frame, text="ARCHIVO", 
-                        bg=COL_CARD_BG, fg=COL_TEXT, 
-                        font=("INTER", 9, "bold"), anchor="w")
-    lbl_nombre.pack(side="left", fill="x", expand=True)
-
-    # Encabezado para fecha (derecha)
-    lbl_fecha = tk.Label(header_frame, text="FECHA", 
-                        bg=COL_CARD_BG, fg=COL_TEXT, 
-                        font=("INTER", 9, "bold"), anchor="e", width=10)
-    lbl_fecha.pack(side="right")
-
-    # Frame para lista y scrollbar
-    list_content_frame = tk.Frame(list_frame, bg=COL_CARD_BG)
-    list_content_frame.pack(fill="both", expand=True)
-
-    scrollbar = tk.Scrollbar(list_content_frame)
-    scrollbar.pack(side="right", fill="y")
-
-    # Listbox con formato mejorado
-    lst_archivos = tk.Listbox(list_content_frame, 
-                            bg=COL_LIST_BG, 
-                            fg=COL_TEXT, 
-                            font=("INTER", 9),
-                            yscrollcommand=scrollbar.set, 
-                            relief="flat", 
-                            bd=0,
-                            highlightthickness=0,
-                            justify="left")
-    lst_archivos.pack(side="left", fill="both", expand=True)
-    scrollbar.config(command=lst_archivos.yview)
-
-    # Función para agregar archivos con formato de dos columnas
-    def agregar_archivo_con_fecha(nombre_archivo, fecha):
-        # Formatear la línea: nombre a la izquierda, fecha a la derecha
-        nombre_truncado = nombre_archivo[:35] + "..." if len(nombre_archivo) > 38 else nombre_archivo
-        espacio_disponible = 50 - len(nombre_truncado)  # Ajustar según el ancho del Listbox
-        espacios = " " * max(espacio_disponible, 5)  # Mínimo 5 espacios
-        linea = f"{nombre_truncado}{espacios}{fecha}"
-        lst_archivos.insert(tk.END, linea)
-
-    # Footer con botones
-    footer_frame = tk.Frame(main_container, bg=COL_BG)
-    footer_frame.pack(fill="x", pady=(10, 0))
-
-    # Botón para eliminar archivo seleccionado
-    btn_eliminar = tk.Button(
-        footer_frame,
-        text="🗑️ Eliminar Archivo",
-        command=lambda: eliminar_archivo_seleccionado(lst_archivos),
-        bg="#D9534F",  # color rojo corporativo
-        fg="white",
-        font=("INTER", 9, "bold"),
-        relief="flat",
-        padx=15,
-        pady=6,
-        cursor="hand2"
-    )
-    btn_eliminar.pack(side="left", padx=(0, 5))
-
-    btn_limpiar = tk.Button(footer_frame, text="🗑️ Limpiar Lista",
-                            command=lambda: limpiar_lista(lst_archivos),
-                            bg=COL_TEXT_LIGHT, fg="white", font=("INTER", 9, "bold"),
-                            relief="flat", padx=15, pady=6, cursor="hand2")
-    btn_limpiar.pack(side="left", padx=(0, 5))
-
-    btn_exportar = tk.Button(footer_frame, text="📊 Exportar PDF",
-                             command=exportar_pdf_simple,
-                             bg=COL_BTN, fg=COL_TEXT, font=("INTER", 9, "bold"),
-                             relief="flat", padx=15, pady=6, cursor="hand2")
-    btn_exportar.pack(side="left", padx=(0, 5))
-
-    btn_cerrar = tk.Button(footer_frame, text="❌ Cerrar",
-                           command=lambda: [monitor.detener_monitoreo(), root.destroy()],
-                           bg=COL_BTN_CERRAR, fg="white", font=("INTER", 9, "bold"),
-                           relief="flat", padx=15, pady=6, cursor="hand2")
-    btn_cerrar.pack(side="right")
+    E.boton(footer_frame, "Eliminar archivo", lambda: eliminar_archivo_seleccionado(lst_archivos),
+            "peligro", "basura").pack(side="left", padx=(0, 8))
+    E.boton(footer_frame, "Limpiar lista", lambda: limpiar_lista(lst_archivos),
+            "secundario", "x").pack(side="left", padx=(0, 8))
+    E.boton(footer_frame, "Exportar PDF", exportar_pdf_simple,
+            "primario", "descargar").pack(side="left")
+    E.boton(footer_frame, "Cerrar", cerrar, "oscuro", "x", width=110).pack(side="right")
+    root.protocol("WM_DELETE_WINDOW", cerrar)
 
     # Dibujar gráfica inicial
     dibujar_grafica(canvas_grafica, lbl_totales, lst_archivos)
 
-
-    # Centrar ventana
-    root.eval('tk::PlaceWindow . center')
-    root.mainloop()
+    if parent is None:
+        root.mainloop()
 
 if __name__ == "__main__":
     main()

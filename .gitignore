@@ -1,0 +1,11 @@
+# Caché de Python
+__pycache__/
+*.pyc
+
+# Salida intermedia de PyInstaller (se regenera al compilar)
+build/
+dist/datos/
+
+# Archivos de depuración que genera procesar_reporte
+Datos/debug_reporte_mercancia_*.json
+datos/debug_reporte_mercancia_*.json
