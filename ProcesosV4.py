@@ -72,7 +72,7 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 from PIL import Image
 from Estilos import (COLOR_FONDO, COLOR_CARD, COLOR_BORDE, COLOR_AMARILLO, COLOR_TEXTO,
-                     COLOR_TEXTO_SEC, ICONO_APP, crear_icono, boton, centrar)
+                     COLOR_TEXTO_SEC, ICONO_APP, crear_icono, boton, centrar, imagen_nitida)
 import sys
 import json
 from Editor_Codigos import EditorCodigos
@@ -703,7 +703,7 @@ if __name__ == "__main__":
     try:
         logo_path = os.path.join(BASE_PATH, "img", "logo.png")
         if os.path.exists(logo_path):
-            logo_img = ctk.CTkImage(light_image=Image.open(logo_path), size=(80, 50))
+            logo_img = imagen_nitida(logo_path, 80, 50)
             ctk.CTkLabel(header_content, text="", image=logo_img).pack(side="left", padx=(0, 20))
     except Exception as e:
         print(f"Error cargando el logo: {e}")

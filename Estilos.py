@@ -175,8 +175,17 @@ def crear_icono(tipo, tam=64, circulo=True, color=COLOR_TEXTO, escala=4):
         d.rectangle(caja(-0.1, -0.2, 0.08, -0.07), outline=tinta, width=w)
         d.rectangle(caja(-0.12, 0.05, 0.12, 0.2), outline=tinta, width=w)
 
-    img = img.resize((tam, tam), Image.Resampling.LANCZOS)
+    # Se entrega al doble de resolución: con el escalado de Windows (125 %, 150 %) CTk reduce
+    # la imagen en vez de ampliarla, y así no se ve pixeleada
+    img = img.resize((tam * 2, tam * 2), Image.Resampling.LANCZOS)
     return ctk.CTkImage(light_image=img, dark_image=img, size=(tam, tam))
+
+
+def imagen_nitida(ruta, ancho, alto):
+    """Abre una imagen y la reduce con LANCZOS al doble del tamaño final (ver crear_icono)."""
+    img = Image.open(ruta)
+    img.thumbnail((ancho * 2, alto * 2), Image.Resampling.LANCZOS)
+    return ctk.CTkImage(light_image=img, dark_image=img, size=(ancho, alto))
 
 
 #  BOTONES
@@ -249,8 +258,12 @@ def _poner_icono(win):
 
 
 def nueva_ventana(parent, titulo, ancho, alto, modal=True, redimensionable=False):
-    """Crea una CTkToplevel centrada, al frente y (opcionalmente) modal."""
+    """Crea una CTkToplevel centrada, al frente y (opcionalmente) modal.
+
+    La ventana nace oculta y se muestra cuando quien la llamó terminó de armar su contenido,
+    para que no se vean los widgets dibujándose uno por uno."""
     win = ctk.CTkToplevel(parent)
+    win.withdraw()
     win.title(titulo)
     win.configure(fg_color=COLOR_FONDO)
     win.resizable(redimensionable, redimensionable)
@@ -260,12 +273,21 @@ def nueva_ventana(parent, titulo, ancho, alto, modal=True, redimensionable=False
         win.transient(parent.winfo_toplevel())
     # CTkToplevel reemplaza el icono a los ~200 ms; se vuelve a poner después
     win.after(250, lambda: _poner_icono(win))
+    win.after_idle(lambda: mostrar_ventana(win, modal))
+    return win
+
+
+def mostrar_ventana(win, modal=False):
+    """Termina de calcular el diseño con la ventana oculta y luego la muestra de una vez."""
+    if not win.winfo_exists():
+        return
+    win.update_idletasks()
+    win.deiconify()
     win.lift()
     win.focus_force()
     if modal:
         # grab_set falla si la ventana aún no es visible
         win.after(150, lambda: win.grab_set() if win.winfo_exists() else None)
-    return win
 
 
 #  TABLAS (ttk.Treeview con estilo plano)
