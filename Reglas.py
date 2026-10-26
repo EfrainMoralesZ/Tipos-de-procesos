@@ -6,6 +6,8 @@ así que los cambios aplican sin reiniciar ni tocar código.
 import copy
 import json
 import os
+import re
+import unicodedata
 
 import customtkinter as ctk
 from tkinter import messagebox
@@ -58,7 +60,17 @@ REGLAS_POR_DEFECTO = {
         {"numero": "141", "norma": "NOM-141-SSA1/SCFI-2012"},
         {"numero": "189", "norma": "NOM-189-SSA1/SCFI-2018"},
     ],
+    # Columna REVISION: todo va a revisión salvo estos TIPO DE PROCESO y estos productos
+    "revision_tipos_excluidos": ["CUMPLE", "SIN NORMA"],
+    "revision_productos_excluidos": [
+        "BALON", "BICICLETA", "CALCETIN", "TOALLA", "PESA", "MANCUERNA", "BASTON", "DISCO",
+        "MESA + PLASTICO", "MESA + METAL", "MESA + METALICA", "SILLA PLEGABLE", "BANCO PLEGABLE",
+        "CALZADO", "SANDALIA",
+    ],
 }
+
+_CLAVES_LISTA = ("normas_adherible", "normas_costura", "normas_validas",
+                 "revision_tipos_excluidos", "revision_productos_excluidos")
 
 
 #  LECTURA / ESCRITURA
@@ -73,8 +85,7 @@ def _normalizar(valores):
 
 
 def _normalizar_reglas(reglas):
-    limpias = {clave: _normalizar(reglas.get(clave, REGLAS_POR_DEFECTO[clave]))
-               for clave in ("normas_adherible", "normas_costura", "normas_validas")}
+    limpias = {clave: _normalizar(reglas.get(clave, REGLAS_POR_DEFECTO[clave])) for clave in _CLAVES_LISTA}
     limpias["excepciones"] = [
         {"nombre": str(exc.get("nombre", "")).strip() or "Sin nombre",
          "normas": _normalizar(exc.get("normas")),
@@ -133,6 +144,38 @@ def clasificar(norma, descripcion, tipo, reglas):
 
 def es_norma_valida(norma, reglas):
     return str(norma).upper().strip() in reglas["normas_validas"]
+
+
+#  REVISIÓN
+def _sin_acentos(texto):
+    texto = unicodedata.normalize("NFKD", str(texto)).encode("ascii", "ignore").decode()
+    return " ".join(texto.upper().split())
+
+
+def _patron_producto(frase):
+    """'SILLA PLEGABLE' -> cada palabra admite plural (S/ES); no cuenta si va después de 'PARA'
+    ('CANDADOS PARA BICICLETAS' es un accesorio, no una bicicleta)."""
+    palabras = [re.escape(p) + "(?:S|ES)?" for p in frase.split()]
+    return r"(?<!PARA )\b" + r"\s+".join(palabras) + r"\b"
+
+
+def producto_sin_revision(descripcion, producto):
+    """El producto puede ser una frase ('SILLA PLEGABLE') o varias partes unidas con '+'
+    que deben aparecer todas en la descripción ('MESA + PLASTICO')."""
+    descripcion = _sin_acentos(descripcion)
+    partes = [_sin_acentos(p) for p in producto.split("+") if p.strip()]
+    return bool(partes) and all(re.search(_patron_producto(p), descripcion) for p in partes)
+
+
+def requiere_revision(tipo, descripcion, reglas):
+    """Devuelve (va_a_revision, motivo) para la columna REVISION."""
+    tipo = str(tipo).upper().strip()
+    if tipo in reglas["revision_tipos_excluidos"]:
+        return False, f'El TIPO DE PROCESO es {tipo}'
+    for producto in reglas["revision_productos_excluidos"]:
+        if producto_sin_revision(descripcion, producto):
+            return False, f'La descripción coincide con el producto "{producto}"'
+    return True, "No es un tipo ni un producto exceptuado"
 
 
 #  PEDIMENTO
@@ -462,6 +505,7 @@ class EditorReglas:
         self._tab_excepciones(tabs.add("  Excepciones por descripción  "))
         self.tabla_equivalencias = TablaEquivalencias(tabs.add("  Pedimento  "), self.ventana, self.marcar_cambio)
         self.tabla_equivalencias.pack(fill="both", expand=True, padx=6, pady=(4, 0))
+        self._tab_revision(tabs.add("  Revisión  "))
         self._tab_probar(tabs.add("  Probar  "))
 
         self.cargar_en_pantalla()
@@ -479,6 +523,28 @@ class EditorReglas:
         for col, (clave, titulo, desc, columna) in enumerate(textos):
             lista = ListaEditable(tab, self.ventana, titulo, desc, columna, self.marcar_cambio)
             lista.grid(row=0, column=col, sticky="nsew", padx=6, pady=(4, 0))
+            self.listas_normas[clave] = lista
+
+    def _tab_revision(self, tab):
+        tab.grid_columnconfigure(0, weight=1, uniform="revision")
+        tab.grid_columnconfigure(1, weight=2, uniform="revision")
+        tab.grid_rowconfigure(1, weight=1)
+        ctk.CTkLabel(tab, text="En la columna REVISION se escribe REVISION en todos los artículos, salvo los "
+                               "que tengan uno de estos TIPO DE PROCESO o cuya descripción coincida con uno "
+                               "de estos productos; esos se dejan vacíos.",
+                     font=E.fuente(12), text_color=E.COLOR_TEXTO_SEC, anchor="w", justify="left",
+                     wraplength=950).grid(row=0, column=0, columnspan=2, sticky="w", padx=8, pady=(4, 8))
+        textos = [
+            ("revision_tipos_excluidos", "TIPO DE PROCESO sin revisión",
+             "Ej. CUMPLE, SIN NORMA.", "TIPO DE PROCESO"),
+            ("revision_productos_excluidos", "Productos sin revisión",
+             "Se buscan en la descripción sin acentos y aceptan plural (BALON = BALONES). No cuentan si van "
+             "después de \"PARA\" (CANDADOS PARA BICICLETAS sí va a revisión). Usa + para pedir varias "
+             "palabras a la vez: MESA + PLASTICO.", "PRODUCTO"),
+        ]
+        for col, (clave, titulo, desc, columna) in enumerate(textos):
+            lista = ListaEditable(tab, self.ventana, titulo, desc, columna, self.marcar_cambio)
+            lista.grid(row=1, column=col, sticky="nsew", padx=6)
             self.listas_normas[clave] = lista
 
     def _tab_excepciones(self, tab):
@@ -675,8 +741,10 @@ class EditorReglas:
             motivo = f"La norma no está en Normas válidas (sin esa revisión sería {resultado}: {motivo})"
             resultado = "SIN NORMA"
         color = {"ADHERIBLE": E.COLOR_AZUL, "COSTURA": E.COLOR_VERDE}.get(resultado, E.COLOR_TEXTO_TENUE)
+        revision, motivo_rev = requiere_revision(resultado, self.prueba["descripcion"].get(), self.reglas)
         self.lbl_prueba.configure(text=resultado, text_color=color)
-        self.lbl_motivo.configure(text=motivo)
+        self.lbl_motivo.configure(text=f"{motivo}\n\nREVISION: {'REVISION' if revision else 'vacía'} "
+                                       f"({motivo_rev})")
 
     def guardar(self):
         for exc in self.reglas["excepciones"]:

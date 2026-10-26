@@ -69,6 +69,42 @@ def cargar_pedimento(path):
                 return df.sort_values("NORMA UVA", key=lambda s: s.isna(), kind="stable").drop_duplicates("CODIGO")
     raise ValueError("El pedimento no tiene una hoja con las columnas CODIGO y NORMA UVA.")
 
+# Archivo de destinos: columna con la tienda según el tipo (CLP o SHU)
+COLUMNAS_DESTINO = [
+    ("CLP", "FINAL DESTINATION NAME"),
+    ("SHU", "DESTINATION"),
+]
+
+def _codigo_texto(serie):
+    """Códigos como texto sin '.0' ni espacios (4479813.0 -> '4479813')."""
+    numeros = pd.to_numeric(serie, errors="coerce").astype("Int64").astype(str)
+    return numeros.where(numeros != "<NA>", serie.astype(str).str.strip())
+
+def cargar_destinos(path):
+    """Busca en el CLP o SHU la hoja con ITEM CODE y la columna de tienda.
+    Devuelve (tipo, {item: tienda}); si un item va a varias tiendas se unen con ', '."""
+    engine = 'xlrd' if path.lower().endswith('.xls') else 'openpyxl'
+    libro = pd.ExcelFile(path, engine=engine)
+    for hoja in libro.sheet_names:
+        muestra = pd.read_excel(libro, hoja, header=None, nrows=30)
+        for fila, valores in muestra.iterrows():
+            columnas = {_texto_columna(v): v for v in valores if pd.notna(v)}
+            if "ITEM CODE" not in columnas:
+                continue
+            for tipo, col_tienda in COLUMNAS_DESTINO:
+                if col_tienda in columnas:
+                    df = pd.read_excel(libro, hoja, header=fila)
+                    df = df[[columnas["ITEM CODE"], columnas[col_tienda]]].dropna()
+                    df.columns = ["ITEM", "TIENDA"]
+                    df["ITEM"] = _codigo_texto(df["ITEM"])
+                    df["TIENDA"] = df["TIENDA"].astype(str).str.strip()
+                    df = df[(df["ITEM"] != "") & (df["TIENDA"] != "")]
+                    tiendas = df.groupby("ITEM", sort=False)["TIENDA"].agg(
+                        lambda s: ", ".join(dict.fromkeys(s)))
+                    return tipo, tiendas.to_dict()
+    raise ValueError("El archivo no tiene una hoja con ITEM CODE y FINAL DESTINATION NAME (CLP) "
+                     "o ITEM CODE y DESTINATION (SHU).")
+
 def limpiar_items(df, columna):
     items = pd.to_numeric(df[columna], errors='coerce')
     items = items.dropna().astype(int)
@@ -292,7 +328,7 @@ def modificar_tipo_proceso(row, reglas):
 
 #  FUNCION PARA GENERAR EL TIPO DE PROCESO
 
-def procesar_reporte(reporte_path, pedimento_path=None):
+def procesar_reporte(reporte_path, pedimento_path=None, destinos_path=None):
     # REGISTRAR ARCHIVO PROCESADO
     nombre_archivo = os.path.basename(reporte_path)
     fecha_proceso = datetime.now().strftime("%Y-%m-%d")
@@ -493,15 +529,26 @@ def procesar_reporte(reporte_path, pedimento_path=None):
             df_result['PIEZAS'] = 0
 
 
-        # PREVIO: buscar la observación en codigos_cumple.json según ITEM
-        df_result['PREVIO'] = df_result.apply(
-            lambda row: df_codigos_cumple.loc[df_codigos_cumple['ITEM'] == str(row['ITEM']), 'OBSERVACIONES'].values[0]
-            if not df_codigos_cumple.loc[df_codigos_cumple['ITEM'] == str(row['ITEM']), 'OBSERVACIONES'].empty else 0,
-            axis=1
-        )
+        # REVISION: todo va a revisión salvo los TIPO DE PROCESO y productos exceptuados
+        # en Reglas → Revisión (CUMPLE, SIN NORMA, calzado, sandalias...), que quedan vacíos
+        df_result['REVISION'] = df_result.apply(
+            lambda row: 'REVISION' if Reglas.requiere_revision(row['TIPO DE PROCESO'], row['DESCRIPCION'], reglas)[0]
+            else '', axis=1)
+
+        # TIENDA desde el CLP (FINAL DESTINATION NAME) o el SHU (DESTINATION) según ITEM CODE
+        columnas_salida = ['ITEM', 'TIPO DE PROCESO', 'NORMA', 'CRITERIO', 'DESCRIPCION', 'PIEZAS', 'REVISION']
+        resumen_destinos = ""
+        if destinos_path:
+            tipo_destinos, tiendas = cargar_destinos(destinos_path)
+            items_txt = _codigo_texto(df_result['ITEM'].astype(str))
+            df_result['TIENDA'] = items_txt.map(tiendas).fillna('')
+            columnas_salida.append('TIENDA')
+            con_tienda = items_txt[df_result['TIENDA'] != ''].nunique()
+            resumen_destinos = (f"\n\n{tipo_destinos}: tienda asignada a {con_tienda} de "
+                                f"{items_txt.nunique()} ítems.")
 
         # --- Columnas que se imprimen en el tipo de proceso --- #
-        df_result = df_result[['ITEM', 'TIPO DE PROCESO', 'NORMA', 'CRITERIO', 'DESCRIPCION', 'PIEZAS', 'PREVIO']]
+        df_result = df_result[columnas_salida]
         # Asegurar que ITEM se exporte como entero en el Excel
         df_result['ITEM'] = df_result['ITEM'].astype('Int64')
 
@@ -592,7 +639,7 @@ def procesar_reporte(reporte_path, pedimento_path=None):
                     # if ws2 is not None:
                     #     aplicar_estilo(ws2, df_codigos_actualizados)
 
-                messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}{resumen_pedimento}")
+                messagebox.showinfo("Éxito", f"Archivo guardado correctamente:\n{save_path}{resumen_pedimento}{resumen_destinos}")
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo guardar el archivo:\n{e}")
         else:
@@ -602,8 +649,8 @@ def procesar_reporte(reporte_path, pedimento_path=None):
 
 # Tipos de archivo: FH lleva reporte de cajas + pedimento; MIMPO solo el reporte de cajas
 TIPOS_ARCHIVO = [
-    ("FH", "Reporte de cajas + tabla del pedimento", True),
-    ("MIMPO", "Solo reporte de cajas", False),
+    ("FH", "Reporte de cajas + tabla del pedimento + CLP o SHU", True),
+    ("MIMPO", "Reporte de cajas + CLP o SHU", False),
 ]
 
 def seleccionar_reporte():
@@ -651,7 +698,15 @@ def seleccionar_archivos(tipo, con_pedimento):
                 "Sin pedimento", "No se seleccionó el pedimento.\n\n"
                                  "¿Generar el tipo de proceso con la norma que trae el reporte?"):
             return
-    procesar_reporte(ruta, pedimento or None)
+    destinos = filedialog.askopenfilename(
+        title=f"{tipo} - Seleccionar CLP o SHU (ITEM CODE y tienda destino)",
+        filetypes=[("Archivos Excel", "*.xlsx *.xls")]
+    )
+    if not destinos and not messagebox.askyesno(
+            "Sin CLP / SHU", "No se seleccionó el archivo CLP o SHU.\n\n"
+                             "¿Generar el tipo de proceso sin la columna TIENDA?"):
+        return
+    procesar_reporte(ruta, pedimento or None, destinos or None)
 
 #  VENTANA DEL DASHBOARD
 def mostrar_estadisticas():
