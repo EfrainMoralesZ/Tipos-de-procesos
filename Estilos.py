@@ -285,9 +285,24 @@ def mostrar_ventana(win, modal=False):
     win.deiconify()
     win.lift()
     win.focus_force()
+    # CTkToplevel cambia el color de la barra de título ~10 ms después de resizable(): guarda el
+    # estado, oculta y restaura. Si eso corre antes que este deiconify guarda "withdrawn" y la
+    # vuelve a ocultar; se revisa un par de veces y se muestra de nuevo.
+    for retraso in (60, 250):
+        win.after(retraso, lambda: _asegurar_visible(win))
     if modal:
         # grab_set falla si la ventana aún no es visible
         win.after(150, lambda: win.grab_set() if win.winfo_exists() else None)
+
+
+def _asegurar_visible(win):
+    try:
+        if win.winfo_exists() and win.state() == "withdrawn":
+            win.deiconify()
+            win.lift()
+            win.focus_force()
+    except Exception:
+        pass
 
 
 #  TABLAS (ttk.Treeview con estilo plano)
