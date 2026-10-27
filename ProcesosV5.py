@@ -26,7 +26,7 @@ def inicializar_datos_externos():
 
 # --- Funciones utilitarias centralizadas ---
 def cargar_excel(path, columnas_requeridas=None):
-    if not os.path.exists(path):
+    if not os.path.exists(path):  
         raise FileNotFoundError(f"No se encontró el archivo: {path}")
     engine = 'xlrd' if path.lower().endswith('.xls') else 'openpyxl'
     df = pd.read_excel(path, engine=engine)
