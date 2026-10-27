@@ -281,18 +281,34 @@ def mostrar_ventana(win, modal=False):
     """Termina de calcular el diseño con la ventana oculta y luego la muestra de una vez."""
     if not win.winfo_exists():
         return
+    # CTkToplevel cambia el color de la barra de título ~10 ms después de resizable(): guarda el
+    # estado ("withdrawn", porque nace oculta), oculta, llama a update() —que puede ejecutar esta
+    # función ahí dentro— y unos ms después restaura el estado guardado, volviendo a ocultarla.
+    # En el .exe esa restauración llega tarde y la ventana quedaba oculta con el grab_set puesto,
+    # bloqueando toda la aplicación. Se le indica que el estado final debe ser visible.
+    win._state_before_windows_set_titlebar_color = "normal"
+    win._withdraw_called_after_windows_set_titlebar_color = False
     win.update_idletasks()
     win.deiconify()
     win.lift()
     win.focus_force()
-    # CTkToplevel cambia el color de la barra de título ~10 ms después de resizable(): guarda el
-    # estado, oculta y restaura. Si eso corre antes que este deiconify guarda "withdrawn" y la
-    # vuelve a ocultar; se revisa un par de veces y se muestra de nuevo.
-    for retraso in (60, 250):
+    # Respaldo por si algo más la oculta
+    for retraso in (60, 250, 600):
         win.after(retraso, lambda: _asegurar_visible(win))
     if modal:
-        # grab_set falla si la ventana aún no es visible
-        win.after(150, lambda: win.grab_set() if win.winfo_exists() else None)
+        win.after(150, lambda: _tomar_grab(win))
+
+
+def _tomar_grab(win):
+    """grab_set solo sobre una ventana visible: un grab en una ventana oculta congela la app."""
+    try:
+        if not win.winfo_exists():
+            return
+        if win.state() == "withdrawn":
+            win.deiconify()
+        win.grab_set()
+    except Exception:
+        pass
 
 
 def _asegurar_visible(win):
